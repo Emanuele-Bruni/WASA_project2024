@@ -7,15 +7,71 @@ info:
       Enjoy seamless conversations with text or GIFs and easily stay in touch through your private chats or group discussions.
   version: "1"
   
-#components:
-  #schemas:
-    #
-    #
-    #
-  #parameters:
+components:
+  schemas:
+    User:
+      type: object
+      description: user's details
+      properties:
+        name:
+          type: string
+          description: user's name
+          example: "Gennaro"
+        userId:
+          type: integer
+          description: user's number Id
+          example: "000000"
+        photo:
+          type: string
+          format: uri
+          description: user profile's photo
+          example: "https..."
+          
+    Conversation:
+      type: object
+      description: conversation between different users
+      properties:
+        conversationId: 
+          type: integer
+          description: conversation's code
+          example: 012039402
+        title:
+          type: string
+          description: conversation name
+          example: "Pisilli informatici"
+        photo:
+          type: string
+          format: uri
+          description: conversation's photo
+        isGroup:
+          type: boolean
+          description: It's true if the conversation is a group, else it's false
+        
+  parameters:
+    userId:
+      schema:
+        type: integer
+      required: true
+      in: path
+      name: userId
+    
+    conversationId:
+      schema:
+        type: integer
+      required: true
+      in: path
+      name: conversationId
+    
+    messageId:
+      schema:
+        type: integer
+      required: true
+      in: path
+      name: messageId
 
 paths:
-  /session:
+  #doLogin
+  /login:
     post:
       tags: ["login"]
       summary: Logs in the user
@@ -48,5 +104,56 @@ paths:
                   identifier:
                     type: string
                     example: "abcdef012345"
+                    
+  #setUsername
+  /users/{userId}/username:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    patch:
+      tags: ["Username"]
+      summary: set your username
+      description: |
+        You can set a new username
+      operationId: setUsername
+      requestBody:
+        description: insert here the username
+        content:
+          application/json:
+           schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  pattern: '^.*?$'
+                  minLength: 3
+                  maxLength: 16
+        required: true
+      responses:
+        '200':
+          description: username setted
       
+  #getMyConversations
+  /users/{userId}/conversations:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: [My Conversations]
+      summary: get user's conversations
+      description: |
+        You can see user's conversations history here
+      operationId: getMyConversations
+      responses:
+        '404':
+          description: conversation not found
+        '200':
+          description: conversation found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Conversation"
     
