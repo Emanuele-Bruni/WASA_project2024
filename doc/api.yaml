@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: WasaText
+  description: |
+      Connect with your friends effortlessly using WASAText! <br>
+      Send and receive messages, whether one-on-one or in groups, all from the convenience of your PC. <br>
+      Enjoy seamless conversations with text or GIFs and easily stay in touch through your private chats or group discussions.
+  version: "1"
+  
+#components:
+  #schemas:
+    #
+    #
+    #
+  #parameters:
+
+paths:
+  /session:
+    post:
+      tags: ["login"]
+      summary: Logs in the user
+      description: |
+        If the user does not exist, it will be created, and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
+      requestBody:
+        description: User Details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Maria
+                  pattern: '^.*?$'
+                  minLength: 3
+                  maxLength: 16
+        required: True
+      responses:
+        '201':
+          description: User log-in action successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifier:
+                    type: string
+                    example: "abcdef012345"
+      
+    
