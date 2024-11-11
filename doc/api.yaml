@@ -46,34 +46,79 @@ components:
         isGroup:
           type: boolean
           description: It's true if the conversation is a group, else it's false
+    
+    Message:
+      type: object
+      description: character string
+      properties:
+        text:
+          type: string
+          description: content of the message
+          example: "Buongiorno!"
+        hours:
+          type: string
+          description: at what time the message was sent
+          example: "12:33"
+    
+    Comment:
+      type: object
+      description: character string under a Message
+      properties:
+        text:
+          type: string
+          description: content of the comment
+    
+    Group:
+      type: object
+      description: list of users
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
         
+    
   parameters:
     userId:
       schema:
-        type: integer
+        type: string
       required: true
       in: path
       name: userId
     
     conversationId:
       schema:
-        type: integer
+        type: string
       required: true
       in: path
       name: conversationId
     
     messageId:
       schema:
-        type: integer
+        type: string
       required: true
       in: path
       name: messageId
+      
+    commentId:
+      schema:
+        type: string
+      required: true
+      in: path
+      name: commentId
+    
+    groupId:
+      schema:
+        type: string
+      required: true
+      in: path
+      name: groupId
 
 paths:
   #doLogin
   /login:
     post:
-      tags: ["login"]
+      tags: ["Login"]
       summary: Logs in the user
       description: |
         If the user does not exist, it will be created, and an identifier is returned.
@@ -94,7 +139,7 @@ paths:
                   maxLength: 16
         required: True
       responses:
-        '201':
+        '200':
           description: User log-in action successful
           content:
             application/json:
@@ -105,7 +150,7 @@ paths:
                     type: string
                     example: "abcdef012345"
                     
-  #setUsername
+  #setMyUserName
   /users/{userId}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
@@ -114,7 +159,7 @@ paths:
       summary: set your username
       description: |
         You can set a new username
-      operationId: setUsername
+      operationId: setMyUserName
       requestBody:
         description: insert here the username
         content:
@@ -137,16 +182,16 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: [My Conversations]
-      summary: get user's conversations
+      tags: ["Conversations"]
+      summary: get all user's conversations
       description: |
         You can see user's conversations history here
       operationId: getMyConversations
       responses:
         '404':
-          description: conversation not found
+          description: user's conversations not found
         '200':
-          description: conversation found
+          description: user's conversations found
           content:
             application/json:
               schema:
@@ -156,4 +201,140 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Conversation"
+                      
+  #getConversation → GET /conversations/{conversationId}
+  /conversations/{conversationId}:
+    parameters:
+      - $ref: "#/components/parameters/conversationId"
+    get:
+      tags: ["Conversations"]
+      summary: get a specific conversation
+      description: |
+        You can see a specific conversation
+      operationId: getConversation
+      responses:
+        "404":
+          description: conversation not found
+        "200":
+          description: conversation found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+          
+  #sendMessage → POST /conversations/{conversationID}/messages
+  /conversations/{conversationId}/message:
+    parameters:
+      - $ref: "#/components/parameters/conversationId"
+    post:
+      tags: ["Messages"]
+      summary: send a new message
+      description: |
+        You can send a new message in a specific conversation
+      operationId: sendMessage
+      responses:
+        "200":
+          description: sending successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: unable to send the message
+  
+  #forwardMessage
+  /messages/{messageId}/forward:
+    parameters:
+      - $ref: "#/components/parameters/messageId"
+    post:
+      tags: ["Messages"]
+      summary: forward a message
+      description: |
+        You can forward a message
+      operationId: forwardMessage
+      responses:
+        "400":
+          description: unable to forward the message
+        "200":
+          description: forwarded message
+          content:
+            application/json:
+              schema:
+                $ref : "#/components/schemas/Message"
+  
+  #commentMessage
+  /messages/{messageId}/comments:
+    parameters:
+      - $ref: "#/components/parameters/messageId"
+    post:
+      tags: ["Comments"]
+      summary: comment a message
+      description: |
+        You can add a comment under a message
+      operationId: commentMessage
+      responses:
+        "400":
+          description: unable to comment the message
+        "200":
+          description: message commented correctly
+          content:
+            application/json:
+              schema:
+                $ref : "#/components/schemas/Comment"
+  
+  #uncommentMessage
+  /messages/{messageId}/comments/{commentId}:
+    parameters:
+      - $ref: "#/components/parameters/messageId"
+      - $ref: "#/components/parameters/commentId"
+    delete:
+      tags: ["Comments"]
+      summary: uncomment a message
+      description: |
+        You can delete a specific comment under a message 
+      operationId: uncommentMessage
+      responses:
+        "400":
+          description: unable to delete the comment
+        "200":
+          description: comment deleted
+          
+  #deleteMessage
+  /conversations/{conversationId}/messages/{messageId}:
+    parameters:
+      - $ref: "#/components/parameters/conversationId"
+      - $ref: "#/components/parameters/messageId"
+    delete:
+      tags: ["Messages"]
+      summary: delete a message
+      description: |
+        You can delete a specific message in a specific conversation
+      operationId: deleteMessage
+      responses:
+        "400":
+          description: unable to delete the message
+        "200":
+          description: message deleted
+  
+  #addToGroup
+  /groups/{groupId}/members:
+    parameters:
+      - $ref: "#/components/parameters/groupId"
+    patch:
+      tags: ["Groups"]
+      summary: add to a group
+      description: |
+        You can add a member to a group
+      operationId: addToGroup
+      responses:
+        "400":
+          description: unable to add 
+        "200":
+          description: added member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+    
+    
     
