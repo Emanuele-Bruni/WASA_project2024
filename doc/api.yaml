@@ -13,19 +13,31 @@ components:
       type: object
       description: user's details
       properties:
-        name:
-          type: string
-          description: user's name
-          example: "Gennaro"
         userId:
           type: integer
           description: user's number Id
           example: "000000"
+        name:
+          type: string
+          description: user's name
+          example: "Gennaro"
         photo:
           type: string
           format: uri
           description: user profile's photo
-          example: "https..."
+          example: "https://example.com/images/photo123.jpg"
+        bio:
+            type: string
+            description: what user writes about him
+            example: "based in Rome"
+        number:
+            type: string
+            pattern: '^\+[0-9]+$'
+            minLength: 10
+            maxLength: 15
+            description: user's cellphone number
+            example: '+3972837482'
+
           
     Conversation:
       type: object
@@ -34,15 +46,17 @@ components:
         conversationId: 
           type: integer
           description: conversation's code
-          example: 012039402
+          minimum: 10000
+          example: 12345
         title:
           type: string
           description: conversation name
-          example: "Pisilli informatici"
+          example: "Gruppo calcetto"
         photo:
           type: string
           format: uri
           description: conversation's photo
+          example: "https://example.com/images/photo123.jpg"
         isGroup:
           type: boolean
           description: It's true if the conversation is a group, else it's false
@@ -51,6 +65,11 @@ components:
       type: object
       description: character string
       properties:
+        messageId:
+          type: integer
+          description: message identifier
+          minimum: 10000
+          example: 12345
         text:
           type: string
           description: content of the message
@@ -59,76 +78,147 @@ components:
           type: string
           description: at what time the message was sent
           example: "12:33"
+        comments: 
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+           
     
     Comment:
       type: object
       description: character string under a Message
       properties:
+        commentId:
+          type: integer
+          description: comment identifier
+          minimum: 10000
+        author:
+          type: string
+          description: who wrote the comment 
         text:
           type: string
           description: content of the comment
+        feedback:
+          type: object
+          description: represent if people agree or not
+          properties:
+            like:
+              type: integer
+              minimum: 0
+            dislike:
+              type: integer
+              minimum: 0
     
     Group:
       type: object
       description: list of users
       properties:
+        groupId:
+          type: integer
+          description: message identifier
+          minimum: 10000
+          example: 12345
+        groupName:
+          type: string
+          example: "Informatics"
         members:
           type: array
           items:
             $ref: "#/components/schemas/User"
+    
+    Photo:
+      type: object
+      description: photo chosen by the user
+      properties:
+        photoId:
+          type: integer
+          minimum: 00000
+          maximum: 99999
+          example: 12345
+        url:
+          type: string
+          format: uri
+          description: photo's url 
+        title:
+          type: string
+          minLength: 1
+          maxLength: 30
+        size:
+          type: object
+          properties: 
+            width: 
+              type: integer
+            height:
+              type: integer
+        
            
   parameters:
     userId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
       required: true
+      description: user identifier
       in: path
       name: userId
     
     conversationId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
       required: true
+      description: conversation identifier
       in: path
       name: conversationId
     
     messageId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
+      description: message identifier
       required: true
       in: path
       name: messageId
       
     commentId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
+      description: comment identifier
       required: true
       in: path
       name: commentId
     
     groupId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
+      description: group identifier
       required: true
       in: path
       name: groupId
 
     forwardId:
       schema:
-        type: string
+        type: integer
+        minimum: 0
+        maximum: 99999
       required: true
       in: path
       name: forwardId
 
-# 1) Define the security scheme type (HTTP bearer)
   securitySchemes:
-    bearerAuth: # arbitrary name for the security scheme
+    bearerAuth:
       type: http
       scheme: bearer
 
-# 2) Apply the security globally to all operations
 security:
-  - bearerAuth: [] # use the same name as above
+  - bearerAuth: [] 
 
 paths:
   #doLogin
@@ -168,12 +258,10 @@ paths:
                     example: "abcdef012345"
                     
   #setMyUserName
-  /users/{userId}/username:
-    parameters:
-      - $ref: "#/components/parameters/userId"
+  /settings/username:
     patch:
-      tags: ["Username"]
-      summary: set your username
+      tags: ["Profile"]
+      summary: Set your username
       description: |
         You can set a new username
       operationId: setMyUserName
@@ -192,7 +280,7 @@ paths:
         required: true
       responses:
         '200':
-          description: username setted
+          description: username set
       
   #getMyConversations
   /conversations:
@@ -280,9 +368,10 @@ paths:
                 $ref : "#/components/schemas/Message"
   
   #commentMessage
-  /messages/{messageId}/comments:
+  /conversations/{conversationId}/messages/{messageId}/comments:
     parameters:
       - $ref: "#/components/parameters/messageId"
+      - $ref: "#/components/parameters/conversationId"
     post:
       tags: ["Comments"]
       summary: comment a message
@@ -300,10 +389,11 @@ paths:
                 $ref : "#/components/schemas/Comment"
   
   #uncommentMessage
-  /messages/{messageId}/comments/{commentId}:
+  /conversations/{conversationId}/messages/{messageId}/comments/{commentId}:
     parameters:
       - $ref: "#/components/parameters/messageId"
       - $ref: "#/components/parameters/commentId"
+      - $ref: "#/components/parameters/conversationId"
     delete:
       tags: ["Comments"]
       summary: uncomment a message
@@ -334,7 +424,7 @@ paths:
           description: message deleted
   
   #addToGroup
-  /groups/{groupId}/members:
+  /conversations/groups/{groupId}/members:
     parameters:
       - $ref: "#/components/parameters/groupId"
     patch:
@@ -353,9 +443,77 @@ paths:
               schema:
                 $ref: "#/components/schemas/Group"
 
-#leaveGroup → DELETE /groups/{groupId}/members/{userId}
-#setGroupName → PUT /groups/{groupId}/name
-#setMyPhoto → PUT /users/{userId}/photo
-#setGroupPhoto → PUT /groups/{groupId}/photo 
-    
+  #leaveGroup 
+  /conversations/groups/{groupId}:
+    parameters:
+      - $ref: "#/components/parameters/groupId"
+    delete:
+      tags: ["Groups"]
+      summary: leave a group
+      description: |
+        You can leave a group you no longer want to be a part of
+      operationId: leaveGroup
+      responses:  
+        "200":
+            description: you left the group
+        "400":
+            description: unable to leave group
+
+  #setGroupName 
+  /conversations/groups/{groupId}/name:
+    parameters:
+      - $ref: "#/components/parameters/groupId"
+    patch:
+      tags: ["Groups"]
+      summary: set a new group name
+      description: |
+        You can set or change a group name
+      operationId: setGroupName
+      responses:
+        "200":
+            description: group name set
+            content:
+              application/json: 
+                schema: 
+                  type: string
+        "400":
+          description: unable to set a new group name
+
+  #setMyPhoto 
+  /settings/photo:
+    patch:
+      tags: ["Profile"]
+      summary: Set your profile photo
+      description: |
+        You can set or change your profile photo
+      operationId: setMyPhoto
+      responses:
+        "400":
+          description: unable to set a new photo
+        "200":
+          description: new profile photo set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+
+  #setGroupPhoto → PUT /groups/{groupId}/photo 
+  /conversations/groups/{groupId}/photo:
+    parameters:
+      - $ref: "#/components/parameters/groupId"
+    patch:  
+      tags: [Groups]
+      summary: Set a new group photo
+      description: |
+        You can set or change a group photo
+      operationId: setGroupPhoto
+      responses:
+        "400":
+            description: unable to set a new photo
+        "200":
+            description: group photo set
+            content:
+              application/json:
+                schema: 
+                  $ref: "#/components/schemas/Group"
     
