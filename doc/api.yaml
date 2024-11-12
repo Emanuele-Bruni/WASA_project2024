@@ -76,8 +76,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/User"
-        
-    
+           
   parameters:
     userId:
       schema:
@@ -114,10 +113,28 @@ components:
       in: path
       name: groupId
 
+    forwardId:
+      schema:
+        type: string
+      required: true
+      in: path
+      name: forwardId
+
+# 1) Define the security scheme type (HTTP bearer)
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+
+# 2) Apply the security globally to all operations
+security:
+  - bearerAuth: [] # use the same name as above
+
 paths:
   #doLogin
   /login:
     post:
+      security: []
       tags: ["Login"]
       summary: Logs in the user
       description: |
@@ -178,9 +195,7 @@ paths:
           description: username setted
       
   #getMyConversations
-  /users/{userId}/conversations:
-    parameters:
-      - $ref: "#/components/parameters/userId"
+  /conversations:
     get:
       tags: ["Conversations"]
       summary: get all user's conversations
@@ -243,9 +258,11 @@ paths:
           description: unable to send the message
   
   #forwardMessage
-  /messages/{messageId}/forward:
+  /conversations/{conversationId}/messages/{messageId}/forward/{forwardId}:
     parameters:
+      - $ref: "#/components/parameters/conversationId"
       - $ref: "#/components/parameters/messageId"
+      - $ref: "#/components/parameters/forwardId"
     post:
       tags: ["Messages"]
       summary: forward a message
@@ -335,6 +352,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
-    
+
+#leaveGroup → DELETE /groups/{groupId}/members/{userId}
+#setGroupName → PUT /groups/{groupId}/name
+#setMyPhoto → PUT /users/{userId}/photo
+#setGroupPhoto → PUT /groups/{groupId}/photo 
     
     
