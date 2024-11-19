@@ -22,15 +22,18 @@ components:
           type: string
           description: user's name
           example: "Gennaro"
+          minLength: 1
+          maxLength: 16
+          pattern: "^.*?$"
         photo:
-          type: string
-          format: url
-          description: user profile's photo
-          example: "https://example.com/images/photo123.jpg"
+          $ref: "#/components/schemas/Photo"
         bio:
             type: string
             description: what user writes about him
             example: "based in Rome"
+            minLength: 1
+            maxLength: 25
+            pattern: "^.*?$"
         number:
             type: string
             pattern: '^\+[0-9]+$'
@@ -53,10 +56,7 @@ components:
           description: conversation name
           example: "Gruppo calcetto"
         photo:
-          type: string
-          format: url
-          description: conversation's photo
-          example: "https://example.com/images/photo123.jpg"
+          $ref: "#/components/schemas/Photo"
         isGroup:
           type: boolean
           description: It's true if the conversation is a group, else it's false
@@ -74,14 +74,23 @@ components:
           type: string
           description: who wrote the message
           example: "Franco Bollo"
+          minLength: 1
+          maxLength: 16
+          pattern: "^.*?$"
         text:
           type: string
           description: content of the message
           example: "Buongiorno!"
+          minLength: 1
+          maxLength: 999
+          pattern: "^.*?$"
         hours:
           type: string
           description: at what time the message was sent
           example: "12:33"
+          minLength: 1
+          maxLength: 5
+          pattern: "^.*?$"
         comments: 
           type: array
           description: other user messages under a message
@@ -101,9 +110,15 @@ components:
         author:
           type: string
           description: who wrote the comment 
+          minLength: 1
+          maxLength: 16
+          pattern: "^.*?$"
         text:
           type: string
           description: content of the comment
+          minLength: 1
+          maxLength: 30
+          pattern: "^.*?$"
         feedback:
           type: object
           description: represent if people agree or not
@@ -126,10 +141,15 @@ components:
           description: message identifier
           minimum: 10000
           example: 12345
+        groupPhoto:
+          $ref: "#/components/schemas/Photo"
         groupName:
           type: string
           example: "Informatics"
           description: title of the group
+          minLength: 1
+          maxLength: 16
+          pattern: "^.*?$"
         members:
           type: array
           minItems: 2
@@ -148,16 +168,13 @@ components:
           maximum: 99999
           example: 12345
           description: photo identifier
-        url:
+        photoContent:
           type: string
-          format: url
-          description: photo's url 
-          example: "https://example.com/images/foto-paesaggio.jpg"
-        title:
-          type: string
-          minLength: 1
-          maxLength: 30
-          description: photo's title
+          format: binary
+          description: photo's content 
+          example: "abCacDFDGhj..."
+          minLength: 0
+          maxLength: 1398101
         size:
           type: object
           description: width x height
@@ -273,7 +290,7 @@ paths:
                   maxLength: 16
         required: True
       responses:
-        '200':
+        "200":
           description: User log-in action successful
           content:
             application/json:
@@ -297,6 +314,7 @@ paths:
       operationId: setMyUserName
       requestBody:
         description: insert here the username
+        required: true
         content:
           application/json:
            schema:
@@ -304,13 +322,7 @@ paths:
               type: object
               properties:
                 username:
-                  type: string
-                  description: effective username
-                  example: Franco123
-                  pattern: '^.*?$'
-                  minLength: 3
-                  maxLength: 16
-        required: true
+                  $ref: "#/components/schemas/User/properties/name"
       responses:
         "204":
           description: username set
@@ -324,9 +336,9 @@ paths:
         You can see user's conversations history here
       operationId: getMyConversations
       responses:
-        '404':
+        "404":
           description: user's conversations not found
-        '200':
+        "200":
           description: user's conversations found
           content:
             application/json:
@@ -345,7 +357,7 @@ paths:
                 conversationId: 12345
                 title: "Avanti Lazio"
                 photo: "https://example.com/images/foto-paesaggio.jpg"
-                isGroup: false
+                isGroup: True
                       
   #getConversation 
   /conversations/{conversationid}:
@@ -369,7 +381,12 @@ paths:
               example:
                 conversationId: 12345
                 title: "Avanti Lazio"
-                photo: "https://example.com/images/foto-paesaggio.jpg"
+                photo: 
+                  photoId: 02819
+                  photoContent: "abCacDFDGhj..."
+                  size: 
+                    width: 20
+                    height: 20
                 isGroup: false
           
   #sendMessage 
@@ -382,6 +399,13 @@ paths:
       description: |
         You can send a new message in a specific conversation
       operationId: sendMessage
+      requestBody:
+        required: true
+        description: Message that you want to send
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Message"
       responses:
         "200":
           description: sending successful
@@ -440,10 +464,17 @@ paths:
       description: |
         You can add a comment under a message
       operationId: commentMessage
+      requestBody:
+        required: true
+        description: Comment that you want to add below a message
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comment"
       responses:
         "400":
           description: unable to comment the message
-        "200":
+        "201":
           description: message commented correctly
           content:
             application/json:
@@ -500,6 +531,13 @@ paths:
       description: |
         You can add a member to a group
       operationId: addToGroup
+      requestBody:
+        required: true
+        description: User that you want to add to group
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
         "400":
           description: unable to add 
@@ -512,8 +550,27 @@ paths:
               example:
                   groupId: 10025
                   groupName: "Informatics" 
-                  members: [{userId: 0,name: "Luca",photo: "https://api.example.com/items/123",bio: "i'm working",number: "+3933333333"},
-                            {userId: 1,name: "Mia",photo: "https://api.example.com/items/123",bio: "i love dogs",number: "+3933333344"}]
+                  members:
+                    - userId: 0
+                      name: "Luca"
+                      photo: 
+                        photoId: 02819
+                        photoContent: "abCacDFDGhj..."
+                        size: 
+                          width: 20
+                          height: 20
+                      bio: "i'm working"
+                      number: "+3933333333"
+                    - userId: 1
+                      name: "Mia"
+                      photo: 
+                        photoId: 02819
+                        photoContent: "abCacDFDGhj..."
+                        size: 
+                          width: 20
+                          height: 20
+                      bio: "i love dogs"
+                      number: "+3933333344"
 
   #leaveGroup 
   /conversations/groups/{groupid}:
@@ -541,6 +598,17 @@ paths:
       description: |
         You can set or change a group name
       operationId: setGroupName
+      requestBody:
+        required: true
+        description: Name that you want to give to a group
+        content:
+          application/json:
+            schema:
+              description: future group name
+              type: object
+              properties:
+                groupName:
+                  $ref: "#/components/schemas/Group/properties/groupName"
       responses:
         "200":
             description: group name set
@@ -561,6 +629,13 @@ paths:
       description: |
         You can set or change your profile photo
       operationId: setMyPhoto
+      requestBody:
+        required: true
+        description: Photo that you want to set
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Photo"
       responses:
         "400":
           description: unable to set a new photo
@@ -572,8 +647,7 @@ paths:
                 $ref: "#/components/schemas/Photo"
               example:
                 photoId: 12345
-                url: "https://example.com/images/foto-paesaggio.jpg"
-                title: "Foto di un paesaggio"
+                photoContent: "abCacDFDGhj..."
                 size: {width: 12, heigth: 10}
 
   #setGroupPhoto 
@@ -586,6 +660,13 @@ paths:
       description: |
         You can set or change a group photo
       operationId: setGroupPhoto
+      requestBody:
+        required: true
+        description: Photo that you want to set
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Photo"
       responses:
         "200":
             description: group photo set
@@ -596,8 +677,27 @@ paths:
                 example:
                   groupId: 10025
                   groupName: "Informatics" 
-                  members: [{userId: 0,name: "Luca",photo: "https://api.example.com/items/123",bio: "i'm working",number: "+3933333333"},
-                            {userId: 1,name: "Mia",photo: "https://api.example.com/items/123",bio: "i love dogs",number: "+3933333344"}]
+                  members:
+                    - userId: 0
+                      name: "Luca"
+                      photo: 
+                        photoId: 02819
+                        photoContent: "abCacDFDGhj..."
+                        size: 
+                          width: 20
+                          height: 20 
+                      bio: "i'm working"
+                      number: "+3933333333"
+                    - userId: 1
+                      name: "Mia"
+                      photo: 
+                        photoId: 02819
+                        photoContent: "abCacDFDGhj..."
+                        size: 
+                          width: 20
+                          height: 20
+                      bio: "i love dogs"
+                      number: "+3933333344"
         "400":
             description: unable to set a new photo
     
