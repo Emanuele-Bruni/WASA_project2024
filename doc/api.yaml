@@ -113,24 +113,13 @@ components:
           minLength: 1
           maxLength: 16
           pattern: "^.*?$"
-        text:
+        emoji:
           type: string
-          description: content of the comment
+          description: the effective comment
           minLength: 1
-          maxLength: 30
-          pattern: "^.*?$"
-        feedback:
-          type: object
-          description: represent if people agree or not
-          properties:
-            like:
-              type: integer
-              minimum: 0
-              description: if someone likes the comment
-            dislike:
-              type: integer
-              minimum: 0
-              description: if someone doesn't like the comment
+          maxLength: 2
+          pattern: "^[\u0000-\uFFFF]+$"
+
     
     Group:
       type: object
