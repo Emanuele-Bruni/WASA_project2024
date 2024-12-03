@@ -38,9 +38,8 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	GetName() (string, error)
+	GetIdByName(name string) (int, error)
 	SetName(name string) error
-
 	Ping() error
 }
 
@@ -55,20 +54,31 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, errors.New("database is required when building a AppDatabase")
 	}
 
-	// Check if table exists. If not, the database is empty, and we need to create the structure
 	var tableName string
-	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='example_table';`).Scan(&tableName)
+	// Tabella foto
+	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='photos_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);`
+		sqlStmt := `CREATE TABLE users_table (photo_id INTEGER NOT NULL PRIMARY KEY, content TEXT);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-
-	return &appdbimpl{
-		c: db,
-	}, nil
+	//controlla se l'Utente è nella tabella, altrimenti lo crea
+	tableName = ""
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users_table';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY,
+												name TEXT,
+												photo_id INTEGER, 
+												number TEXT,
+												FOREIGN KEY(photo_id) REFERENCES photos_table(photo_id));`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
+	}
+	return &appdbimpl{c: db}, nil
 }
 
 func (db *appdbimpl) Ping() error {

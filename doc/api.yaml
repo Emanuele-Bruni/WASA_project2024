@@ -119,7 +119,6 @@ components:
           minLength: 1
           maxLength: 2
           pattern: "^[\u0000-\uFFFF]+$"
-
     
     Group:
       type: object

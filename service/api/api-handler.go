@@ -11,7 +11,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/context", rt.wrap(rt.getContextReply))
 
 	//EndPoints
-	rt.router.POST("/login", rt.doLogin)
+	rt.router.POST("/login", rt.wrap(rt.doLogin))
 
 	//rt.router.PATCH("/settings/username", rt.wrap(rt.setMyUserName))
 	//rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))
