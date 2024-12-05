@@ -22,7 +22,7 @@ components:
           type: string
           description: user's name
           example: "Gennaro"
-          minLength: 1
+          minLength: 3
           maxLength: 16
           pattern: "^.*?$"
         photo:
@@ -291,6 +291,10 @@ paths:
                     description: password
                     example: "abcdef012345"
               example: {identifier: "abcd2394"}
+        "501":
+          description: Internal server error
+        "404":
+          description: user not found
                     
   #setMyUserName
   /settings/username:
@@ -314,7 +318,10 @@ paths:
       responses:
         "204":
           description: username set
-      
+        "404":
+          description: user not found
+        "501":
+          description: Internal server error
   #getMyConversations
   /conversations:
     get:
@@ -346,6 +353,8 @@ paths:
                 title: "Avanti Lazio"
                 photo: "https://example.com/images/foto-paesaggio.jpg"
                 isGroup: True
+        "501":
+          description: Internal server error
                       
   #getConversation 
   /conversations/{conversationid}:
@@ -360,6 +369,8 @@ paths:
       responses:
         "404":
           description: conversation not found
+        "501":
+          description: Internal server error
         "200":
           description: conversation found
           content:
@@ -408,9 +419,10 @@ paths:
                 hours: "22:20"
                 comments: [{commentId: 12345 ,author: "Stef" ,text: "No" ,feedback: {like: 2, dislike: 3}},
                             {commentId: 54321 ,author: "Gio" ,text: "ahahah" ,feedback: {like: 4, dislike: 0}}]
-
         "400":
           description: unable to send the message
+        "501":
+          description: Internal server error
   
   #forwardMessage
   /conversations/{conversationid}/messages/{messageid}/forward/{forwardid}:
@@ -427,6 +439,8 @@ paths:
       responses:
         "400":
           description: unable to forward the message
+        "501":
+          description: Internal server error
         "200":
           description: forwarded message
           content:
@@ -462,6 +476,8 @@ paths:
       responses:
         "400":
           description: unable to comment the message
+        "501":
+          description: Internal server error
         "201":
           description: message commented correctly
           content:
@@ -489,6 +505,8 @@ paths:
       responses:
         "400":
           description: unable to delete the comment
+        "501":
+          description: Internal server error
         "204":
           description: comment deleted
           
@@ -506,6 +524,8 @@ paths:
       responses:
         "400":
           description: unable to delete the message
+        "501":
+          description: Internal server error
         "204":
           description: message deleted
   
@@ -529,6 +549,8 @@ paths:
       responses:
         "400":
           description: unable to add 
+        "501":
+          description: Internal server error
         "200":
           description: added member
           content:
@@ -575,6 +597,8 @@ paths:
             description: you left the group
         "400":
             description: unable to leave group
+        "501":
+          description: Internal server error
 
   #setGroupName 
   /conversations/groups/{groupid}/name:
@@ -608,6 +632,8 @@ paths:
                 example: "Informatics"
         "400":
           description: unable to set a new group name
+        "501":
+          description: Internal server error
 
   #setMyPhoto 
   /settings/photo:
@@ -627,6 +653,8 @@ paths:
       responses:
         "400":
           description: unable to set a new photo
+        "501":
+          description: Internal server error
         "200":
           description: new profile photo set
           content:
@@ -688,4 +716,6 @@ paths:
                       number: "+3933333344"
         "400":
             description: unable to set a new photo
+        "501":
+          description: Internal server error
     

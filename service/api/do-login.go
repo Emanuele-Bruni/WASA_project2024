@@ -53,7 +53,7 @@ type Group struct {
 	members    []User
 } */
 
-func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 
 	var requestBody = struct {
 		Name string `json:"name"` //"name" nel RequestBody dell'API
@@ -67,7 +67,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	//controllo se il nome è lungo minimo 3 e massimo 16
-	if len(requestBody.Name) < 3 || len(requestBody.Name) > 16 || len(requestBody.Name) == 0 {
+	if len(requestBody.Name) < 3 || len(requestBody.Name) > 16 {
 		http.Error(w, "Invalid Name", http.StatusBadRequest)
 		ctx.Logger.WithField("name", requestBody.Name).Error("Invalid length of field 'name'")
 		return
@@ -101,9 +101,10 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	w.Header().Set("Authentication", fmt.Sprintf("bearerAuth: %d", loginResponse.Identifier))
 	w.WriteHeader(http.StatusCreated)
 
+	//json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
 	if err := json.NewEncoder(w).Encode(loginResponse); err != nil {
-		ctx.Logger.Error("Failed to encode response: ", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		ctx.Logger.Error("Failed to encode response: ", err)
 		return
 	}
 

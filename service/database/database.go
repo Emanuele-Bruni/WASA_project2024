@@ -39,7 +39,8 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	GetIdByName(name string) (int, error)
-	SetName(name string) error
+	CreateUser(name string) (int, error)
+	SetName(name string, id int) error
 	Ping() error
 }
 
@@ -58,17 +59,18 @@ func New(db *sql.DB) (AppDatabase, error) {
 	// Tabella foto
 	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='photos_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE users_table (photo_id INTEGER NOT NULL PRIMARY KEY, content TEXT);`
+		sqlStmt := `CREATE TABLE photos_table (	photo_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+												content TEXT);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
-			return nil, fmt.Errorf("error creating database structure: %w", err)
+			return nil, fmt.Errorf("error creating photos_table structure: %w", err)
 		}
 	}
 	//controlla se l'Utente è nella tabella, altrimenti lo crea
 	tableName = ""
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY,
+		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 												name TEXT,
 												photo_id INTEGER, 
 												number TEXT,
@@ -84,3 +86,5 @@ func New(db *sql.DB) (AppDatabase, error) {
 func (db *appdbimpl) Ping() error {
 	return db.c.Ping()
 }
+
+//--------------------------------------------------------------------------------------------------
