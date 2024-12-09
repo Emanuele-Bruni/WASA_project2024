@@ -8,9 +8,9 @@ func (db *appdbimpl) CreateUser(name string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error creating user: %w", err)
 	}
-	lastID, err := res.LastInsertId()
+	userID, err := res.LastInsertId()
 	if err != nil {
 		return 0, fmt.Errorf("error getting last insert ID: %w", err)
 	}
-	return int(lastID), nil
+	return int(userID), nil
 }

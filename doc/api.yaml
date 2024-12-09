@@ -26,7 +26,12 @@ components:
           maxLength: 16
           pattern: "^.*?$"
         photo:
-          $ref: "#/components/schemas/Photo"
+          type: string
+          description: photo
+          format: binary
+          example: "abcDFHDIaaaz..."
+          minLength: 0
+          maxLength: 1300000
         bio:
             type: string
             description: what user writes about him
@@ -55,8 +60,23 @@ components:
           type: string
           description: conversation name
           example: "Gruppo calcetto"
+          minLength: 1
+          maxLength: 16
+          pattern: "^.*?$"
         photo:
-          $ref: "#/components/schemas/Photo"
+          type: string
+          description: photo
+          format: binary
+          example: "abcDFHDIaaaz..."
+          minLength: 0
+          maxLength: 1300000
+        members:
+          type: array
+          minItems: 2
+          maxItems: 100
+          description: all the users in the group
+          items:
+            $ref: "#/components/schemas/User"
         isGroup:
           type: boolean
           description: It's true if the conversation is a group, else it's false
@@ -120,60 +140,6 @@ components:
           maxLength: 2
           pattern: "^[\u0000-\uFFFF]+$"
     
-    Group:
-      type: object
-      description: list of users
-      properties:
-        groupId:
-          type: integer
-          description: message identifier
-          minimum: 10000
-          example: 12345
-        groupPhoto:
-          $ref: "#/components/schemas/Photo"
-        groupName:
-          type: string
-          example: "Informatics"
-          description: title of the group
-          minLength: 1
-          maxLength: 16
-          pattern: "^.*?$"
-        members:
-          type: array
-          minItems: 2
-          maxItems: 100
-          description: all the users in the group
-          items:
-            $ref: "#/components/schemas/User"
-    
-    Photo:
-      type: object
-      description: photo chosen by the user
-      properties:
-        photoId:
-          type: integer
-          minimum: 00000
-          maximum: 99999
-          example: 12345
-          description: photo identifier
-        photoContent:
-          type: string
-          format: binary
-          description: photo's content 
-          example: "abCacDFDGhj..."
-          minLength: 0
-          maxLength: 1398101
-        size:
-          type: object
-          description: width x height
-          properties: 
-            width: 
-              type: integer
-              description: photo's width
-            height:
-              type: integer
-              description: photo's height
-  
   #PARAMETERS               
   parameters:
     conversationId:
@@ -309,19 +275,20 @@ paths:
         required: true
         content:
           application/json:
-           schema:
+            schema:
               description: username's schema
               type: object
               properties:
                 username:
                   $ref: "#/components/schemas/User/properties/name"
       responses:
-        "204":
+        "202":
           description: username set
         "404":
           description: user not found
         "501":
           description: Internal server error
+  
   #getMyConversations
   /conversations:
     get:
@@ -345,14 +312,46 @@ paths:
                     description: user conversations
                     type: array
                     minItems: 0
-                    maxItems: 9999
+                    maxItems: 32
                     items:
                       $ref: "#/components/schemas/Conversation"
               example:
-                conversationId: 12345
-                title: "Avanti Lazio"
-                photo: "https://example.com/images/foto-paesaggio.jpg"
-                isGroup: True
+                conversations:
+                  - conversationId: 12345
+                    title: "Avanti Lazio"
+                    photo: "nsadoNISABDnsd..."
+                    isGroup: False
+                    members:
+                      - userId: 33
+                        name: "Franco"
+                        photo: "nsadoNISABDnsd..."
+                        bio: "Sto viaggiando"
+                        number: "+3933333333"
+                      - userId: 34
+                        name: "Franca"
+                        photo: "nsadoNISABDnsd..."
+                        bio: "Sto camminando"
+                        number: "+3933333334" 
+                  - conversationId: 12354
+                    title: "Viva i cani"
+                    photo: "nsadoNISABDnsd..."
+                    isGroup: True
+                    members: 
+                      - userId: 37
+                        name: "Franco"
+                        photo: "nsadoNISABDnsd..."
+                        bio: "Sto viaggiando"
+                        number: "+3933333333"
+                      - userId: 322
+                        name: "Francisco"
+                        photo: "nsadoNISABDnsd..."
+                        bio: "Sto viaggiando"
+                        number: "+3933333333"
+                      - userId: 39
+                        name: "Francesco"
+                        photo: "nsadoNISABDnsd..."
+                        bio: "hola"
+                        number: "+3933333333"
         "501":
           description: Internal server error
                       
@@ -378,15 +377,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/Conversation"
               example:
-                conversationId: 12345
-                title: "Avanti Lazio"
-                photo: 
-                  photoId: 02819
-                  photoContent: "abCacDFDGhj..."
-                  size: 
-                    width: 20
-                    height: 20
-                isGroup: false
+                  conversationId: 12345
+                  title: "Avanti Lazio"
+                  photo: "nsadoNISABDnsd..."
+                  isGroup: false
+                  members:
+                    - userId: 33
+                      name: "Franco"
+                      photo: "nsadoNISABDnsd..."
+                      bio: "Sto viaggiando"
+                      number: "+3933333333"
+                    - userId: 34
+                      name: "Franca"
+                      photo: "nsadoNISABDnsd..."
+                      bio: "Sto camminando"
+                      number: "+3933333334"
           
   #sendMessage 
   /conversations/{conversationid}/message:
@@ -404,7 +409,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Message"
+              description: content of the message
+              type: object
+              properties:
+                message:
+                  $ref: "#/components/schemas/Message"
       responses:
         "200":
           description: sending successful
@@ -472,7 +481,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Comment"
+              description: content of the comment
+              type: object
+              properties:
+                comment:
+                  $ref: "#/components/schemas/Comment"
       responses:
         "400":
           description: unable to comment the message
@@ -545,7 +558,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              description: user identity
+              type: object
+              properties:
+                user:
+                  $ref: "#/components/schemas/User"
       responses:
         "400":
           description: unable to add 
@@ -556,31 +573,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Group"
+                $ref: "#/components/schemas/Conversation"
               example:
-                  groupId: 10025
-                  groupName: "Informatics" 
+                  conversationId: 10025
+                  title: "Informatics"
+                  photo: "aAaAaAas..." 
                   members:
                     - userId: 0
                       name: "Luca"
-                      photo: 
-                        photoId: 02819
-                        photoContent: "abCacDFDGhj..."
-                        size: 
-                          width: 20
-                          height: 20
+                      photo: "abCacDFDGhj..."
                       bio: "i'm working"
                       number: "+3933333333"
                     - userId: 1
                       name: "Mia"
-                      photo: 
-                        photoId: 02819
-                        photoContent: "abCacDFDGhj..."
-                        size: 
-                          width: 20
-                          height: 20
+                      photo: "abCacDFDGhj..."
                       bio: "i love dogs"
                       number: "+3933333344"
+                    - userId: 2
+                      name: "Marcello"
+                      photo: "abCacDFDGhj..."
+                      bio: "i love cats"
+                      number: "+3933343344"
+                  isGroup : True
 
   #leaveGroup 
   /conversations/groups/{groupid}:
@@ -620,7 +634,7 @@ paths:
               type: object
               properties:
                 groupName:
-                  $ref: "#/components/schemas/Group/properties/groupName"
+                  $ref: "#/components/schemas/Conversation/properties/title"
       responses:
         "200":
             description: group name set
@@ -649,7 +663,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Photo"
+              description: photo's schema
+              type: object
+              properties:
+                photo:
+                  $ref: "#/components/schemas/User/properties/photo"
       responses:
         "400":
           description: unable to set a new photo
@@ -660,11 +678,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Photo"
+                $ref: "#/components/schemas/User/properties/photo"
               example:
-                photoId: 12345
-                photoContent: "abCacDFDGhj..."
-                size: {width: 12, heigth: 10}
+                photo: "abCacDFDGhj..."
 
   #setGroupPhoto 
   /conversations/groups/{groupid}/photo:
@@ -682,38 +698,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Photo"
+              description: photo's schema
+              type: object
+              properties:
+                photo:
+                  $ref: "#/components/schemas/User/properties/photo"
       responses:
         "200":
             description: group photo set
             content:
               application/json:
                 schema: 
-                  $ref: "#/components/schemas/Group"
+                  $ref: "#/components/schemas/Conversation"
                 example:
-                  groupId: 10025
-                  groupName: "Informatics" 
+                  conversationId: 10025
+                  title: "Informatics" 
                   members:
                     - userId: 0
-                      name: "Luca"
-                      photo: 
-                        photoId: 02819
-                        photoContent: "abCacDFDGhj..."
-                        size: 
-                          width: 20
-                          height: 20 
+                      name: "Ernesto"
+                      photo: "abCacDFDGhj..."
                       bio: "i'm working"
                       number: "+3933333333"
                     - userId: 1
-                      name: "Mia"
-                      photo: 
-                        photoId: 02819
-                        photoContent: "abCacDFDGhj..."
-                        size: 
-                          width: 20
-                          height: 20
-                      bio: "i love dogs"
-                      number: "+3933333344"
+                      name: "Luca"
+                      photo: "abCacDFDGhj..."
+                      bio: "i'm travelling"
+                      number: "+3933353333"
+                    - userId: 2
+                      name: "Lucia"
+                      photo: "abCacDFDGhj..."
+                      bio: "i'm sleeping"
+                      number: "+3937333333"
+                  isGroup: True
         "400":
             description: unable to set a new photo
         "501":

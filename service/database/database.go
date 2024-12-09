@@ -36,11 +36,42 @@ import (
 	"fmt"
 )
 
+var ErrorNoConversation = errors.New("utente non ha conversazioni")
+
+// Faccio i diversi schemas
+type User struct {
+	Name   string `json:"name"`
+	Photo  string `json:"photo"`
+	Bio    string `json:"bio"`
+	Number string `json:"number"`
+}
+type Conversation struct {
+	ConversationId int    `json:"conversationId"`
+	Title          string `json:"title"`
+	Photo          string `json:"photo"`
+	IsGroup        bool   `json:"isGroup"`
+	Members        []User `json:"members"`
+}
+
+/*type Message struct {
+	messageId int
+	author    string
+	text      string
+	hours     string
+	comments  []Comment
+}
+type Comment struct {
+	commentId int
+	author    string
+	text      string
+}*/
+
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	GetIdByName(name string) (int, error)
 	CreateUser(name string) (int, error)
 	SetName(name string, id int) error
+	GetConversations(id int) ([]Conversation, error)
 	Ping() error
 }
 
@@ -56,25 +87,28 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	var tableName string
-	// Tabella foto
-	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='photos_table';`).Scan(&tableName)
-	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE photos_table (	photo_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-												content TEXT);`
-		_, err = db.Exec(sqlStmt)
-		if err != nil {
-			return nil, fmt.Errorf("error creating photos_table structure: %w", err)
-		}
-	}
-	//controlla se l'Utente è nella tabella, altrimenti lo crea
-	tableName = ""
-	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users_table';`).Scan(&tableName)
+	//TABELLA UTENTI
+	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 												name TEXT,
-												photo_id INTEGER, 
+												photo TEXT, 
 												number TEXT,
-												FOREIGN KEY(photo_id) REFERENCES photos_table(photo_id));`
+												conversation_ids TEXT);`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
+	}
+	//TABELLA CONVERSAZIONIxUTENTE
+	tableName = ""
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='conversations_table';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE conversations_table (	conversation_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+															titolo TEXT,
+															photo TEXT, 
+															isGroup INTEGER NOT NULL CHECK(isGroup IN (0,1)),
+															members TEXT);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)

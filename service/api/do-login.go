@@ -11,48 +11,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*type User struct {
-	name   string
-	photo  Photo
-	bio    string
-	number string
-}
-
-type Photo struct {
-	photoId      int
-	photoContent string
-	width        int
-	height       int
-}
-
-type Conversation struct {
-	conversatioId int
-	title         string
-	photo         Photo
-	isGroup       bool
-}
-
-type Message struct {
-	messageId int
-	author    string
-	text      string
-	hours     string
-	comments  []Comment
-}
-
-type Comment struct {
-	commentId int
-	author    string
-	text      string
-}
-
-type Group struct {
-	groupId    int
-	groupPhoto Photo
-	groupName  string
-	members    []User
-} */
-
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 
 	var requestBody = struct {
@@ -104,7 +62,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 	//json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
 	if err := json.NewEncoder(w).Encode(loginResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.Error("Failed to encode response: ", err)
+		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 

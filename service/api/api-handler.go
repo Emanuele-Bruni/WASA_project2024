@@ -13,8 +13,7 @@ func (rt *_router) Handler() http.Handler {
 	//EndPoints
 	rt.router.POST("/login", rt.wrap(rt.doLogin))
 	rt.router.PATCH("/settings/username", rt.wrap(rt.setMyUserName))
-
-	//rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))
+	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
