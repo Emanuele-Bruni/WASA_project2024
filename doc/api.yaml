@@ -142,6 +142,15 @@ components:
     
   #PARAMETERS               
   parameters:
+    userId:
+      schema: 
+        type: integer
+        minimum: 0
+        maximum: 99999
+      required: true
+      description: user identifier
+      in: path
+      name: userid
     conversationId:
       schema:
         type: integer
@@ -171,16 +180,6 @@ components:
       required: true
       in: path
       name: commentid
-    
-    groupId:
-      schema:
-        type: integer
-        minimum: 0
-        maximum: 99999
-      description: group identifier
-      required: true
-      in: path
-      name: groupid
 
     forwardId:
       schema:
@@ -543,9 +542,9 @@ paths:
           description: message deleted
   
   #addToGroup
-  /conversations/groups/{groupid}/members:
+  /conversations/{conversationid}/members:
     parameters:
-      - $ref: "#/components/parameters/groupId"
+      - $ref: "#/components/parameters/conversationId"
     patch:
       tags: ["Groups"]
       summary: add to a group
@@ -597,9 +596,10 @@ paths:
                   isGroup : True
 
   #leaveGroup 
-  /conversations/groups/{groupid}:
+  /conversations/{conversationid}/members/{userid}:
     parameters:
-      - $ref: "#/components/parameters/groupId"
+      - $ref: "#/components/parameters/conversationId"
+      - $ref: "#/components/parameters/userId"
     delete:
       tags: ["Groups"]
       summary: leave a group
@@ -615,9 +615,9 @@ paths:
           description: Internal server error
 
   #setGroupName 
-  /conversations/groups/{groupid}/name:
+  /conversations/{conversationid}/name:
     parameters:
-      - $ref: "#/components/parameters/groupId"
+      - $ref: "#/components/parameters/conversationId"
     patch:
       tags: ["Groups"]
       summary: set a new group name
@@ -683,9 +683,9 @@ paths:
                 photo: "abCacDFDGhj..."
 
   #setGroupPhoto 
-  /conversations/groups/{groupid}/photo:
+  /conversations/{conversationid}/photo:
     parameters:
-      - $ref: "#/components/parameters/groupId"
+      - $ref: "#/components/parameters/conversationId"
     patch:  
       tags: [Groups]
       summary: Set a new group photo
