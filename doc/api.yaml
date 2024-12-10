@@ -678,9 +678,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User/properties/photo"
-              example:
-                photo: "abCacDFDGhj..."
+                description: user photo
+                type: string
+              example: "abcDFHDIaaaz..."
 
   #setGroupPhoto 
   /conversations/{conversationid}/photo:
