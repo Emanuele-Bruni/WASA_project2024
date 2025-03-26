@@ -72,6 +72,7 @@ type AppDatabase interface {
 	CreateUser(name string) (int, error)
 	SetName(name string, id int) error
 	GetConversations(id int) ([]Conversation, error)
+	GetSpecificConversation(conversationId int) (Conversation, error)
 	Ping() error
 }
 
