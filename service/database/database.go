@@ -53,18 +53,19 @@ type Conversation struct {
 	Members        []User `json:"members"`
 }
 
-/*type Message struct {
+type Message struct {
 	messageId int
 	author    string
 	text      string
 	hours     string
 	comments  []Comment
 }
+
 type Comment struct {
 	commentId int
 	author    string
 	text      string
-}*/
+}
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
@@ -73,6 +74,8 @@ type AppDatabase interface {
 	SetName(name string, id int) error
 	GetConversations(id int) ([]Conversation, error)
 	GetSpecificConversation(conversationId int) (Conversation, error)
+	CreateMessage(author string, text string, hours string, cnvid int) (Message, error)
+	ConversationExists(cnvId int) (bool, error)
 	Ping() error
 }
 
@@ -101,7 +104,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-	//TABELLA CONVERSAZIONIxUTENTE
+	//TABELLA CONVERSAZIONI
 	tableName = ""
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='conversations_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -110,6 +113,22 @@ func New(db *sql.DB) (AppDatabase, error) {
 															photo TEXT, 
 															isGroup INTEGER NOT NULL CHECK(isGroup IN (0,1)),
 															members TEXT);`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
+	}
+	//TABELLA MESSAGGIxCONVERSAZIONE
+	tableName = ""
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='messages_table';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE messages_table (	message_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+														author TEXT,
+														text TEXT, 
+														hours TEXT,
+														comments TEXT,
+														conversation_id INTEGER NOT NULL,
+														FOREIGN KEY (conversation_id) REFERENCES conversations_table(conversation_id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)

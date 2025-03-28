@@ -110,7 +110,7 @@ components:
           example: "12:33"
           minLength: 1
           maxLength: 5
-          pattern: '^\d{2}:\d{2}$'
+          pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$'
         comments: 
           type: array
           description: other user messages under a message
@@ -411,8 +411,16 @@ paths:
               description: content of the message
               type: object
               properties:
-                message:
-                  $ref: "#/components/schemas/Message"
+                author:
+                  type: string
+                  description: The author of the message
+                text:
+                  type: string
+                  description: The text content of the message
+                hours:
+                  type: string
+                  description: Timestamp of the message
+                  pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$'
       responses:
         "200":
           description: sending successful
