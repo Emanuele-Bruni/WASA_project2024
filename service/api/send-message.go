@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -35,11 +36,13 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 	}
 
 	// Controllo che i campi non siano vuoti
-	if requestBody.Author == "" || requestBody.Text == "" || requestBody.Hours == "" {
-		http.Error(w, "I campi author, text e hours sono obbligatori", http.StatusBadRequest)
+	if requestBody.Author == "" || requestBody.Text == "" {
+		http.Error(w, "I campi author e text sono obbligatori", http.StatusBadRequest)
 		ctx.Logger.Error("Campi mancanti nel request body")
 		return
 	}
+	// calcolo automaticamente l'orario attuale in formato HH:mm
+	requestBody.Hours = time.Now().Format("15:04")
 
 	//prendo il conversation id dal path
 	cnvId, err := strconv.Atoi(p.ByName("conversationId"))
