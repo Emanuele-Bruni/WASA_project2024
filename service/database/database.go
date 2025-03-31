@@ -54,17 +54,17 @@ type Conversation struct {
 }
 
 type Message struct {
-	messageId int
-	author    string
-	text      string
-	hours     string
-	comments  []Comment
+	MessageId int       `json:"messageId"`
+	Author    string    `json:"author"`
+	Text      string    `json:"text"`
+	Hours     string    `json:"hours"`
+	Comments  []Comment `json:"comments"`
 }
 
 type Comment struct {
 	commentId int
 	author    string
-	text      string
+	emoji     string
 }
 
 // AppDatabase is the high level interface for the DB
@@ -76,6 +76,9 @@ type AppDatabase interface {
 	GetSpecificConversation(conversationId int) (Conversation, error)
 	CreateMessage(author string, text string, hours string, cnvid int) (Message, error)
 	ConversationExists(cnvId int) (bool, error)
+	CheckUser_Conversation(cnvId int, userId int) (bool, error)
+	CheckMessage_Conversation(messageId int, cnvId int) (bool, error)
+	GetMessage(messageId int) (Message, error)
 	Ping() error
 }
 

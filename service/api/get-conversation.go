@@ -7,12 +7,22 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//non ho nessun request body
+
+	//estraggo userId e controllo se è autorizzato
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	id, err := strconv.Atoi(token)
+	if err != nil {
+		ctx.Logger.Error("Token must be a number: ", err)
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
 	//prendo il conversationid
 	cnvId, err := strconv.Atoi(p.ByName("conversationId"))
 	if err != nil {
@@ -20,6 +30,18 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId invalid parameter")
 		return
+	}
+	//controllo se l'utente fa parte della conversazione
+	//funzione che controlla se l'utente è nella conversazione
+	found, err := rt.db.CheckUser_Conversation(cnvId, id)
+	if err != nil {
+		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'appartenenza dell'utente alla conversazione")
+		return
+	}
+	if !found {
+		http.Error(w, "Utente non appartiene alla conversazione", http.StatusForbidden)
+		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 	}
 	// prendo la conversazione dalla tabella con una funzione
 	conversation, err := rt.db.GetSpecificConversation(cnvId)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -16,6 +17,16 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		Text   string `json:"text"`
 		Hours  string `json:"hours"`
 	}{}
+
+	//estraggo userId e controllo se è autorizzato
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	id, err := strconv.Atoi(token)
+	if err != nil {
+		ctx.Logger.Error("Token must be a number: ", err)
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
 	//decodifico la richiesta secondo il request body
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           //tipo di errore
@@ -50,6 +61,19 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		http.Error(w, "La conversazione non esiste", http.StatusNotFound)
 		ctx.Logger.Error("Tentativo di inviare un messaggio a una conversazione inesistente")
 		return
+	}
+
+	//controllo se l'utente fa parte della conversazione
+	//funzione che controlla se l'utente è nella conversazione
+	found, err := rt.db.CheckUser_Conversation(cnvId, id)
+	if err != nil {
+		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'appartenenza dell'utente alla conversazione")
+		return
+	}
+	if !found {
+		http.Error(w, "Utente non appartiene alla conversazione", http.StatusForbidden)
+		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 	}
 
 	// FUNZIONE "create-message" che ritorna il messaggio (senza commenti)
