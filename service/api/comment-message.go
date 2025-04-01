@@ -22,7 +22,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
-	//prendo il conversation id dal path e vedo se esiste
+	//--------------------------------------------------------------------------CONTROLLI CONVERSAZIONE
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
 		//errore nel prendere il parametro
@@ -41,7 +41,6 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-
 	//controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
@@ -55,7 +54,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
-	//prendo il message id dal path e vedo se esiste nella conversazione
+	//--------------------------------------------------------------------------CONTROLLI MESSAGGIO
 	messageId, err := strconv.Atoi(p.ByName("messageid"))
 	if err != nil {
 		//errore nel prendere il parametro
@@ -63,6 +62,18 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.WithError(err).Error("messageId parametro non valido")
 		return
 	}
+	exists, err = rt.db.MessageExists(messageId)
+	if err != nil {
+		http.Error(w, "Errore interno nel controllo del messaggio", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'esistenza del messaggio")
+		return
+	}
+	if !exists {
+		http.Error(w, "Il messaggio non esiste", http.StatusNotFound)
+		ctx.Logger.Error("messaggio inesistente")
+		return
+	}
+	//vedo se esiste nella conversazione
 	messageFound, err := rt.db.CheckMessage_Conversation(messageId, cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del messaggio", http.StatusInternalServerError)
@@ -85,13 +96,6 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
-		return
-	}
-
-	//controllo la lunghezza dei campi
-	if len(requestBody.Author) < 1 || len(requestBody.Author) > 16 || len(requestBody.Emoji) < 1 || len(requestBody.Emoji) > 2 {
-		http.Error(w, "Invalid lenght of fields", http.StatusBadRequest)
-		ctx.Logger.Error("Errore nella lunghezza dei campi")
 		return
 	}
 

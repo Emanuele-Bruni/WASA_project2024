@@ -76,10 +76,14 @@ type AppDatabase interface {
 	GetSpecificConversation(conversationId int) (Conversation, error)
 	CreateMessage(author string, text string, hours string, cnvid int) (Message, error)
 	ConversationExists(cnvId int) (bool, error)
+	CommentExists(commentId int) (bool, error)
+	MessageExists(messageId int) (bool, error)
 	CheckUser_Conversation(cnvId int, userId int) (bool, error)
 	CheckMessage_Conversation(messageId int, cnvId int) (bool, error)
 	GetMessage(messageId int) (Message, error)
 	CreateComment(author string, emoji string, messageId int) (Comment, error)
+	CheckComment_Message(commentId int, messageId int) (bool, error)
+	DeleteComment(commentId int) error
 	Ping() error
 }
 
