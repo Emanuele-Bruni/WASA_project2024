@@ -491,8 +491,18 @@ paths:
               description: content of the comment
               type: object
               properties:
-                comment:
-                  $ref: "#/components/schemas/Comment"
+                author:
+                  type: string
+                  description: author of the comment
+                  minLength: 1
+                  maxLength: 16
+                  pattern: "^.*?$"
+                emoji:
+                  type: string
+                  description: the effective comment
+                  minLength: 1
+                  maxLength: 2
+                  pattern: "^[\u0000-\uFFFF]+$"
       responses:
         "400":
           description: unable to comment the message

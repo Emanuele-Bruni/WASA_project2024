@@ -62,9 +62,9 @@ type Message struct {
 }
 
 type Comment struct {
-	commentId int
-	author    string
-	emoji     string
+	CommentId int    `json:"commentId"`
+	Author    string `json:"author"`
+	Emoji     string `json:"emoji"`
 }
 
 // AppDatabase is the high level interface for the DB
@@ -79,6 +79,7 @@ type AppDatabase interface {
 	CheckUser_Conversation(cnvId int, userId int) (bool, error)
 	CheckMessage_Conversation(messageId int, cnvId int) (bool, error)
 	GetMessage(messageId int) (Message, error)
+	CreateComment(author string, emoji string, messageId int) (Comment, error)
 	Ping() error
 }
 
@@ -132,6 +133,20 @@ func New(db *sql.DB) (AppDatabase, error) {
 														comments TEXT,
 														conversation_id INTEGER NOT NULL,
 														FOREIGN KEY (conversation_id) REFERENCES conversations_table(conversation_id) ON DELETE CASCADE);`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
+	}
+	//TABELLA COMMENTIxMESSAGGI
+	tableName = ""
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='comments_table';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE comments_table (	comment_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+														author TEXT,
+														emoji TEXT, 
+														message_id INTEGER NOT NULL,
+														FOREIGN KEY (message_id) REFERENCES messages_table(message_id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)

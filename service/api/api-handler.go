@@ -17,7 +17,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))
 	rt.router.POST("/conversations/:conversationid/message", rt.wrap(rt.sendMessage))
 	rt.router.POST("/conversations/:conversationid/messages/:messageid/forward/:forwardid", rt.wrap(rt.forwardMessage))
-	//rt.router.POST("/conversations/{conversationid}/messages/{messageid}/comments", rt.wrap(rt.commentMessage))
+	rt.router.POST("/conversations/:conversationid/messages/:messageid/comments", rt.wrap(rt.commentMessage))
 	//rt.router.DELETE("/conversations/{conversationid}/messages/{messageid}/comments/{commentid}", rt.wrap(rt.uncommentMessage))
 	//rt.router.DELETE("/conversations/{conversationid}/messages/{messageid}", rt.wrap(rt.deleteMessage))
 	//rt.router.PATCH("/conversations/{conversationid}/members", rt.wrap(rt.addToGroup))
