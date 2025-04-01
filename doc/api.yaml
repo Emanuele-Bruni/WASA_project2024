@@ -31,7 +31,7 @@ components:
           format: binary
           example: "abcDFHDIaaaz..."
           minLength: 0
-          maxLength: 1300000
+          maxLength: 1300
         bio:
             type: string
             description: what user writes about him
@@ -46,7 +46,7 @@ components:
             maxLength: 15
             description: user's cellphone number
             example: '+3972837482'
-     
+
     Conversation:
       type: object
       description: conversation between different users
@@ -69,7 +69,7 @@ components:
           format: binary
           example: "abcDFHDIaaaz..."
           minLength: 0
-          maxLength: 1300000
+          maxLength: 1300
         members:
           type: array
           minItems: 2
@@ -107,10 +107,10 @@ components:
         hours:
           type: string
           description: at what time the message was sent
-          example: "12:33"
-          minLength: 1
+          example: "00:00"
+          minLength: 5
           maxLength: 5
-          pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$'
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
         comments: 
           type: array
           description: other user messages under a message
@@ -225,7 +225,7 @@ paths:
       description: |
         If the user does not exist, it will be created, and an identifier is returned.
         If the user exists, the user identifier is returned.
-      operationId: doLogin
+      operationId: do_login
       requestBody:
         description: User Details
         content:
@@ -257,9 +257,29 @@ paths:
                     example: "abcdef012345"
               example: {identifier: "abcd2394"}
         "501":
-          description: Internal server error
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "404":
           description: user not found
+          content:
+            application/json:
+              schema:
+                description: schema for 404 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "User not found"
                     
   #setMyUserName
   /settings/username:
@@ -285,8 +305,28 @@ paths:
           description: username set
         "404":
           description: user not found
+          content:
+            application/json:
+              schema:
+                description: schema for 404 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "User not found"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
   
   #getMyConversations
   /conversations:
@@ -299,6 +339,16 @@ paths:
       responses:
         "404":
           description: user's conversations not found
+          content:
+            application/json:
+              schema:
+                description: schema for 404 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "User's conversations not found"
         "200":
           description: user's conversations found
           content:
@@ -353,6 +403,16 @@ paths:
                         number: "+3933333333"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
                       
   #getConversation 
   /conversations/{conversationid}:
@@ -367,8 +427,28 @@ paths:
       responses:
         "404":
           description: conversation not found
+          content:
+            application/json:
+              schema:
+                description: schema for 404 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "conversation not found"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "200":
           description: conversation found
           content:
@@ -413,14 +493,22 @@ paths:
               properties:
                 author:
                   type: string
+                  minLength: 1
+                  maxLength: 10
                   description: The author of the message
+                  pattern: '^.*?$'
                 text:
                   type: string
+                  minLength: 1
+                  maxLength: 20
                   description: The text content of the message
+                  pattern: '^.*?$'
                 hours:
                   type: string
                   description: Timestamp of the message
-                  pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$'
+                  minLength: 5
+                  maxLength: 5
+                  pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
       responses:
         "200":
           description: sending successful
@@ -437,8 +525,28 @@ paths:
                             {commentId: 54321 ,author: "Gio" ,emoji: "\uD83D\uDE02"}]
         "400":
           description: unable to send the message
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to send the message"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
   
   #forwardMessage
   /conversations/{conversationid}/messages/{messageid}/forward/{forwardid}:
@@ -455,8 +563,28 @@ paths:
       responses:
         "400":
           description: unable to forward the message
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to forward the message"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "200":
           description: forwarded message
           content:
@@ -506,8 +634,28 @@ paths:
       responses:
         "400":
           description: unable to comment the message
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to comment the message"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "201":
           description: message commented correctly
           content:
@@ -534,8 +682,28 @@ paths:
       responses:
         "400":
           description: unable to delete the comment
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to delete the comment"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "204":
           description: comment deleted
           
@@ -553,8 +721,28 @@ paths:
       responses:
         "400":
           description: unable to delete the message
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to delete the message"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "204":
           description: message deleted
   
@@ -582,8 +770,28 @@ paths:
       responses:
         "400":
           description: unable to add 
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to add"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "200":
           description: added member
           content:
@@ -628,8 +836,28 @@ paths:
             description: you left the group
         "400":
             description: unable to leave group
+            content:
+              application/json:
+                schema:
+                  description: schema for 400 response
+                  type: object
+                  properties:
+                   error:
+                      type: string
+                      description: type of error
+                      example: "unable to leave group"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
 
   #setGroupName 
   /conversations/{conversationid}/name:
@@ -663,8 +891,28 @@ paths:
                 example: "Informatics"
         "400":
           description: unable to set a new group name
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to set a new group"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
 
   #setMyPhoto 
   /settings/photo:
@@ -688,8 +936,28 @@ paths:
       responses:
         "400":
           description: unable to set a new photo
+          content:
+            application/json:
+              schema:
+                description: schema for 400 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "unable to set a new photo"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
         "200":
           description: new profile photo set
           content:
@@ -749,6 +1017,26 @@ paths:
                   isGroup: True
         "400":
             description: unable to set a new photo
+            content:
+              application/json:
+                schema:
+                  description: schema for 400 response
+                  type: object
+                  properties:
+                   error:
+                      type: string
+                      description: type of error
+                      example: "unable to set a new photo"
         "501":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                description: schema for 501 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "Internal Server Error"
     
