@@ -17,7 +17,7 @@ components:
         userId:
           type: integer
           description: user's number Id
-          example: 000000
+          example: 34
         name:
           type: string
           description: user's name
@@ -31,7 +31,7 @@ components:
           format: binary
           example: "abcDFHDIaaaz..."
           minLength: 0
-          maxLength: 1300
+          maxLength: 100
         bio:
             type: string
             description: what user writes about him
@@ -54,8 +54,8 @@ components:
         conversationId: 
           type: integer
           description: conversation's code
-          minimum: 10000
-          example: 12345
+          minimum: 1
+          example: 124
         title:
           type: string
           description: conversation name
@@ -69,11 +69,11 @@ components:
           format: binary
           example: "abcDFHDIaaaz..."
           minLength: 0
-          maxLength: 1300
+          maxLength: 100
         members:
           type: array
           minItems: 2
-          maxItems: 100
+          maxItems: 30
           description: all the users in the group
           items:
             $ref: "#/components/schemas/User"
@@ -88,8 +88,8 @@ components:
         messageId:
           type: integer
           description: message identifier
-          minimum: 10000
-          example: 12345
+          minimum: 1
+          example: 124
         author:
           type: string
           description: who wrote the message
@@ -102,7 +102,7 @@ components:
           description: content of the message
           example: "Buongiorno!"
           minLength: 1
-          maxLength: 999
+          maxLength: 20
           pattern: "^.*?$"
         hours:
           type: string
@@ -115,7 +115,7 @@ components:
           type: array
           description: other user messages under a message
           minItems: 0
-          maxItems: 50
+          maxItems: 20
           items:
             $ref: "#/components/schemas/Comment"
            
@@ -126,7 +126,7 @@ components:
         commentId:
           type: integer
           description: comment identifier
-          minimum: 10000
+          minimum: 1
         author:
           type: string
           description: who wrote the comment 
@@ -145,17 +145,18 @@ components:
     userId:
       schema: 
         type: integer
-        minimum: 0
-        maximum: 99999
+        minimum: 1
+        maximum: 999
       required: true
       description: user identifier
       in: path
       name: userid
+    
     conversationId:
       schema:
         type: integer
-        minimum: 0
-        maximum: 99999
+        minimum: 1
+        maximum: 999
       required: true
       description: conversation identifier
       in: path
@@ -164,8 +165,8 @@ components:
     messageId:
       schema:
         type: integer
-        minimum: 0
-        maximum: 99999
+        minimum: 1
+        maximum: 999
       description: message identifier
       required: true
       in: path
@@ -174,8 +175,8 @@ components:
     commentId:
       schema:
         type: integer
-        minimum: 0
-        maximum: 99999
+        minimum: 1
+        maximum: 999
       description: comment identifier
       required: true
       in: path
@@ -184,8 +185,8 @@ components:
     forwardId:
       schema:
         type: integer
-        minimum: 0
-        maximum: 99999
+        minimum: 1
+        maximum: 999
       description: identifies which user to send the message to
       required: true
       in: path
@@ -225,7 +226,7 @@ paths:
       description: |
         If the user does not exist, it will be created, and an identifier is returned.
         If the user exists, the user identifier is returned.
-      operationId: do_login
+      operationId: doLogin
       requestBody:
         description: User Details
         content:
@@ -299,7 +300,12 @@ paths:
               type: object
               properties:
                 username:
-                  $ref: "#/components/schemas/User/properties/name"
+                  type: string
+                  description: username
+                  example: Maria
+                  pattern: "^.*?$"
+                  minLength: 3
+                  maxLength: 16
       responses:
         "202":
           description: username set
@@ -366,7 +372,7 @@ paths:
                       $ref: "#/components/schemas/Conversation"
               example:
                 conversations:
-                  - conversationId: 12345
+                  - conversationId: 123
                     title: "Avanti Lazio"
                     photo: "nsadoNISABDnsd..."
                     isGroup: False
@@ -381,7 +387,7 @@ paths:
                         photo: "nsadoNISABDnsd..."
                         bio: "Sto camminando"
                         number: "+3933333334" 
-                  - conversationId: 12354
+                  - conversationId: 124
                     title: "Viva i cani"
                     photo: "nsadoNISABDnsd..."
                     isGroup: True
@@ -456,7 +462,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Conversation"
               example:
-                  conversationId: 12345
+                  conversationId: 183
                   title: "Avanti Lazio"
                   photo: "nsadoNISABDnsd..."
                   isGroup: false
@@ -517,12 +523,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Message"
               example:
-                messageId: 10052
+                messageId: 153
                 author: "MarcoL"
                 text: "Ciao, posso parlarti?"
                 hours: "22:20"
-                comments: [{commentId: 12345 ,author: "Stef" ,emoji: "\uD83D\uDE02" },
-                            {commentId: 54321 ,author: "Gio" ,emoji: "\uD83D\uDE02"}]
+                comments: [{commentId: 125 ,author: "Stef" ,emoji: "\uD83D\uDE02" },
+                            {commentId: 541 ,author: "Gio" ,emoji: "\uD83D\uDE02"}]
         "400":
           description: unable to send the message
           content:
@@ -592,12 +598,12 @@ paths:
               schema:
                 $ref : "#/components/schemas/Message"
               example:
-                messageId: 10052
+                messageId: 10
                 author: "MarcoL"
                 text: "Ciao, posso parlarti?"
                 hours: "22:20"
-                comments: [{commentId: 12345 ,author: "Stef" ,emoji: "\uD83D\uDE02"},
-                            {commentId: 54321 ,author: "Gio" ,emoji: "\uD83D\uDE02"}]
+                comments: [{commentId: 13 ,author: "Stef" ,emoji: "\uD83D\uDE02"},
+                            {commentId: 54 ,author: "Gio" ,emoji: "\uD83D\uDE02"}]
   
   #commentMessage
   /conversations/{conversationid}/messages/{messageid}/comments:
@@ -663,7 +669,7 @@ paths:
               schema:
                 $ref : "#/components/schemas/Comment"
               example:
-                commentId: 10001
+                commentId: 100
                 author: "stefano123"
                 emoji: "\uD83D\uDE02"
   
@@ -879,7 +885,12 @@ paths:
               type: object
               properties:
                 groupName:
-                  $ref: "#/components/schemas/Conversation/properties/title"
+                  type: string
+                  description: group's Name
+                  example: Informatica24
+                  pattern: '^.*?$'
+                  minLength: 1
+                  maxLength: 10
       responses:
         "200":
             description: group name set
@@ -932,7 +943,12 @@ paths:
               type: object
               properties:
                 photo:
-                  $ref: "#/components/schemas/User/properties/photo"
+                  type: string
+                  description: photo
+                  format: binary
+                  example: "abcDFHDIaaaz..."
+                  minLength: 0
+                  maxLength: 100
       responses:
         "400":
           description: unable to set a new photo
@@ -987,7 +1003,12 @@ paths:
               type: object
               properties:
                 photo:
-                  $ref: "#/components/schemas/User/properties/photo"
+                  type: string
+                  description: photo
+                  format: binary
+                  example: "abcDFHDIaaaz..."
+                  minLength: 0
+                  maxLength: 100
       responses:
         "200":
             description: group photo set
