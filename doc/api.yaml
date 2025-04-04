@@ -102,7 +102,7 @@ components:
           description: content of the message
           example: "Buongiorno!"
           minLength: 1
-          maxLength: 20
+          maxLength: 30
           pattern: "^.*?$"
         hours:
           type: string
@@ -142,16 +142,6 @@ components:
     
   #PARAMETERS               
   parameters:
-    userId:
-      schema: 
-        type: integer
-        minimum: 1
-        maximum: 999
-      required: true
-      description: user identifier
-      in: path
-      name: userid
-    
     conversationId:
       schema:
         type: integer
@@ -236,12 +226,7 @@ paths:
               type: object
               properties:
                 name:
-                  type: string
-                  description: user name
-                  example: Maria
-                  pattern: '^.*?$'
-                  minLength: 3
-                  maxLength: 16
+                  $ref: "#/components/schemas/User/properties/name"
         required: True
       responses:
         "201":
@@ -257,18 +242,18 @@ paths:
                     description: password
                     example: "abcdef012345"
               example: {identifier: "abcd2394"}
-        "501":
+        "500":
           description: internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
                     
   #setMyUserName
   /settings/username:
@@ -288,51 +273,56 @@ paths:
               type: object
               properties:
                 username:
-                  type: string
-                  description: username
-                  example: Maria
-                  pattern: "^.*?$"
-                  minLength: 3
-                  maxLength: 16
+                  $ref: "#/components/schemas/User/properties/name"
       responses:
-        "204":
+        "201":
           description: username set
+          content:
+            application/json:
+              schema:
+                type: object
+                description: the new username
+                properties:
+                  username:
+                    $ref: "#/components/schemas/User/properties/name"
+              example: 
+                username: "sbrellu"
         "400":
           description: bad request
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Bad Request"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Bad Request"
         "401":
           description: user unauthorized
           content:
             application/json:
               schema:
-                description: schema for 401 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "User unauthorized"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "User Unauthorized"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
   
   #getMyConversations
   /conversations:
@@ -348,13 +338,13 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 404 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "User's conversations not found"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Conversation not found"
         "200":
           description: user's conversations found
           content:
@@ -407,18 +397,18 @@ paths:
                         photo: "nsadoNISABDnsd..."
                         bio: "hola"
                         number: "+3933333333"
-        "501":
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
                       
   #getConversation 
   /conversations/{conversationid}:
@@ -436,25 +426,25 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 404 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "conversation not found"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Conversation not found"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "200":
           description: conversation found
           content:
@@ -498,23 +488,11 @@ paths:
               type: object
               properties:
                 author:
-                  type: string
-                  minLength: 1
-                  maxLength: 10
-                  description: The author of the message
-                  pattern: '^.*?$'
+                  $ref: "#/components/schemas/Message/properties/author"
                 text:
-                  type: string
-                  minLength: 1
-                  maxLength: 20
-                  description: The text content of the message
-                  pattern: '^.*?$'
+                  $ref: "#/components/schemas/Message/properties/text"
                 hours:
-                  type: string
-                  description: Timestamp of the message
-                  minLength: 5
-                  maxLength: 5
-                  pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+                  $ref: "#/components/schemas/Message/properties/hours"
       responses:
         "200":
           description: sending successful
@@ -534,25 +512,25 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to send the message"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to send the message"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
   
   #forwardMessage
   /conversations/{conversationid}/messages/{messageid}/forward/{forwardid}:
@@ -572,25 +550,25 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to forward the message"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to forward the message"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "200":
           description: forwarded message
           content:
@@ -626,42 +604,34 @@ paths:
               type: object
               properties:
                 author:
-                  type: string
-                  description: author of the comment
-                  minLength: 1
-                  maxLength: 16
-                  pattern: "^.*?$"
+                  $ref: "#/components/schemas/Comment/properties/author"
                 emoji:
-                  type: string
-                  description: the effective comment
-                  minLength: 1
-                  maxLength: 2
-                  pattern: "^[\u0000-\uFFFF]+$"
+                  $ref: "#/components/schemas/Comment/properties/emoji"
       responses:
         "400":
           description: unable to comment the message
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to comment the message"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to comment the message"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "201":
           description: message commented correctly
           content:
@@ -691,25 +661,25 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to delete the comment"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to delete the comment"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "204":
           description: comment deleted
           
@@ -730,25 +700,25 @@ paths:
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to delete the message"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to delete the message"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "204":
           description: message deleted
   
@@ -772,32 +742,32 @@ paths:
               type: object
               properties:
                 user:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/User/properties/userId"
       responses:
         "400":
           description: unable to add 
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to add"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to add the member into the group"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "200":
           description: added member
           content:
@@ -825,12 +795,7 @@ paths:
                       bio: "i love cats"
                       number: "+3933343344"
                   isGroup : True
-
   #leaveGroup 
-  /conversations/{conversationid}/members/{userid}:
-    parameters:
-      - $ref: "#/components/parameters/conversationId"
-      - $ref: "#/components/parameters/userId"
     delete:
       tags: ["Groups"]
       summary: leave a group
@@ -845,25 +810,25 @@ paths:
             content:
               application/json:
                 schema:
-                  description: schema for 400 response
                   type: object
+                  description: error schema
                   properties:
-                   error:
+                    error:
                       type: string
-                      description: type of error
-                      example: "unable to leave group"
-        "501":
+                      description: error's description
+                      example: "Unable to leave the group"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
 
   #setGroupName 
   /conversations/{conversationid}/name:
@@ -885,45 +850,44 @@ paths:
               type: object
               properties:
                 groupName:
-                  type: string
-                  description: group's Name
-                  example: Informatica24
-                  pattern: '^.*?$'
-                  minLength: 1
-                  maxLength: 10
+                  $ref: "#/components/schemas/Conversation/properties/title"
       responses:
         "200":
             description: group name set
             content:
               application/json: 
                 schema: 
-                  description: group name
-                  type: string
-                example: "Informatics"
+                  description: the new group name
+                  type: object
+                  properties: 
+                    groupName:
+                      $ref: "#/components/schemas/Conversation/properties/title"
+                example: 
+                  groupName: "Gruppo calcetto"
         "400":
           description: unable to set a new group name
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to set a new group"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to set a new group name"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
 
   #setMyPhoto 
   /settings/photo:
@@ -943,45 +907,44 @@ paths:
               type: object
               properties:
                 photo:
-                  type: string
-                  description: photo
-                  format: binary
-                  example: "abcDFHDIaaaz..."
-                  minLength: 0
-                  maxLength: 100
+                  $ref: "#/components/schemas/User/properties/photo"
       responses:
         "400":
           description: unable to set a new photo
           content:
             application/json:
               schema:
-                description: schema for 400 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "unable to set a new photo"
-        "501":
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to set a new photo"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
         "200":
           description: new profile photo set
           content:
             application/json:
               schema:
-                description: user photo
-                type: string
-              example: "abcDFHDIaaaz..."
+                description: the new profile photo
+                type: object
+                properties:
+                  photo: 
+                    $ref: "#/components/schemas/User/properties/photo"
+              example: 
+                photo: "abcDFHDIaaaz..."
 
   #setGroupPhoto 
   /conversations/{conversationid}/photo:
@@ -1003,61 +966,45 @@ paths:
               type: object
               properties:
                 photo:
-                  type: string
-                  description: photo
-                  format: binary
-                  example: "abcDFHDIaaaz..."
-                  minLength: 0
-                  maxLength: 100
+                  $ref: "#/components/schemas/User/properties/photo"
       responses:
         "200":
             description: group photo set
             content:
               application/json:
-                schema: 
-                  $ref: "#/components/schemas/Conversation"
-                example:
-                  conversationId: 10025
-                  title: "Informatics" 
-                  members:
-                    - userId: 0
-                      name: "Ernesto"
-                      photo: "abCacDFDGhj..."
-                      bio: "i'm working"
-                      number: "+3933333333"
-                    - userId: 1
-                      name: "Luca"
-                      photo: "abCacDFDGhj..."
-                      bio: "i'm travelling"
-                      number: "+3933353333"
-                    - userId: 2
-                      name: "Lucia"
-                      photo: "abCacDFDGhj..."
-                      bio: "i'm sleeping"
-                      number: "+3937333333"
-                  isGroup: True
-        "400":
-            description: unable to set a new photo
-            content:
-              application/json:
                 schema:
-                  description: schema for 400 response
+                  description:  the new group photo
                   type: object
                   properties:
-                   error:
-                      type: string
-                      description: type of error
-                      example: "unable to set a new photo"
-        "501":
+                    photo:
+                      $ref: "#/components/schemas/User/properties/photo"
+                example: 
+                  photo: "abcDFHDIaaaz..."
+            
+        "400":
+          description: unable to set a new photo
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to set a new photo"
+            
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                description: schema for 501 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "Internal Server Error"
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
+
     
