@@ -272,7 +272,7 @@ paths:
                     
   #setMyUserName
   /settings/username:
-    patch:
+    put:
       tags: ["Profile"]
       summary: Set your username
       description: |
@@ -756,7 +756,7 @@ paths:
   /conversations/{conversationid}/members:
     parameters:
       - $ref: "#/components/parameters/conversationId"
-    patch:
+    put:
       tags: ["Groups"]
       summary: add to a group
       description: |
@@ -869,7 +869,7 @@ paths:
   /conversations/{conversationid}/name:
     parameters:
       - $ref: "#/components/parameters/conversationId"
-    patch:
+    put:
       tags: ["Groups"]
       summary: set a new group name
       description: |
@@ -927,7 +927,7 @@ paths:
 
   #setMyPhoto 
   /settings/photo:
-    patch:
+    put:
       tags: ["Profile"]
       summary: Set your profile photo
       description: |
@@ -987,7 +987,7 @@ paths:
   /conversations/{conversationid}/photo:
     parameters:
       - $ref: "#/components/parameters/conversationId"
-    patch:  
+    put:  
       tags: [Groups]
       summary: Set a new group photo
       description: |

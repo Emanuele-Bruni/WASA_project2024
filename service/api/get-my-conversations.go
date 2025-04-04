@@ -16,7 +16,7 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ 
 	//non ho nessun requestBody
 	//calcolo l'id dell'utente corrente
 	//Calcolo l'id del nome utente da modificare nella tabella
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
