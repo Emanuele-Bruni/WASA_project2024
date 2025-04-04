@@ -26,11 +26,24 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 	}
 
 	//Calcolo l'id del nome utente da modificare nella tabella
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	//controllo se l'id esiste
+	idFound, err := rt.db.CheckUserId(id)
+	if err != nil {
+		ctx.Logger.Error("Errore nel controllare l'id utente: ", err)
+		http.Error(w, "Error while checking userId", http.StatusInternalServerError)
+		return
+	}
+	if !idFound {
+		http.Error(w, "L'utente non esiste", http.StatusUnauthorized)
+		ctx.Logger.Error("Tentativo di modificare l'username di un utente che non esiste")
 		return
 	}
 
@@ -54,7 +67,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 	}
 
 	//Responso finale
-	ctx.Logger.Infof("New username setted succesful: %s", requestBody.Username)
+	ctx.Logger.WithField("id", id).Infof("New username setted succesful: %s", requestBody.Username)
 
 	w.WriteHeader(http.StatusNoContent) // Imposta lo stato HTTP 204
 }

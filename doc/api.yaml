@@ -244,7 +244,7 @@ paths:
                   maxLength: 16
         required: True
       responses:
-        "200":
+        "201":
           description: User log-in action successful
           content:
             application/json:
@@ -269,18 +269,6 @@ paths:
                     type: string
                     description: type of error
                     example: "Internal Server Error"
-        "404":
-          description: user not found
-          content:
-            application/json:
-              schema:
-                description: schema for 404 response
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: type of error
-                    example: "User not found"
                     
   #setMyUserName
   /settings/username:
@@ -307,20 +295,32 @@ paths:
                   minLength: 3
                   maxLength: 16
       responses:
-        "202":
+        "204":
           description: username set
-        "404":
-          description: user not found
+        "400":
+          description: bad request
           content:
             application/json:
               schema:
-                description: schema for 404 response
+                description: schema for 400 response
                 type: object
                 properties:
                   error:
                     type: string
                     description: type of error
-                    example: "User not found"
+                    example: "Bad Request"
+        "401":
+          description: user unauthorized
+          content:
+            application/json:
+              schema:
+                description: schema for 401 response
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: type of error
+                    example: "User unauthorized"
         "501":
           description: Internal server error
           content:

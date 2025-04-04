@@ -84,6 +84,7 @@ type AppDatabase interface {
 	CreateComment(author string, emoji string, messageId int) (Comment, error)
 	CheckComment_Message(commentId int, messageId int) (bool, error)
 	DeleteComment(commentId int) error
+	CheckUserId(id int) (bool, error)
 	Ping() error
 }
 
