@@ -66,8 +66,20 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	//Responso finale
-	ctx.Logger.WithField("id", id).Infof("New username setted succesful: %s", requestBody.Username)
+	var setUsernameResponse = struct {
+		Username string `json:"username"`
+	}{
+		Username: requestBody.Username,
+	}
 
-	w.WriteHeader(http.StatusNoContent) // Imposta lo stato HTTP 204
+	//Responso finale
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(setUsernameResponse); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Failed to encode response")
+		return
+	}
+
+	ctx.Logger.WithField("id", id).Infof("New username setted succesful: %s", setUsernameResponse)
 }
