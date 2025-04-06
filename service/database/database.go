@@ -40,6 +40,7 @@ var ErrorNoConversation = errors.New("utente non ha conversazioni")
 
 // Faccio i diversi schemas
 type User struct {
+	Id     int    `json:"userId"`
 	Name   string `json:"name"`
 	Photo  string `json:"photo"`
 	Bio    string `json:"bio"`
@@ -87,6 +88,10 @@ type AppDatabase interface {
 	CheckUserId(id int) (bool, error)
 	CheckMessage_User(messageId int, userId int) (bool, error)
 	RemoveMessage(messageId int) error
+	AddUserToGroup(userId int, cnvId int) error
+	Conversation_isGroup(conversationId int) (bool, error)
+	GetConversationMembers(cnvId int) ([]int, error)
+	GetUsersMembers(membri []int) ([]User, error)
 	Ping() error
 }
 
@@ -107,7 +112,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 												name TEXT,
-												photo TEXT, 
+												photo TEXT,
+												bio TEXT, 
 												number TEXT,
 												conversation_ids TEXT);`
 		_, err = db.Exec(sqlStmt)
