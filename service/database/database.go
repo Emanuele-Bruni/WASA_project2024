@@ -74,7 +74,7 @@ type AppDatabase interface {
 	SetName(name string, id int) error
 	GetConversations(id int) ([]Conversation, error)
 	GetSpecificConversation(conversationId int) (Conversation, error)
-	CreateMessage(author string, text string, hours string, cnvid int) (Message, error)
+	CreateMessage(author string, text string, hours string, cnvid int, userid int) (Message, error)
 	ConversationExists(cnvId int) (bool, error)
 	CommentExists(commentId int) (bool, error)
 	MessageExists(messageId int) (bool, error)
@@ -85,6 +85,8 @@ type AppDatabase interface {
 	CheckComment_Message(commentId int, messageId int) (bool, error)
 	DeleteComment(commentId int) error
 	CheckUserId(id int) (bool, error)
+	CheckMessage_User(messageId int, userId int) (bool, error)
+	RemoveMessage(messageId int) error
 	Ping() error
 }
 
@@ -137,7 +139,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 														hours TEXT,
 														comments TEXT,
 														conversation_id INTEGER NOT NULL,
-														FOREIGN KEY (conversation_id) REFERENCES conversations_table(conversation_id) ON DELETE CASCADE);`
+														user_id INTEGER NOT NULL,
+														FOREIGN KEY (conversation_id) REFERENCES conversations_table(conversation_id) ON DELETE CASCADE,
+														FOREIGN KEY (user_id) REFERENCES users_table(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)

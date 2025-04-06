@@ -126,7 +126,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 	//calcolo il nuovo orario
 	currentTime := time.Now().Format("15:04")
 	//devo richiamare la funzione che crea il messaggio
-	forwardResponse, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId)
+	forwardResponse, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del messaggio")

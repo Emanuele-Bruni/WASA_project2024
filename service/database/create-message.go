@@ -3,9 +3,9 @@ package database
 import "fmt"
 
 // CreateMessage crea un nuovo messaggio e lo restituisce (ovviamente senza commenti, perché è stato appena creato).
-func (db *appdbimpl) CreateMessage(author string, text string, hours string, cnvid int) (Message, error) {
+func (db *appdbimpl) CreateMessage(author string, text string, hours string, cnvid int, userid int) (Message, error) {
 	//inserisco i dati in input nella tabella
-	res, err := db.c.Exec("INSERT INTO messages_table (author,text,hours,conversation_id) VALUES (?,?,?,?)", author, text, hours, cnvid)
+	res, err := db.c.Exec("INSERT INTO messages_table (author,text,hours,conversation_id,user_id) VALUES (?,?,?,?,?)", author, text, hours, cnvid, userid)
 	if err != nil {
 		return Message{}, fmt.Errorf("error creating message: %w", err)
 	}

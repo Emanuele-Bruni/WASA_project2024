@@ -773,11 +773,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Conversation"
+                $ref: "#/components/schemas/Conversation/properties/members"
               example:
-                  conversationId: 10025
-                  title: "Informatics"
-                  photo: "aAaAaAas..." 
                   members:
                     - userId: 0
                       name: "Luca"
@@ -794,7 +791,6 @@ paths:
                       photo: "abCacDFDGhj..."
                       bio: "i love cats"
                       number: "+3933343344"
-                  isGroup : True
   #leaveGroup 
     delete:
       tags: ["Groups"]

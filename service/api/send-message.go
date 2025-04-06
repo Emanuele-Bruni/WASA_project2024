@@ -80,7 +80,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 	}
 
 	// FUNZIONE "create-message" che ritorna il messaggio (senza commenti)
-	messageResponse, err := rt.db.CreateMessage(requestBody.Author, requestBody.Text, requestBody.Hours, cnvId)
+	messageResponse, err := rt.db.CreateMessage(requestBody.Author, requestBody.Text, requestBody.Hours, cnvId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del messaggio")
