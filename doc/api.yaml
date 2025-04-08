@@ -722,7 +722,7 @@ paths:
         "204":
           description: message deleted
   
-  #addToGroup
+  #addToGroup e leaveGroup
   /conversations/{conversationid}/members:
     parameters:
       - $ref: "#/components/parameters/conversationId"
