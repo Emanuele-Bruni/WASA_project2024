@@ -23,7 +23,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))
 	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))
 	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))
-	//rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
+	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	//rt.router.PUT("/conversations/{conversationid}/photo", rt.wrap(rt.setGroupPhoto))
 
 	// Special routes

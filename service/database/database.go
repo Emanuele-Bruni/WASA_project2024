@@ -95,6 +95,7 @@ type AppDatabase interface {
 	RemoveGroupFromMember(userId int, groupId int) error
 	RemoveMemberFromGroup(userId int, groupId int) error
 	SetGroupName(groupName string, cnvId int) error
+	SetMyPhoto(photo string, id int) error
 	Ping() error
 }
 
