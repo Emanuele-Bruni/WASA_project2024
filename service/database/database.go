@@ -92,6 +92,8 @@ type AppDatabase interface {
 	Conversation_isGroup(conversationId int) (bool, error)
 	GetConversationMembers(cnvId int) ([]int, error)
 	GetUsersMembers(membri []int) ([]User, error)
+	RemoveGroupFromMember(userId int, groupId int) error
+	RemoveMemberFromGroup(userId int, groupId int) error
 	Ping() error
 }
 
