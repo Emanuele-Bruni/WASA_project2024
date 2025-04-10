@@ -101,6 +101,7 @@ type AppDatabase interface {
 	SetMyPhoto(photo string, id int) error
 	SetGroupPhoto(photo string, cnvId int) error
 	GetAllUsers(userId int) ([]int, []string, error)
+	CreateConversation(userId1 int, userId2 int) (int, error)
 	Ping() error
 }
 

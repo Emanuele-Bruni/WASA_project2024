@@ -26,7 +26,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	rt.router.PUT("/conversations/:conversationid/photo", rt.wrap(rt.setGroupPhoto))
 	rt.router.GET("/users", rt.wrap(rt.getUsers))
-	//rt.router.POST("/users/:userid",rt.wrap(rt.newConversation))
+	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation))
 	//rt.router.POST("/converations",rt.wrap(rt.newGroup))
 
 	// Special routes

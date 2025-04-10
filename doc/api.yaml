@@ -200,6 +200,8 @@ components:
 
 #TAGS
 tags:
+  - name: Users
+    description: Users operations
   - name: Login
     description: User login operations
   - name: Profile
@@ -432,18 +434,27 @@ paths:
         content:
           application/json:
             schema:
-              description: group's partecipants ids
-              type: array
-              items:
-                $ref: "#/components/schemas/User/properties/userId"
+              type: object
+              properties: 
+                title: 
+                  $ref: "#/components/schemas/Conversation/properties/title"
+                users:
+                  type: array
+                  description: group's members IDs
+                  items:
+                    $ref: "#/components/schemas/User/properties/userId"
       responses:
         "200":
           description: Group created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Conversation/properties/conversationId"
-              example: 3
+                type: object
+                properties:
+                  conversationId: 
+                    $ref: "#/components/schemas/Conversation/properties/conversationId"
+              example:
+                conversationId: 3
         "400":
           description: unable to create the group
           content:
@@ -832,7 +843,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Conversation/properties/members"
+                type: object
+                properties:
+                  members: 
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Conversation/properties/members"
               example:
                   members:
                     - userId: 0
@@ -1132,8 +1148,18 @@ paths:
         You can create a new one-to-one conversation between you and another user. (This is not a group chat)
       operationId: newConversation
       responses:
-        "204":
+        "200":
           description: new conversation created succesfully
+          content:
+            application/json:
+              schema: 
+                description: new conversation identifier
+                type: object
+                properties:
+                  identifier:
+                    $ref: "#/components/schemas/Conversation/properties/conversationId"
+              example:
+                identifier: 32
         "400":
           description: unable to create a conversation with this user
           content:
