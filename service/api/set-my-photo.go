@@ -2,6 +2,7 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
+	"WASA_project2024/service/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -41,11 +42,15 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo se va bene (se è lunga <=100, può essere anche vuota)
-	if len(requestBody.Photo) <= 100 {
+	//controllo se va bene (se è lunga <=1000000, può essere anche vuota)
+	if len(requestBody.Photo) <= 1000000 {
 		http.Error(w, "Invalid photo", http.StatusBadRequest)
 		ctx.Logger.WithField("photo", requestBody.Photo).Error("Invalid length of field 'photo'")
 		return
+	} else {
+		if len(requestBody.Photo) == 0 {
+			requestBody.Photo = database.DefaultContactPhoto
+		}
 	}
 
 	//aggiorno la foto
