@@ -444,17 +444,18 @@ paths:
                   items:
                     $ref: "#/components/schemas/User/properties/userId"
       responses:
-        "200":
+        "201":
           description: Group created
           content:
             application/json:
               schema:
+                description: new group id
                 type: object
                 properties:
-                  conversationId: 
+                  groupId: 
                     $ref: "#/components/schemas/Conversation/properties/conversationId"
               example:
-                conversationId: 3
+                groupId: 3
         "400":
           description: unable to create the group
           content:
@@ -843,15 +844,19 @@ paths:
           content:
             application/json:
               schema:
+                description: members list
                 type: object
                 properties:
                   members: 
+                    description: users into the conversation
                     type: array
+                    minLength: 2
+                    maxLength: 20
                     items:
                       $ref: "#/components/schemas/Conversation/properties/members"
               example:
                   members:
-                    - userId: 0
+                    - userId: 4
                       name: "Luca"
                       photo: "abCacDFDGhj..."
                       bio: "i'm working"
