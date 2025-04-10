@@ -1076,11 +1076,26 @@ paths:
             content:
               application/json:
                 schema:
-                  description:  list of user ids
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/User/properties/userId"
-                example: [20,30,40]    
+                  description:  list of user 
+                  type: object
+                  properties:
+                    userIds: 
+                      description: list of user ids
+                      type: array
+                      minItems: 0
+                      maxItems: 100
+                      items: 
+                        $ref: "#/components/schemas/User/properties/userId"
+                    names:
+                      description: list of user names
+                      type: array
+                      minItems: 0
+                      maxItems: 100
+                      items:
+                        $ref: "#/components/schemas/User/properties/name"
+                example:
+                  userIds: [20,40,30]
+                  names: ["Giorgio","Elena","Bob"]
         "400":
           description: unable to get the app users
           content:
