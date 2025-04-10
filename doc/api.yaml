@@ -142,6 +142,16 @@ components:
     
   #PARAMETERS               
   parameters:
+    userId:
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999
+      required: true
+      description: user identifier
+      in: path
+      name: userid
+    
     conversationId:
       schema:
         type: integer
@@ -324,7 +334,7 @@ paths:
                   description: error's description
                   example: "Internal Server Error"
   
-  #getMyConversations
+  #getMyConversations e newGroup
   /conversations:
     get:
       tags: ["Conversations"]
@@ -397,6 +407,55 @@ paths:
                         photo: "nsadoNISABDnsd..."
                         bio: "hola"
                         number: "+3933333333"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
+  #newGroup
+    post:
+      tags: [Groups]
+      summary: create a new group
+      description: |
+        You can create a new group chat between many users
+      operationId: newGroup
+      requestBody:
+        required: true
+        description: users that you want to include into the group
+        content:
+          application/json:
+            schema:
+              description: group's partecipants ids
+              type: array
+              items:
+                $ref: "#/components/schemas/User/properties/userId"
+      responses:
+        "200":
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation/properties/conversationId"
+              example: 3
+        "400":
+          description: unable to create the group
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to create the group"
         "500":
           description: Internal server error
           content:
@@ -1003,4 +1062,87 @@ paths:
                   description: error's description
                   example: "Internal Server Error"
 
+  #getUsers
+  /users:
+    get:
+      tags: [Users]
+      summary: get all users
+      description: |
+        You can get all the app users
+      operationId: getUsers
+      responses:
+        "200":
+            description: all the app users
+            content:
+              application/json:
+                schema:
+                  description:  list of user ids
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/User/properties/userId"
+                example: [20,30,40]    
+        "400":
+          description: unable to get the app users
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to get the app users"  
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
+  
+  #newConversation
+  /users/{userid}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    post: 
+      tags: [Conversations]
+      summary: create a new conversation
+      description: |
+        You can create a new one-to-one conversation between you and another user. (This is not a group chat)
+      operationId: newConversation
+      responses:
+        "204":
+          description: new conversation created succesfully
+        "400":
+          description: unable to create a conversation with this user
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Unable to create a new conversation"  
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+               type: object
+               description: error schema
+               properties:
+                error:
+                  type: string
+                  description: error's description
+                  example: "Internal Server Error"
+
+  
     
