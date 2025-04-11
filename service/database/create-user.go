@@ -4,7 +4,8 @@ import "fmt"
 
 // CreateUser crea un nuovo utente con il nome specificato e restituisce il suo ID.
 func (db *appdbimpl) CreateUser(name string) (int, error) {
-	res, err := db.c.Exec("INSERT INTO users_table (name) VALUES (?)", name)
+	photo := DefaultContactPhoto
+	res, err := db.c.Exec("INSERT INTO users_table (name,photo,bio,number) VALUES (?,?,?,?)", name, photo, "", "")
 	if err != nil {
 		return -1, fmt.Errorf("error creating user: %w", err)
 	}

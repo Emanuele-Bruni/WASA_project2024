@@ -103,6 +103,7 @@ type AppDatabase interface {
 	GetAllUsers(userId int) ([]int, []string, error)
 	CreateConversation(userId1 int, userId2 int) (int, error)
 	CreateGroup(titolo string, members []int, userId int) (int, error)
+	Conversation2MembersExists(userId1 int, userId2 int) (bool, int, error)
 	Ping() error
 }
 

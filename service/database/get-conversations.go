@@ -21,6 +21,7 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 	if stringaConversazioni == "" {
 		return []Conversation{}, ErrorNoConversation
 	}
+
 	//prendo gli id delle conversazioni dell'utente e la aggiungo alla lista degli id
 	for _, id_stringa := range strings.Split(stringaConversazioni, ",") {
 		//converto il valore in numero
@@ -36,8 +37,9 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 		var conversation Conversation
 		var members string
 		var isGroup int
+
 		//recupero le info della conversazione
-		err := db.c.QueryRow("SELECT titolo,photo,isGroup,members FROM userConvesations_table WHERE id=?", conversation_id).Scan(&conversation.Title, &conversation.Photo, &isGroup, &members)
+		err := db.c.QueryRow("SELECT titolo,photo,isGroup,members FROM conversations_table WHERE conversation_id=?", conversation_id).Scan(&conversation.Title, &conversation.Photo, &isGroup, &members)
 		if err != nil {
 			return []Conversation{}, err
 		}

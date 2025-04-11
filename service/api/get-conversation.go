@@ -16,7 +16,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 	//non ho nessun request body
 
 	//estraggo userId e controllo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)

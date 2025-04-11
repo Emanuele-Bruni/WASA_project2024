@@ -14,7 +14,6 @@ import (
 
 func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 	//non ho nessun requestBody
-	//calcolo l'id dell'utente corrente
 	//Calcolo l'id del nome utente da modificare nella tabella
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)

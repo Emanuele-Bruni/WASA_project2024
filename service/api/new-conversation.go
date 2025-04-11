@@ -8,11 +8,13 @@ import (
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 )
 
 func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	//ctx.Logger.Infof("Token: %s", r.Header.Get("Authorization"))
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	userId1, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -39,22 +41,43 @@ func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p htt
 		ctx.Logger.WithError(err).Error("L'userId è di un utente che non esiste")
 		return
 	}
-	//creo la conversazione
-	cnvId, err := rt.db.CreateConversation(userId1, userId2)
+	//controllo se la conversazione esiste già
+	//funzione che controlla se una conversazione tra i due utenti esiste già
+	exists, cnvId, err := rt.db.Conversation2MembersExists(userId1, userId2)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Errore durante la creazione della conversazione")
+		ctx.Logger.WithError(err).Error("Errore durante il controllo dell'esistenza di una conversazione tra i due utenti")
 		return
 	}
+	if exists {
+		http.Error(w, "Conversazione già esistente", http.StatusBadRequest)
+		ctx.Logger.WithField("conversationId", cnvId).Error("Conversazione già esistente")
+		return
+	} else {
+		//creo la conversazione
+		cnvId, err = rt.db.CreateConversation(userId1, userId2)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			ctx.Logger.WithError(err).Error("Errore durante la creazione della conversazione")
+			return
+		}
+	}
+
 	//ritorno il conversationId
+	var newConversationResponse = struct {
+		ConversationId int `json:"conversationId"`
+	}{
+		ConversationId: cnvId,
+	}
+
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(w).Encode(cnvId); err != nil {
+	if err := json.NewEncoder(w).Encode(newConversationResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 
-	ctx.Logger.Infof("Conversazione creata: %w", cnvId)
+	ctx.Logger.WithFields(logrus.Fields{"utente1": userId1, "utente2": userId2}).Infof("Conversazione creata con ID: %v", cnvId)
 }
