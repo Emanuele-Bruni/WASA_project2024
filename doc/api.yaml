@@ -434,12 +434,15 @@ paths:
         content:
           application/json:
             schema:
+              description: group title and members
               type: object
               properties: 
                 title: 
                   $ref: "#/components/schemas/Conversation/properties/title"
                 users:
                   type: array
+                  minItems: 1
+                  maxItems: 100
                   description: group's members IDs
                   items:
                     $ref: "#/components/schemas/User/properties/userId"
@@ -848,29 +851,25 @@ paths:
                 type: object
                 properties:
                   members: 
-                    description: users into the conversation
-                    type: array
-                    minLength: 2
-                    maxLength: 20
-                    items:
-                      $ref: "#/components/schemas/Conversation/properties/members"
+                    $ref: "#/components/schemas/Conversation/properties/members"
               example:
                   members:
-                    - userId: 4
+                    - userId: 1
                       name: "Luca"
                       photo: "abCacDFDGhj..."
                       bio: "i'm working"
                       number: "+3933333333"
-                    - userId: 1
+                    - userId: 2
                       name: "Mia"
                       photo: "abCacDFDGhj..."
                       bio: "i love dogs"
                       number: "+3933333344"
-                    - userId: 2
+                    - userId: 3
                       name: "Marcello"
                       photo: "abCacDFDGhj..."
                       bio: "i love cats"
                       number: "+3933343344"
+
   #leaveGroup 
     delete:
       tags: ["Groups"]
@@ -1161,10 +1160,10 @@ paths:
                 description: new conversation identifier
                 type: object
                 properties:
-                  identifier:
+                  conversationId:
                     $ref: "#/components/schemas/Conversation/properties/conversationId"
               example:
-                identifier: 32
+                conversationId: 32
         "400":
           description: unable to create a conversation with this user
           content:
