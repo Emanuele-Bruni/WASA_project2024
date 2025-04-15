@@ -13,7 +13,7 @@ import (
 
 func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -126,7 +126,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 	//calcolo il nuovo orario
 	currentTime := time.Now().Format("15:04")
 	//devo richiamare la funzione che crea il messaggio
-	forwardResponse, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId, id)
+	forwardResponse, fwdId, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del messaggio")
@@ -143,6 +143,6 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 	//Logga il successo
-	ctx.Logger.Infof("Messaggio inviato con successo: %s", forwardResponse.Text)
+	ctx.Logger.Infof("Messaggio inviato con successo: %s", fwdId)
 
 }

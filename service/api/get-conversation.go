@@ -24,7 +24,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 		return
 	}
 	//prendo il conversationid
-	cnvId, err := strconv.Atoi(p.ByName("conversationId"))
+	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
 		//errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
@@ -35,7 +35,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 	//funzione che controlla se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
-		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'appartenenza dell'utente alla conversazione")
 		return
 	}
@@ -68,6 +68,6 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
-	ctx.Logger.Infof("Conversazione ricevuta")
+	ctx.Logger.Infof("Conversazione ricevuta: %v", cnvId)
 
 }

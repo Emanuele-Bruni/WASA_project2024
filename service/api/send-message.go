@@ -2,6 +2,7 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
+	"WASA_project2024/service/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -12,40 +13,37 @@ import (
 )
 
 func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//request body -> messaggio da inviare
-	var requestBody = struct {
-		Author string `json:"author"`
-		Text   string `json:"text"`
-		Hours  string `json:"hours"`
-	}{}
 
 	//estraggo userId e controllo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
+	//funzione che ritorna il nome dell'userId
+	//autore = username dell'utente
+	name, err := rt.db.GetNameById(id)
+	if err != nil {
+		http.Error(w, "Autore non identificato", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore nel recuperare il nome dell'utente")
+		return
+	}
 
+	//request body -> messaggio da inviare
+	var requestBody = struct {
+		Text string `json:"text"`
+	}{}
 	//decodifico la richiesta secondo il request body
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           //tipo di errore
-		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody") //descrizione errore
+		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
+		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-
-	// Controllo che i campi non siano vuoti
-	if requestBody.Author == "" || requestBody.Text == "" {
-		http.Error(w, "I campi author e text sono obbligatori", http.StatusBadRequest)
-		ctx.Logger.Error("Campi mancanti nel request body")
-		return
-	}
-	// calcolo automaticamente l'orario attuale in formato HH:mm
-	requestBody.Hours = time.Now().Format("15:04")
 
 	//prendo il conversation id dal path
-	cnvId, err := strconv.Atoi(p.ByName("conversationId"))
+	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
 		//errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
@@ -79,12 +77,28 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 	}
 
-	// FUNZIONE "create-message" che ritorna il messaggio (senza commenti)
-	messageResponse, err := rt.db.CreateMessage(requestBody.Author, requestBody.Text, requestBody.Hours, cnvId, id)
+	// Controllo che i campi non siano vuoti
+	if requestBody.Text == "" {
+		http.Error(w, "Impossibile inviare un messaggio vuoto", http.StatusBadRequest)
+		ctx.Logger.Error("Testo mancante nel request body")
+		return
+	}
+
+	// calcolo automaticamente l'orario attuale in formato HH:mm
+	hours := time.Now().Format("15:04")
+
+	// FUNZIONE "create-message" che ritorna il messaggio (senza commenti) e il suo id
+	message, msgId, err := rt.db.CreateMessage(name, requestBody.Text, hours, cnvId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del messaggio")
 		return
+	}
+
+	var messageResponse = struct {
+		FinalMessage database.Message `json:"message"`
+	}{
+		FinalMessage: message,
 	}
 
 	//preparo l'header
@@ -97,6 +111,6 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		return
 	}
 	//Logga il successo
-	ctx.Logger.Infof("Messaggio inviato con successo: %s", requestBody.Text)
+	ctx.Logger.Infof("Messaggio inviato con successo: messaggio: %v, conversazione: %v", msgId, cnvId)
 
 }

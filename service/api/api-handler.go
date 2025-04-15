@@ -11,11 +11,11 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/context", rt.wrap(rt.getContextReply))
 
 	//EndPoints
-	rt.router.POST("/login", rt.wrap(rt.doLogin))                  //OK
-	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName)) //OK
-	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))
-	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))
-	rt.router.POST("/conversations/:conversationid/message", rt.wrap(rt.sendMessage))
+	rt.router.POST("/login", rt.wrap(rt.doLogin))                                     //OK
+	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName))                    //OK
+	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))                   //OK
+	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))      //OK
+	rt.router.POST("/conversations/:conversationid/message", rt.wrap(rt.sendMessage)) //OK
 	rt.router.POST("/conversations/:conversationid/messages/:messageid/forward/:forwardid", rt.wrap(rt.forwardMessage))
 	rt.router.POST("/conversations/:conversationid/messages/:messageid/comments", rt.wrap(rt.commentMessage))
 	rt.router.DELETE("/conversations/:conversationid/messages/:messageid/comments/:commentid", rt.wrap(rt.uncommentMessage))
@@ -25,9 +25,9 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))
 	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	rt.router.PUT("/conversations/:conversationid/photo", rt.wrap(rt.setGroupPhoto))
-	rt.router.GET("/users", rt.wrap(rt.getUsers))
+	rt.router.GET("/users", rt.wrap(rt.getUsers))                 //OK
 	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation)) //OK
-	rt.router.POST("/converations", rt.wrap(rt.newGroup))
+	rt.router.POST("/conversations", rt.wrap(rt.newGroup))        //OK
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)

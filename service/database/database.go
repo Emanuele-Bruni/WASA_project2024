@@ -78,7 +78,7 @@ type AppDatabase interface {
 	SetName(name string, id int) error
 	GetConversations(id int) ([]Conversation, error)
 	GetSpecificConversation(conversationId int) (Conversation, error)
-	CreateMessage(author string, text string, hours string, cnvid int, userid int) (Message, error)
+	CreateMessage(author string, text string, hours string, cnvid int, userid int) (Message, int, error)
 	ConversationExists(cnvId int) (bool, error)
 	CommentExists(commentId int) (bool, error)
 	MessageExists(messageId int) (bool, error)
@@ -104,6 +104,7 @@ type AppDatabase interface {
 	CreateConversation(userId1 int, userId2 int) (int, error)
 	CreateGroup(titolo string, members []int, userId int) (int, error)
 	Conversation2MembersExists(userId1 int, userId2 int) (bool, int, error)
+	GetNameById(userId int) (string, error)
 	Ping() error
 }
 

@@ -12,7 +12,7 @@ import (
 
 func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -35,11 +35,16 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(w).Encode(groupId); err != nil {
+	var newGroupResponse = struct {
+		GroupId int `json:"groupId"`
+	}{
+		GroupId: groupId,
+	}
+	if err := json.NewEncoder(w).Encode(newGroupResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 
-	ctx.Logger.Infof("Gruppo creato: %w", groupId)
+	ctx.Logger.Infof("Gruppo creato: %v", groupId)
 }

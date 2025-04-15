@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"strconv"
 	"strings"
 
@@ -9,21 +10,21 @@ import (
 
 func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 
-	var userConversations []Conversation //lista finale delle conversazioni
-	var stringaConversazioni string      //stringa "20,30,40"
-	var lista_id []int                   // [20,30,40]
+	var userConversations []Conversation    //lista finale delle conversazioni
+	var stringaConversazioni sql.NullString //stringa "20,30,40"
+	var lista_id []int                      // [20,30,40]
 
 	//controllo l'id nella tabella utenti e prendo la stringa di conversazioni
 	err := db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", userId).Scan(&stringaConversazioni)
 	if err != nil {
 		return []Conversation{}, err
 	}
-	if stringaConversazioni == "" {
+	if !stringaConversazioni.Valid && stringaConversazioni.String == "" {
 		return []Conversation{}, ErrorNoConversation
 	}
 
 	//prendo gli id delle conversazioni dell'utente e la aggiungo alla lista degli id
-	for _, id_stringa := range strings.Split(stringaConversazioni, ",") {
+	for _, id_stringa := range strings.Split(stringaConversazioni.String, ",") {
 		//converto il valore in numero
 		num, err := strconv.Atoi(id_stringa)
 		if err != nil {
@@ -35,7 +36,9 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 
 	for _, conversation_id := range lista_id {
 		var conversation Conversation
-		var members string
+		conversation.ConversationId = conversation_id
+
+		var members string //"1,2,3"
 		var isGroup int
 
 		//recupero le info della conversazione
@@ -54,11 +57,12 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 			//converto membro in numero
 			memberId, err := strconv.Atoi(memberId_stringa)
 			var utente User
+			utente.Id = memberId
 			if err != nil {
 				logrus.WithField("memberId not valid", memberId).WithError(err).Error("id non valido")
 			} else {
 				//ottenuto id membro, ora devo prendere le sue info
-				err := db.c.QueryRow("SELECT name,photo,number FROM users_table WHERE id=?", memberId).Scan(&utente.Name, &utente.Photo, &utente.Number)
+				err := db.c.QueryRow("SELECT name,photo,bio,number FROM users_table WHERE id=?", memberId).Scan(&utente.Name, &utente.Photo, &utente.Bio, &utente.Number)
 				if err != nil {
 					return []Conversation{}, err
 				}
