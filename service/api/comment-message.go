@@ -2,8 +2,10 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
+	"WASA_project2024/service/database"
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -14,7 +16,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 
 	//--------- CONTROLLI ---------
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -98,13 +100,33 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
+	//controllo che il commento o l'autore non siano vuoti
+	if strings.TrimSpace(requestBody.Author) == "" || strings.TrimSpace(requestBody.Emoji) == "" {
+		http.Error(w, "Autore ed emoji non possono essere vuoti", http.StatusBadRequest)
+		ctx.Logger.Error("Autore ed emoji non possono essere vuoti")
+		return
+	}
+	//controllo pattern emoji
+	emojiRegex := regexp.MustCompile(`^\p{So}+$`)
+	matched := emojiRegex.MatchString(requestBody.Emoji)
+	if !matched {
+		http.Error(w, "Emoji non accettabile", http.StatusBadRequest)
+		ctx.Logger.Error("Emoji contiene caratteri non validi")
+		return
+	}
 
 	//funzione che crea commento e lo aggiunge ai messaggi (append ai commenti)
-	commentResponse, err := rt.db.CreateComment(requestBody.Author, requestBody.Emoji, messageId)
+	comment, commentId, err := rt.db.CreateComment(requestBody.Author, requestBody.Emoji, messageId)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del commento")
 		return
+	}
+
+	var commentResponse = struct {
+		Comment database.Comment `json:"comment"`
+	}{
+		Comment: comment,
 	}
 
 	//preparo l'header
@@ -117,5 +139,5 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 	//Logga il successo
-	ctx.Logger.Infof("Commento inviato con successo: %s", requestBody.Emoji)
+	ctx.Logger.Infof("Commento inviato con successo: %s, ID: %v, conversazione: %v, messaggio: %v", requestBody.Emoji, commentId, cnvId, messageId)
 }

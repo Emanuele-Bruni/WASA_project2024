@@ -85,7 +85,7 @@ type AppDatabase interface {
 	CheckUser_Conversation(cnvId int, userId int) (bool, error)
 	CheckMessage_Conversation(messageId int, cnvId int) (bool, error)
 	GetMessage(messageId int) (Message, error)
-	CreateComment(author string, emoji string, messageId int) (Comment, error)
+	CreateComment(author string, emoji string, messageId int) (Comment, int, error)
 	CheckComment_Message(commentId int, messageId int) (bool, error)
 	DeleteComment(commentId int) error
 	CheckUserId(id int) (bool, error)

@@ -12,7 +12,7 @@ import (
 func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//--------- CONTROLLI ---------
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -121,7 +121,7 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 	err = rt.db.DeleteComment(commentId)
 	if err != nil {
 		http.Error(w, "Errore durante la rimozione del commento", http.StatusInternalServerError)
-		ctx.Logger.Error("Commento non rimosso")
+		ctx.Logger.WithError(err).Error("Commento non rimosso")
 		return
 	}
 

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -17,27 +18,26 @@ func (db *appdbimpl) DeleteComment(commentId int) error {
 		return fmt.Errorf("errore nel trovare il messaggio associato al commento: %w", err)
 	}
 	//prendo la stringa con gli id dei commenti
-	var commentsArray string
+	var commentsArray sql.NullString
 	err = db.c.QueryRow("SELECT comments FROM messages_table WHERE message_id=?", messageId).Scan(&commentsArray)
 	if err != nil {
 		return fmt.Errorf("errore nel recuperare i commenti del messaggio: %w", err)
 	}
-	//converto la stringa in lista ed elimino l'id del commento
-	var updatedComments []string
-	for _, id := range strings.Split(commentsArray, ",") {
-		if id != strconv.Itoa(commentId) {
-			continue
+	if commentsArray.Valid && commentsArray.String != "" {
+		//converto la stringa in lista ed elimino l'id del commento
+		var updatedComments []string
+		for _, id := range strings.Split(commentsArray.String, ",") {
+			if id != strconv.Itoa(commentId) {
+				updatedComments = append(updatedComments, id)
+			}
 		}
-		updatedComments = append(updatedComments, id)
-	}
-
-	//converto la nuova lista in stringa
-	newComments := strings.Join(updatedComments, ",")
-
-	//aggiorno il campo comments della tabella dei messaggi con la nuova lista
-	_, err = db.c.Exec("UPDATE messages_table SET comments=? WHERE message_id=?", newComments, messageId)
-	if err != nil {
-		return fmt.Errorf("errore durante l'aggiornamento dei commenti del messaggio: %w", err)
+		//converto la nuova lista in stringa
+		newComments := strings.Join(updatedComments, ",")
+		//aggiorno il campo comments della tabella dei messaggi con la nuova lista
+		_, err = db.c.Exec("UPDATE messages_table SET comments=? WHERE message_id=?", newComments, messageId)
+		if err != nil {
+			return fmt.Errorf("errore durante l'aggiornamento dei commenti del messaggio: %w", err)
+		}
 	}
 
 	//elimino la riga dalla tabella con il commentId in input
