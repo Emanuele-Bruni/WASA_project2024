@@ -62,7 +62,7 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 				logrus.WithField("memberId not valid", memberId).WithError(err).Error("id non valido")
 			} else {
 				//ottenuto id membro, ora devo prendere le sue info
-				err := db.c.QueryRow("SELECT name,photo,bio,number FROM users_table WHERE id=?", memberId).Scan(&utente.Name, &utente.Photo, &utente.Bio, &utente.Number)
+				err := db.c.QueryRow("SELECT name,photo FROM users_table WHERE id=?", memberId).Scan(&utente.Name, &utente.Photo)
 				if err != nil {
 					return []Conversation{}, err
 				}

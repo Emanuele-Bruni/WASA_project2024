@@ -2,6 +2,7 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
+	"WASA_project2024/service/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -24,10 +25,18 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 		Title string `json:"title"`
 		Users []int  `json:"users"`
 	}{}
+
 	//creo il gruppo e ritorno l'id
 	groupId, err := rt.db.CreateGroup(requestBody.Title, requestBody.Users, id)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la creazione del gruppo: ", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	//devo ritornare il gruppo -> richiamo la funzione GetConversation
+	gruppo, err := rt.db.GetSpecificConversation(groupId)
+	if err != nil {
+		ctx.Logger.Error("Errore durante la selezione del nuovo gruppo: ", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -36,9 +45,17 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 	w.WriteHeader(http.StatusCreated)
 
 	var newGroupResponse = struct {
-		GroupId int `json:"groupId"`
+		GroupId int             `json:"groupId"`
+		Title   string          `json:"title"`
+		Photo   string          `json:"photo"`
+		IsGroup bool            `json:"isGroup"`
+		Members []database.User `json:"members"`
 	}{
-		GroupId: groupId,
+		GroupId: gruppo.ConversationId,
+		Title:   gruppo.Title,
+		Photo:   gruppo.Photo,
+		IsGroup: gruppo.IsGroup,
+		Members: gruppo.Members,
 	}
 	if err := json.NewEncoder(w).Encode(newGroupResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

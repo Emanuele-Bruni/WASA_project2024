@@ -11,7 +11,7 @@ func (db *appdbimpl) GetUsersMembers(membri []int) ([]User, error) {
 
 	for _, id := range membri {
 		var u User
-		err := db.c.QueryRow("SELECT id, name, photo, bio, number FROM users_table WHERE id = ?", id).Scan(&u.Id, &u.Name, &u.Photo, &u.Bio, &u.Number)
+		err := db.c.QueryRow("SELECT id, name, photo FROM users_table WHERE id = ?", id).Scan(&u.Id, &u.Name, &u.Photo)
 		if err != nil {
 			return nil, fmt.Errorf("errore nel recuperare utente con id %d: %w", id, err)
 		}

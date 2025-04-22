@@ -32,20 +32,6 @@ components:
           example: "abcDFHDIaaaz..."
           minLength: 0
           maxLength: 1000000
-        bio:
-            type: string
-            description: what user writes about him
-            example: "based in Rome"
-            minLength: 1
-            maxLength: 25
-            pattern: "^.*?$"
-        number:
-            type: string
-            pattern: '^\+[0-9]+$'
-            minLength: 10
-            maxLength: 15
-            description: user's cellphone number
-            example: '+3972837482'
 
     Conversation:
       type: object
@@ -382,13 +368,9 @@ paths:
                       - userId: 33
                         name: "Franco"
                         photo: "nsadoNISABDnsd..."
-                        bio: "Sto viaggiando"
-                        number: "+3933333333"
                       - userId: 34
                         name: "Franca"
                         photo: "nsadoNISABDnsd..."
-                        bio: "Sto camminando"
-                        number: "+3933333334" 
                   - conversationId: 124
                     title: "Viva i cani"
                     photo: "nsadoNISABDnsd..."
@@ -397,18 +379,12 @@ paths:
                       - userId: 37
                         name: "Franco"
                         photo: "nsadoNISABDnsd..."
-                        bio: "Sto viaggiando"
-                        number: "+3933333333"
                       - userId: 322
                         name: "Francisco"
                         photo: "nsadoNISABDnsd..."
-                        bio: "Sto viaggiando"
-                        number: "+3933333333"
                       - userId: 39
                         name: "Francesco"
                         photo: "nsadoNISABDnsd..."
-                        bio: "hola"
-                        number: "+3933333333"
         "500":
           description: Internal server error
           content:
@@ -438,27 +414,39 @@ paths:
               type: object
               properties: 
                 title: 
-                  $ref: "#/components/schemas/Conversation/properties/title"
+                  type: string
+                  description: group name
+                  minLength: 1
+                  maxLength: 16
+                  pattern: "^.*?$"
                 users:
                   type: array
                   minItems: 1
                   maxItems: 100
                   description: group's members IDs
                   items:
-                    $ref: "#/components/schemas/User/properties/userId"
+                    type: integer
+                    description: user's number Id
       responses:
         "201":
           description: Group created
           content:
             application/json:
               schema:
-                description: new group id
-                type: object
-                properties:
-                  groupId: 
-                    $ref: "#/components/schemas/Conversation/properties/conversationId"
+                $ref: "#/components/schemas/Conversation"
               example:
-                groupId: 3
+                conversationId: 3
+                title: "Nome gruppo"
+                photo: "nsadoNISABDnsd..."
+                isGroup: true
+                members: 
+                  - userId: 1
+                    name: "Mario"
+                    photo: "abCacDFDGhj..."
+                  - userId: 2
+                    name: "Giulio"
+                    photo: "abCacDFDGhj..."
+                  
         "400":
           description: unable to create the group
           content:
@@ -534,13 +522,9 @@ paths:
                     - userId: 33
                       name: "Franco"
                       photo: "nsadoNISABDnsd..."
-                      bio: "Sto viaggiando"
-                      number: "+3933333333"
                     - userId: 34
                       name: "Franca"
                       photo: "nsadoNISABDnsd..."
-                      bio: "Sto camminando"
-                      number: "+3933333334"
           
   #sendMessage 
   /conversations/{conversationid}/message:
@@ -853,18 +837,12 @@ paths:
                     - userId: 1
                       name: "Luca"
                       photo: "abCacDFDGhj..."
-                      bio: "i'm working"
-                      number: "+3933333333"
                     - userId: 2
                       name: "Mia"
                       photo: "abCacDFDGhj..."
-                      bio: "i love dogs"
-                      number: "+3933333344"
                     - userId: 3
                       name: "Marcello"
                       photo: "abCacDFDGhj..."
-                      bio: "i love cats"
-                      number: "+3933343344"
 
   #leaveGroup 
     delete:
@@ -1095,7 +1073,7 @@ paths:
                   description:  list of user 
                   type: object
                   properties:
-                    userIds: 
+                    users: 
                       description: list of user ids
                       type: array
                       minItems: 0

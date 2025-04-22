@@ -31,7 +31,7 @@ func (db *appdbimpl) GetSpecificConversation(conversationId int) (Conversation, 
 	for _, id := range membersIdList {
 		var utente User
 		utente.Id = id
-		err = db.c.QueryRow("SELECT name,photo,bio,number FROM users_table WHERE id=?", id).Scan(&utente.Name, &utente.Photo, &utente.Bio, &utente.Number)
+		err = db.c.QueryRow("SELECT name,photo FROM users_table WHERE id=?", id).Scan(&utente.Name, &utente.Photo)
 		finalMembers = append(finalMembers, utente)
 	}
 	conversation.Members = finalMembers

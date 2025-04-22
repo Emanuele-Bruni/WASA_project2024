@@ -43,11 +43,9 @@ var DefaultContactPhoto = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAATlBMV
 
 // Faccio i diversi schemas
 type User struct {
-	Id     int    `json:"userId"`
-	Name   string `json:"name"`
-	Photo  string `json:"photo"`
-	Bio    string `json:"bio"`
-	Number string `json:"number"`
+	Id    int    `json:"userId"`
+	Name  string `json:"name"`
+	Photo string `json:"photo"`
 }
 type Conversation struct {
 	ConversationId int    `json:"conversationId"`
@@ -126,8 +124,6 @@ func New(db *sql.DB) (AppDatabase, error) {
 		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 												name TEXT,
 												photo TEXT,
-												bio TEXT, 
-												number TEXT,
 												conversation_ids TEXT);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
