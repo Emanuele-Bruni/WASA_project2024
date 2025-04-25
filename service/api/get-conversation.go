@@ -42,6 +42,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 	if !found {
 		http.Error(w, "Utente non appartiene alla conversazione", http.StatusForbidden)
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
+		return
 	}
 	// prendo la conversazione dalla tabella con una funzione
 	conversation, err := rt.db.GetSpecificConversation(cnvId)

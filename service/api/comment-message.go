@@ -106,6 +106,18 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.Error("Autore ed emoji non possono essere vuoti")
 		return
 	}
+	//controllo che l'autore sia quello giusto -> prende il nome dell'utente dall'id e lo compara
+	username, err := rt.db.GetNameById(id)
+	if err != nil {
+		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
+		ctx.Logger.Error("Errore durante la selezione del nome utente corrente")
+		return
+	}
+	if username != requestBody.Author {
+		http.Error(w, "Autore non corretto", http.StatusBadRequest)
+		ctx.Logger.Error("L'utente corrente deve corrispondere all'autore")
+		return
+	}
 	//controllo pattern emoji
 	emojiRegex := regexp.MustCompile(`^\p{So}+$`)
 	matched := emojiRegex.MatchString(requestBody.Emoji)

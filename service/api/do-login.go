@@ -67,5 +67,5 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 	}
 
 	//Logga il successo
-	ctx.Logger.Infof("Login succesful: %s", requestBody.Name)
+	ctx.Logger.Infof("Login succesful: %s, %v", requestBody.Name, loginResponse.Identifier)
 }

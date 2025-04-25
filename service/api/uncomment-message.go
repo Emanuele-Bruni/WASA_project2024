@@ -116,6 +116,25 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		ctx.Logger.Error("Errore perché il commento non appartiene al messaggio")
 		return
 	}
+	//controllo che chi sta cercando di eliminare il commento sia l'autore
+	username, err := rt.db.GetNameById(id)
+	if err != nil {
+		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
+		ctx.Logger.Error("Errore durante la selezione del nome utente corrente")
+		return
+	}
+	//FUNZION CHECK COMMENT AUTHOR
+	matched, err := rt.db.CheckAuthorComment(commentId, username)
+	if err != nil {
+		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
+		ctx.Logger.Error("Errore durante il controllo dell'autore")
+		return
+	}
+	if !matched {
+		http.Error(w, "Utente non autorizzato", http.StatusUnauthorized)
+		ctx.Logger.Error("Un utente non può rimuovere un commento non suo")
+		return
+	}
 
 	//rimuovo il commento dal messaggio tramite la funzione
 	err = rt.db.DeleteComment(commentId)
