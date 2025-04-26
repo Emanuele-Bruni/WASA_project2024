@@ -25,6 +25,18 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 		Title string `json:"title"`
 		Users []int  `json:"users"`
 	}{}
+	//decodifico la richiesta secondo il requestBody
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
+		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
+		return
+	}
+	//controllo che i valori passati siano validi
+	if len(requestBody.Title) < 1 || len(requestBody.Title) > 16 || len(requestBody.Users) < 2 || len(requestBody.Users) > 16 {
+		http.Error(w, "Valori non accettabili", http.StatusBadRequest)
+		ctx.Logger.WithError(err).Error("Lunghezza dei valori errata")
+		return
+	}
 
 	//creo il gruppo e ritorno l'id
 	groupId, err := rt.db.CreateGroup(requestBody.Title, requestBody.Users, id)

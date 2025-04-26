@@ -13,21 +13,21 @@ func (rt *_router) Handler() http.Handler {
 	//EndPoints
 	rt.router.POST("/login", rt.wrap(rt.doLogin))                                                                            //OK
 	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName))                                                           //OK
-	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))                                                          //?? con i gruppi
-	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))                                             //?? con i gruppi
+	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))                                                          //OK
+	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))                                             //OK
 	rt.router.POST("/conversations/:conversationid/message", rt.wrap(rt.sendMessage))                                        //OK
 	rt.router.POST("/conversations/:conversationid/messages/:messageid/forward/:forwardid", rt.wrap(rt.forwardMessage))      //OK
 	rt.router.POST("/conversations/:conversationid/messages/:messageid/comments", rt.wrap(rt.commentMessage))                //OK
 	rt.router.DELETE("/conversations/:conversationid/messages/:messageid/comments/:commentid", rt.wrap(rt.uncommentMessage)) //OK
 	rt.router.DELETE("/conversations/:conversationid/messages/:messageid", rt.wrap(rt.deleteMessage))                        //OK
-	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))
+	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))                                          //OK
 	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))
 	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))
 	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	rt.router.PUT("/conversations/:conversationid/photo", rt.wrap(rt.setGroupPhoto))
 	rt.router.GET("/users", rt.wrap(rt.getUsers))                 //OK
 	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation)) //OK
-	rt.router.POST("/conversations", rt.wrap(rt.newGroup))        //??
+	rt.router.POST("/conversations", rt.wrap(rt.newGroup))        //OK
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)

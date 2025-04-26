@@ -13,7 +13,6 @@ import (
 
 func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo l'id utente e vedo se è autorizzato
-	//ctx.Logger.Infof("Token: %s", r.Header.Get("Authorization"))
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	userId1, err := strconv.Atoi(token)
 	if err != nil {

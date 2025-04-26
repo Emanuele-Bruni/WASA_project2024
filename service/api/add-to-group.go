@@ -2,6 +2,7 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
+	"WASA_project2024/service/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 
 func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)
@@ -62,14 +63,15 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.Error("La conversazione indicata non è un gruppo")
 		return
 	}
+
 	//requestBody con l'userId da aggiungere
 	var requestBody = struct {
 		UserId int `json:"user"`
 	}{}
 	//decodifico la richiesta secondo il requestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           //tipo di errore
-		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody") //descrizione errore
+		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
+		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
 	//controllo se l'userId esiste
@@ -84,6 +86,19 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.WithError(err).Error("L'userId è di un utente che non esiste")
 		return
 	}
+	//controllo che l'utente non sia già nel gruppo (che controlla automaticamente che non stia aggiungendo me stesso)
+	presente, err := rt.db.CheckUser_Conversation(cnvId, requestBody.UserId)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore durante la verifica che l'utente da aggiungere sia già presente o meno")
+		return
+	}
+	if presente {
+		http.Error(w, "Utente già nel gruppo", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("L'utente che stai cercando di aggiungere è già nel gruppo")
+		return
+	}
+
 	//aggiungo l'utente al gruppo
 	err = rt.db.AddUserToGroup(requestBody.UserId, cnvId)
 	if err != nil {
@@ -108,15 +123,21 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 	}
 
 	//responso finale
+	var addToGroupResponse = struct {
+		Members []database.User `json:"members"`
+	}{
+		Members: utenti,
+	}
+
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(utenti); err != nil {
+	if err := json.NewEncoder(w).Encode(addToGroupResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 
 	//Log del successo
-	ctx.Logger.Infof("Membro aggiunto correttamente: %s", requestBody.UserId)
+	ctx.Logger.Infof("Membro aggiunto correttamente: %v", requestBody.UserId)
 
 }
