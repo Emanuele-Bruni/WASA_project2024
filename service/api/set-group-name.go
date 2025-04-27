@@ -12,7 +12,7 @@ import (
 
 func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 	//calcolo id e vedo se autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "bearerAuth ")
+	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
 		ctx.Logger.Error("Token must be a number: ", err)

@@ -21,8 +21,8 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/conversations/:conversationid/messages/:messageid/comments/:commentid", rt.wrap(rt.uncommentMessage)) //OK
 	rt.router.DELETE("/conversations/:conversationid/messages/:messageid", rt.wrap(rt.deleteMessage))                        //OK
 	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))                                          //OK
-	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))
-	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))
+	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))                                       //OK
+	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))                                           //OK
 	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	rt.router.PUT("/conversations/:conversationid/photo", rt.wrap(rt.setGroupPhoto))
 	rt.router.GET("/users", rt.wrap(rt.getUsers))                 //OK

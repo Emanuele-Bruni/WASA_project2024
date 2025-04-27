@@ -42,7 +42,7 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 	groupId, err := rt.db.CreateGroup(requestBody.Title, requestBody.Users, id)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la creazione del gruppo: ", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Impossible to add yourself into a group", http.StatusInternalServerError)
 		return
 	}
 	//devo ritornare il gruppo -> richiamo la funzione GetConversation
