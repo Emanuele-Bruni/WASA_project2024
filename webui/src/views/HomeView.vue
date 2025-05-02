@@ -8,20 +8,13 @@ export default {
 		}
 	},
 	methods: {
-		async refresh() {
-			this.loading = true;
-			this.errormsg = null;
-			try {
-				let response = await this.$axios.get("/");
-				this.some_data = response.data;
-			} catch (e) {
-				this.errormsg = e.toString();
-			}
-			this.loading = false;
-		},
+		logout(){
+			localStorage.removeItem("auth")
+			localStorage.removeItem("id")
+			this.$router.push("/login") //torno al login
+		}
 	},
 	mounted() {
-		this.refresh()
 	}
 }
 </script>
@@ -41,8 +34,8 @@ export default {
 					</button>
 				</div>
 				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
+					<button type="button" class="btn btn-sm btn-outline-danger" @click="logout">
+						Logout
 					</button>
 				</div>
 			</div>
