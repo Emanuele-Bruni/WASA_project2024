@@ -39,7 +39,7 @@ export default {
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		<div class="subcontent"> 
 			<form id="loginForm" @submit.prevent="doLogin">
-			<p> Accedi o Crea un nuovo utente </p>
+			<p>Accedi o Crea un nuovo utente </p>
 			<input class="input" type="text" id="username" v-model="username" placeholder="Inserisci il tuo username" required>
 			<button class="inputButton" type="submit"> Accedi </button>
 			</form>
@@ -54,44 +54,58 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	background-color: rgb(233, 239, 243);
 }
 .subcontent{
-	margin-top: 10rem;
-	margin-bottom: 10rem;
+	margin-top: 4%;
 	align-content: center;
 	text-align: center;
 }
 h1 {
-	margin-top: 2rem;
+	margin-top: 5rem;
 	text-align: center;
 	color: rgb(4, 103, 133);
 	text-shadow: 2px 2px 5px rgba(12, 92, 197, 0.3);
+	font-size: 7rem;
 }
 hr {
-	width: 70%;
+	width: 50%;
 	margin: auto;
 }
-
+p {
+	font-size: 1.4rem;
+	font-family: "SF Pro";
+	color: rgb(4, 78, 100); 
+}
 .inputButton {
 	text-align: center;
 	font-family: "SF Pro";
+	color: rgb(4, 66, 85); 
 	background-color: #bad4e9;
 	border: 2px solid rgb(4, 103, 133);
-	border-radius: 0.5rem;
+	border-radius: 1rem;
 	padding: 0.875rem;
 	width: 100%;
 	margin-top: 1rem;
 	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+}
+.inputButton:hover{
+	background-color:rgb(10, 146, 187);
+	color: white;
+}
+.inputButton:active{
+	box-shadow: 
+	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
+	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
+	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
+	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
 }
 
 .input {
   font-family: "SF Pro";
   width: 100%;
   padding: 0.875rem;
-  /*font-size: 1rem;*/
   border: 2px solid rgb(4, 103, 133);
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   box-shadow: 1px 3px 0 rgb(4, 103, 133);
   outline: none;
   transition: ease 0.25s;
