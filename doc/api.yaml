@@ -32,7 +32,7 @@ components:
           description: photo
           format: binary
           minLength: 0
-          maxLength: 1398101
+          maxLength: 500000
           example: "abcDFHDIaaaz..."
 
     Conversation:
@@ -58,7 +58,7 @@ components:
           format: binary
           example: "abcDFHDIaaaz..."
           minLength: 0
-          maxLength: 1398101
+          maxLength: 500000
         members:
           type: array
           minItems: 2
@@ -143,58 +143,58 @@ components:
           maxLength: 1000
           pattern: "^.*?$"
           example: "Internal Server Error"
-    
+  
   #PARAMETERS               
   parameters:
     userId:
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 999
+      name: userid
+      in: path
       required: true
       description: user identifier
-      in: path
-      name: userid
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999
     
     conversationId:
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 999
+      name: conversationid
+      in: path
       required: true
       description: conversation identifier
-      in: path
-      name: conversationid
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 999
     
     messageId:
+      name: messageid
+      in: path
+      required: true
+      description: message identifier
       schema:
         type: integer
         minimum: 1
         maximum: 999
-      description: message identifier
-      required: true
-      in: path
-      name: messageid
       
     commentId:
+      name: commentid
+      in: path
+      required: true
+      description: comment identifier
       schema:
         type: integer
         minimum: 1
         maximum: 999
-      description: comment identifier
-      required: true
-      in: path
-      name: commentid
 
     forwardId:
+      name: forwardid
+      in: path
+      required: true
+      description: identifies which conversation to send the message to
       schema:
         type: integer
         minimum: 1
         maximum: 999
-      description: identifies which conversation to send the message to
-      required: true
-      in: path
-      name: forwardid
 
   #SECURITY
   securitySchemes:
