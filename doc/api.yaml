@@ -504,7 +504,7 @@ paths:
                       photo: "nsadoNISABDnsd..."
           
   #sendMessage 
-  /conversations/{conversationid}/message:
+  /conversations/{conversationid}/messages:
     parameters:
       - $ref: "#/components/parameters/conversationId"
     post:
