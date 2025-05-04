@@ -15,12 +15,10 @@ export default {
                 if (response) {
                     let auth = response.headers.authorization;   //let definisce una variabile 
 				    localStorage.setItem("auth",auth)           //lo salvo nella cronologia (per prenderlo si usa getItem)
-
                     let identifier = response.data.identifier;  //setto il responso .data["identifier"]
                     localStorage.setItem("id",identifier)
-
                     //vado in un'altra pagina
-                    this.$router.push("/home") //path della prossima pagina
+                    this.$router.push("/conversations") //path della prossima pagina
                 }
 			} catch (e) {
 				this.errormsg = e.toString();
