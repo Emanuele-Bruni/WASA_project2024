@@ -57,7 +57,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 	//la risposta sarà in formato JSON, impostando il content-type della risposta
 	w.Header().Set("content-type", "application/json")
 	w.Header().Set("Authorization", fmt.Sprintf("bearerAuth: %d", loginResponse.Identifier))
-	w.WriteHeader(http.StatusCreated)
+	//w.WriteHeader(http.StatusCreated)
 
 	//json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
 	if err := json.NewEncoder(w).Encode(loginResponse); err != nil {

@@ -12,11 +12,16 @@ export default {
 			//console.log(this.username)
 			try {
 				let response = await this.$axios.post("/login", {name: this.username}); //path dell'endpoint
-                if (response) {
+				console.log("Login response headers:", response.headers);
+				//console.log("Login response data:", response.data);
+                if (response.data) {
+					console.log("Response: ",response)
                     let auth = response.headers.authorization;   //let definisce una variabile 
 				    localStorage.setItem("auth",auth)           //lo salvo nella cronologia (per prenderlo si usa getItem)
+					console.log("Auth: ",auth);
                     let identifier = response.data.identifier;  //setto il responso .data["identifier"]
                     localStorage.setItem("id",identifier)
+					console.log("Id: ",identifier);
                     //vado in un'altra pagina
                     this.$router.push("/conversations") //path della prossima pagina
                 }

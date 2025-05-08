@@ -3,6 +3,8 @@ export default {
     data: function() {
         return {
 			errormsg: null,
+			ids: [],
+			names: []
 		}
     },
     methods: {
@@ -14,11 +16,26 @@ export default {
         settingsSection(){
 			this.$router.push("/settings")
 		},
-        conversationsSection(){
+        conversationsSection(){	
             this.$router.push("/conversations")
-        }
+        },
+		async getAllUsers() {
+			this.errormsg = null	
+			try{
+				//console.log("Authorization Header:", localStorage.getItem("auth"));
+				let response = await this.$axios.get("/users", {headers:{Authorization: localStorage.getItem("id")}});
+				console.log("Response Data: ",response.data);
+				if(response) {
+					this.ids = response.data.Ids;
+					this.names = response.data.Names;
+				}
+			} catch(e){
+				this.errormsg = e.toString();
+			}
+		}
     },
     mounted() {
+		this.getAllUsers();
     }
 }
 </script>
@@ -31,11 +48,21 @@ export default {
 			<button type="button" class="logoutButton" @click="logout"> Logout </button>
 		</div> 
 	</div>
+	<div class="userList">
+		<UserItem v-for="(name,index) in names" :key="ids[index]" :username="name"> </UserItem>
+	</div>
 	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 
 
 <style scoped>
+.userList{
+	margin-top: 100px; /* o quanto è alta la tua navbar */
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+}
 .navbar{
 	background-color: rgb(178, 207, 233);
 	padding: 0.75rem 1rem;
