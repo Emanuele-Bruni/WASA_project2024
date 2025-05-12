@@ -3,7 +3,8 @@ export default {
 	data: function() {
 		return {
 			errormsg: null, //variabili globali 
-            username: ""
+            username: "",
+			successmsg: null
 		}
 	},
 	methods: {
@@ -12,18 +13,24 @@ export default {
 			//console.log(this.username)
 			try {
 				let response = await this.$axios.post("/login", {name: this.username}); //path dell'endpoint
-				console.log("Login response headers:", response.headers);
+				//console.log("Login response headers:", response.headers);
 				//console.log("Login response data:", response.data);
                 if (response.data) {
-					console.log("Response: ",response)
+					//console.log("Response: ",response)
                     let auth = response.headers.authorization;   //let definisce una variabile 
 				    localStorage.setItem("auth",auth)           //lo salvo nella cronologia (per prenderlo si usa getItem)
-					console.log("Auth: ",auth);
+					//console.log("Auth: ",auth);
                     let identifier = response.data.identifier;  //setto il responso .data["identifier"]
                     localStorage.setItem("id",identifier)
-					console.log("Id: ",identifier);
-                    //vado in un'altra pagina
-                    this.$router.push("/conversations") //path della prossima pagina
+					//console.log("Id: ",identifier);
+					localStorage.setItem("username",this.username)
+
+					this.successmsg = "Login effettuato con successo!";
+					setTimeout(()=> {
+						this.successmsg = null;
+						//vado in un'altra pagina
+						this.$router.push("/conversations") //path della prossima pagina
+					},500);								//1 secondo di attesa prima del redirect
                 }
 			} catch (e) {
 				this.errormsg = e.toString();
@@ -39,7 +46,8 @@ export default {
 	<div class="content">
 		<h1> WasaText </h1> 
 		<hr>
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+		<ErrorMsg v-if="errormsg" :msg="errormsg"/>
+		<SuccessMsg v-if="successmsg" :msg="successmsg" />
 		<div class="subcontent"> 
 			<form id="loginForm" @submit.prevent="doLogin">
 			<p>Accedi o Crea un nuovo utente </p>

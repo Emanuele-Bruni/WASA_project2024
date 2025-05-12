@@ -3,6 +3,9 @@ export default {
     data: function() {
         return {
 			errormsg: null,
+			username:"",
+			newUsername:"",
+			successmsg : null,
 		}
     },
     methods: {
@@ -16,9 +19,35 @@ export default {
 		},
         conversationsSection(){
             this.$router.push("/conversations")
-        }
+        },
+		async setUsername(){
+			this.successmsg = null;
+			this.errormsg = null;
+			const token = localStorage.getItem("id");
+			if(!token){
+				this.errormsg = "Utente non autenticato";
+				return
+			}
+			try {
+				let response = await this.$axios.put("/settings/username",
+				{username: this.newUsername},{headers:{Authorization: localStorage.getItem("id")}});
+				console.log("Response Data: ",response.data);
+				if(response){
+					this.successmsg = "Username aggiornato con successo!";
+					localStorage.setItem("username",response.data.username);
+					this.username = response.data.username;
+
+					setTimeout(()=> {this.successmsg=null},1000);
+				}
+			}catch(e){
+				this.errormsg = e.toString();
+			}
+		}
     },
     mounted() {
+		const savedUsername = localStorage.getItem("username") || "";
+		this.username = savedUsername;
+		this.newUsername = savedUsername;
     }
 }
 </script>
@@ -31,11 +60,45 @@ export default {
 			<button type="button" class="logoutButton" @click="logout"> Logout </button>
 		</div> 
 	</div>
+	<div class="settings">
+		<div>
+			<p>Modifica la tua foto </p>
+			<!-- CERCHIO PER IMPOSTARE LA FOTO CHE VOGLIO IN ANTEPRIMA-->
+			<p>Modifica il tuo username </p>
+			<!-- BARRA PER IMPOSTARE USERNAME-->
+			<form id="newUsernameForm" @submit.prevent="setUsername">
+				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
+            </form>	
+			<SuccessMsg v-if="successmsg" :msg="successmsg" />
+		</div>
+	</div>
 	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 
 
 <style scoped>
+input{
+	font-family: "SF Pro";
+	width: 100%;
+	padding: 0.875rem;
+	border: 2px solid rgb(4, 103, 133);
+	border-radius: 1rem;
+	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+	outline: none;
+	transition: ease 0.25s;
+}
+p{
+	font-size: 1.4rem;
+	font-family: "SF Pro";
+	color: rgb(4, 78, 100); 
+}
+.settings{
+	margin-top: 100px;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+}
 .navbar{
 	background-color: rgb(178, 207, 233);
 	padding: 0.75rem 1rem;

@@ -7,12 +7,12 @@ import Settings from '../views/Settings.vue'
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
 	routes: [
+		{path : '/', redirect:'/login'},
 		{path: '/login',component: Login},
 		{path: '/conversations', component: Conversations},
 		{path: '/users', component: Users},
 		{path: '/settings', component: Settings},
 		//{path: '/some/:id/link', component: HomeView},
-		//{path : '/', component:}
 	]
 })
 
