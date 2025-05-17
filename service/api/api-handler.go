@@ -11,23 +11,23 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/context", rt.wrap(rt.getContextReply))
 
 	//EndPoints
-	rt.router.POST("/login", rt.wrap(rt.doLogin))                                                                            //OK
-	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName))                                                           //OK
-	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))                                                          //OK
-	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))                                             //OK
-	rt.router.POST("/conversations/:conversationid/messages", rt.wrap(rt.sendMessage))                                       //OK
-	rt.router.POST("/conversations/:conversationid/messages/:messageid/forward/:forwardid", rt.wrap(rt.forwardMessage))      //OK
-	rt.router.POST("/conversations/:conversationid/messages/:messageid/comments", rt.wrap(rt.commentMessage))                //OK
-	rt.router.DELETE("/conversations/:conversationid/messages/:messageid/comments/:commentid", rt.wrap(rt.uncommentMessage)) //OK
-	rt.router.DELETE("/conversations/:conversationid/messages/:messageid", rt.wrap(rt.deleteMessage))                        //OK
-	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))                                          //OK
-	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))                                       //OK
-	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))                                           //OK
+	rt.router.POST("/login", rt.wrap(rt.doLogin))
+	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName))
+	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))
+	rt.router.GET("/conversations/:conversationid", rt.wrap(rt.getConversation))
+	rt.router.POST("/conversations/:conversationid/messages", rt.wrap(rt.sendMessage))
+	rt.router.POST("/conversations/:conversationid/messages/:messageid/forward/:forwardid", rt.wrap(rt.forwardMessage))
+	rt.router.POST("/conversations/:conversationid/messages/:messageid/comments", rt.wrap(rt.commentMessage))
+	rt.router.DELETE("/conversations/:conversationid/messages/:messageid/comments/:commentid", rt.wrap(rt.uncommentMessage))
+	rt.router.DELETE("/conversations/:conversationid/messages/:messageid", rt.wrap(rt.deleteMessage))
+	rt.router.PUT("/conversations/:conversationid/members", rt.wrap(rt.addToGroup))
+	rt.router.DELETE("/conversations/:conversationid/members", rt.wrap(rt.leaveGroup))
+	rt.router.PUT("/conversations/:conversationid/name", rt.wrap(rt.setGroupName))
 	rt.router.PUT("/settings/photo", rt.wrap(rt.setMyPhoto))
 	rt.router.PUT("/conversations/:conversationid/photo", rt.wrap(rt.setGroupPhoto))
-	rt.router.GET("/users", rt.wrap(rt.getUsers))                 //OK
-	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation)) //OK
-	rt.router.POST("/conversations", rt.wrap(rt.newGroup))        //OK
+	rt.router.GET("/users", rt.wrap(rt.getUsers))
+	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation))
+	rt.router.POST("/conversations", rt.wrap(rt.newGroup))
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
