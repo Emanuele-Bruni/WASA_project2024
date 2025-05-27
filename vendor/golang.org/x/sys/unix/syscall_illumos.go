@@ -4,7 +4,7 @@
 
 // illumos system calls not present on Solaris.
 
-//go:build amd64 && illumos
+// go:build amd64 && illumos
 // +build amd64,illumos
 
 package unix
@@ -28,7 +28,7 @@ func bytes2iovec(bs [][]byte) []Iovec {
 	return iovecs
 }
 
-//sys	readv(fd int, iovs []Iovec) (n int, err error)
+// sys	readv(fd int, iovs []Iovec) (n int, err error)
 
 func Readv(fd int, iovs [][]byte) (n int, err error) {
 	iovecs := bytes2iovec(iovs)
@@ -36,7 +36,7 @@ func Readv(fd int, iovs [][]byte) (n int, err error) {
 	return n, err
 }
 
-//sys	preadv(fd int, iovs []Iovec, off int64) (n int, err error)
+// sys	preadv(fd int, iovs []Iovec, off int64) (n int, err error)
 
 func Preadv(fd int, iovs [][]byte, off int64) (n int, err error) {
 	iovecs := bytes2iovec(iovs)
@@ -44,7 +44,7 @@ func Preadv(fd int, iovs [][]byte, off int64) (n int, err error) {
 	return n, err
 }
 
-//sys	writev(fd int, iovs []Iovec) (n int, err error)
+// sys	writev(fd int, iovs []Iovec) (n int, err error)
 
 func Writev(fd int, iovs [][]byte) (n int, err error) {
 	iovecs := bytes2iovec(iovs)
@@ -52,7 +52,7 @@ func Writev(fd int, iovs [][]byte) (n int, err error) {
 	return n, err
 }
 
-//sys	pwritev(fd int, iovs []Iovec, off int64) (n int, err error)
+// sys	pwritev(fd int, iovs []Iovec, off int64) (n int, err error)
 
 func Pwritev(fd int, iovs [][]byte, off int64) (n int, err error) {
 	iovecs := bytes2iovec(iovs)
@@ -60,7 +60,7 @@ func Pwritev(fd int, iovs [][]byte, off int64) (n int, err error) {
 	return n, err
 }
 
-//sys	accept4(s int, rsa *RawSockaddrAny, addrlen *_Socklen, flags int) (fd int, err error) = libsocket.accept4
+// sys	accept4(s int, rsa *RawSockaddrAny, addrlen *_Socklen, flags int) (fd int, err error) = libsocket.accept4
 
 func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
 	var rsa RawSockaddrAny
@@ -80,7 +80,7 @@ func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
 	return
 }
 
-//sys	putmsg(fd int, clptr *strbuf, dataptr *strbuf, flags int) (err error)
+// sys	putmsg(fd int, clptr *strbuf, dataptr *strbuf, flags int) (err error)
 
 func Putmsg(fd int, cl []byte, data []byte, flags int) (err error) {
 	var clp, datap *strbuf
@@ -99,7 +99,7 @@ func Putmsg(fd int, cl []byte, data []byte, flags int) (err error) {
 	return putmsg(fd, clp, datap, flags)
 }
 
-//sys	getmsg(fd int, clptr *strbuf, dataptr *strbuf, flags *int) (err error)
+// sys	getmsg(fd int, clptr *strbuf, dataptr *strbuf, flags *int) (err error)
 
 func Getmsg(fd int, cl []byte, data []byte) (retCl []byte, retData []byte, flags int, err error) {
 	var clp, datap *strbuf

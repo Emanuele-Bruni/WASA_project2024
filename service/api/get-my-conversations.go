@@ -13,8 +13,8 @@ import (
 )
 
 func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	//non ho nessun requestBody
-	//Calcolo l'id del nome utente da modificare nella tabella
+	// non ho nessun requestBody
+	// Calcolo l'id del nome utente da modificare nella tabella
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -25,7 +25,7 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ 
 
 	allMyConversations, err := rt.db.GetConversations(id)
 	if err != nil {
-		//controllo se l'errore è dovuto alla mancanza di conversazioni
+		// controllo se l'errore è dovuto alla mancanza di conversazioni
 		if errors.Is(err, database.ErrNoConversation) {
 			http.Error(w, "L'utente non ha conversazioni", http.StatusNotFound)
 			ctx.Logger.WithError(err).Error("Error finding conversations")
@@ -43,17 +43,17 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ 
 		AllMyConversations: allMyConversations,
 	}
 
-	//ritorno le conversazioni dall'id utente tramite la funzione che creo nel database
+	// ritorno le conversazioni dall'id utente tramite la funzione che creo nel database
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	//json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
+	// json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
 	if err := json.NewEncoder(w).Encode(responseConversations); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 
-	//successo
+	// successo
 	ctx.Logger.Infof("Conversazioni ricevute")
 }

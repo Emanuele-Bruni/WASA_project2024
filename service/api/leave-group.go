@@ -10,7 +10,7 @@ import (
 )
 
 func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'utente e vedo se è autorizzato
+	// calcolo l'utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -18,10 +18,10 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, p httprout
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//controllo se la conversazione esiste
+	// controllo se la conversazione esiste
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -37,7 +37,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 		return
 	}
-	//controllo se la conversazione è un gruppo
+	// controllo se la conversazione è un gruppo
 	isGroup, err := rt.db.Conversation_isGroup(cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del gruppo", http.StatusInternalServerError)
@@ -69,7 +69,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.WithError(err).Error("Errore durante la rimozione del gruppo dalle conversazioni dell'utente")
 		return
 	}
-	//rimuovere l'utente dai membri della conversazione
+	// rimuovere l'utente dai membri della conversazione
 	err = rt.db.RemoveMemberFromGroup(id, cnvId)
 	if err != nil {
 		http.Error(w, "Utente non rimosso", http.StatusInternalServerError)

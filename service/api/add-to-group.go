@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'id utente e vedo se è autorizzato
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,10 +20,10 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//controllo se la conversazione esiste
+	// controllo se la conversazione esiste
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -39,7 +39,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 		return
 	}
-	//controllo se la conversazione è un gruppo
+	// controllo se la conversazione è un gruppo
 	isGroup, err := rt.db.Conversation_isGroup(cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del gruppo", http.StatusInternalServerError)
@@ -64,17 +64,17 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	//requestBody con l'userId da aggiungere
+	// requestBody con l'userId da aggiungere
 	var requestBody = struct {
 		UserId int `json:"user"`
 	}{}
-	//decodifico la richiesta secondo il requestBody
+	// decodifico la richiesta secondo il requestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo se l'userId esiste
+	// controllo se l'userId esiste
 	exists, err = rt.db.CheckUserId(requestBody.UserId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo dell'utente da aggiungere", http.StatusInternalServerError)
@@ -86,7 +86,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		ctx.Logger.WithError(err).Error("L'userId è di un utente che non esiste")
 		return
 	}
-	//controllo che l'utente non sia già nel gruppo (che controlla automaticamente che non stia aggiungendo me stesso)
+	// controllo che l'utente non sia già nel gruppo (che controlla automaticamente che non stia aggiungendo me stesso)
 	presente, err := rt.db.CheckUser_Conversation(cnvId, requestBody.UserId)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	//aggiungo l'utente al gruppo
+	// aggiungo l'utente al gruppo
 	err = rt.db.AddUserToGroup(requestBody.UserId, cnvId)
 	if err != nil {
 		http.Error(w, "Utente non aggiunto", http.StatusInternalServerError)
@@ -107,7 +107,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	//devo restituire una lista di utenti -> faccio una funzione GetConversationMembers che ritorna una lista di id dei membri
+	// devo restituire una lista di utenti -> faccio una funzione GetConversationMembers che ritorna una lista di id dei membri
 	membri, err := rt.db.GetConversationMembers(cnvId)
 	if err != nil {
 		http.Error(w, "Membri non calcolati", http.StatusInternalServerError)
@@ -122,7 +122,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	//responso finale
+	// responso finale
 	var addToGroupResponse = struct {
 		Members []database.User `json:"members"`
 	}{
@@ -137,7 +137,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	//Log del successo
+	// Log del successo
 	ctx.Logger.Infof("Membro aggiunto correttamente: %v", requestBody.UserId)
 
 }

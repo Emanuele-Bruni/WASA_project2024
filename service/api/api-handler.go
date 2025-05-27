@@ -10,7 +10,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/", rt.getHelloWorld)
 	rt.router.GET("/context", rt.wrap(rt.getContextReply))
 
-	//EndPoints
+	// EndPoints
 	rt.router.POST("/login", rt.wrap(rt.doLogin))
 	rt.router.PUT("/settings/username", rt.wrap(rt.setMyUserName))
 	rt.router.GET("/conversations", rt.wrap(rt.getMyConversations))

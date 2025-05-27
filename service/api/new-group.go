@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'id utente e vedo se è autorizzato
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,32 +20,32 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//requestBody con il titolo e un array di interi (sarebbero gli id degli utenti da aggiungere)
+	// requestBody con il titolo e un array di interi (sarebbero gli id degli utenti da aggiungere)
 	var requestBody = struct {
 		Title string `json:"title"`
 		Users []int  `json:"users"`
 	}{}
-	//decodifico la richiesta secondo il requestBody
+	// decodifico la richiesta secondo il requestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo che i valori passati siano validi
+	// controllo che i valori passati siano validi
 	if len(requestBody.Title) < 1 || len(requestBody.Title) > 16 || len(requestBody.Users) < 2 || len(requestBody.Users) > 16 {
 		http.Error(w, "Valori non accettabili", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Lunghezza dei valori errata")
 		return
 	}
 
-	//creo il gruppo e ritorno l'id
+	// creo il gruppo e ritorno l'id
 	groupId, err := rt.db.CreateGroup(requestBody.Title, requestBody.Users, id)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la creazione del gruppo: ", err)
 		http.Error(w, "Impossible to add yourself into a group", http.StatusInternalServerError)
 		return
 	}
-	//devo ritornare il gruppo -> richiamo la funzione GetConversation
+	// devo ritornare il gruppo -> richiamo la funzione GetConversation
 	gruppo, err := rt.db.GetSpecificConversation(groupId)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la selezione del nuovo gruppo: ", err)

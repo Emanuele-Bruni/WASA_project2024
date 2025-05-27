@@ -5,7 +5,7 @@ import (
 )
 
 func yaml_insert_token(parser *yaml_parser_t, pos int, token *yaml_token_t) {
-	//fmt.Println("yaml_insert_token", "pos:", pos, "typ:", token.typ, "head:", parser.tokens_head, "len:", len(parser.tokens))
+	// fmt.Println("yaml_insert_token", "pos:", pos, "typ:", token.typ, "head:", parser.tokens_head, "len:", len(parser.tokens))
 
 	// Check if we can move the queue at the beginning of the buffer.
 	if parser.tokens_head > 0 && len(parser.tokens) == cap(parser.tokens) {
@@ -173,9 +173,9 @@ func yaml_emitter_set_break(emitter *yaml_emitter_t, line_break yaml_break_t) {
 // * Destroy a token object.
 // */
 //
-//YAML_DECLARE(void)
-//yaml_token_delete(yaml_token_t *token)
-//{
+// YAML_DECLARE(void)
+// yaml_token_delete(yaml_token_t *token)
+// {
 //    assert(token);  // Non-NULL token object expected.
 //
 //    switch (token.type)
@@ -207,7 +207,7 @@ func yaml_emitter_set_break(emitter *yaml_emitter_t, line_break yaml_break_t) {
 //    }
 //
 //    memset(token, 0, sizeof(yaml_token_t));
-//}
+// }
 //
 ///*
 // * Check if a string is a valid UTF-8 sequence.
@@ -215,9 +215,9 @@ func yaml_emitter_set_break(emitter *yaml_emitter_t, line_break yaml_break_t) {
 // * Check 'reader.c' for more details on UTF-8 encoding.
 // */
 //
-//static int
-//yaml_check_utf8(yaml_char_t *start, size_t length)
-//{
+// static int
+// yaml_check_utf8(yaml_char_t *start, size_t length)
+// {
 //    yaml_char_t *end = start+length;
 //    yaml_char_t *pointer = start;
 //
@@ -252,7 +252,7 @@ func yaml_emitter_set_break(emitter *yaml_emitter_t, line_break yaml_break_t) {
 //    }
 //
 //    return 1;
-//}
+// }
 //
 
 // Create STREAM-START.
@@ -297,9 +297,9 @@ func yaml_document_end_event_initialize(event *yaml_event_t, implicit bool) {
 // * Create ALIAS.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_alias_event_initialize(event *yaml_event_t, anchor *yaml_char_t)
-//{
+// YAML_DECLARE(int)
+// yaml_alias_event_initialize(event *yaml_event_t, anchor *yaml_char_t)
+// {
 //    mark yaml_mark_t = { 0, 0, 0 }
 //    anchor_copy *yaml_char_t = NULL
 //
@@ -315,7 +315,7 @@ func yaml_document_end_event_initialize(event *yaml_event_t, implicit bool) {
 //    ALIAS_EVENT_INIT(*event, anchor_copy, mark, mark)
 //
 //    return 1
-//}
+// }
 
 // Create SCALAR.
 func yaml_scalar_event_initialize(event *yaml_event_t, anchor, tag, value []byte, plain_implicit, quoted_implicit bool, style yaml_scalar_style_t) bool {
@@ -378,13 +378,13 @@ func yaml_event_delete(event *yaml_event_t) {
 // * Create a document object.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_initialize(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_initialize(document *yaml_document_t,
 //        version_directive *yaml_version_directive_t,
 //        tag_directives_start *yaml_tag_directive_t,
 //        tag_directives_end *yaml_tag_directive_t,
 //        start_implicit int, end_implicit int)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -446,7 +446,7 @@ func yaml_event_delete(event *yaml_event_t) {
 //
 //    return 1
 //
-//error:
+// error:
 //    STACK_DEL(&context, nodes)
 //    yaml_free(version_directive_copy)
 //    while (!STACK_EMPTY(&context, tag_directives_copy)) {
@@ -459,15 +459,15 @@ func yaml_event_delete(event *yaml_event_t) {
 //    yaml_free(value.prefix)
 //
 //    return 0
-//}
+// }
 //
 ///*
 // * Destroy a document object.
 // */
 //
-//YAML_DECLARE(void)
-//yaml_document_delete(document *yaml_document_t)
-//{
+// YAML_DECLARE(void)
+// yaml_document_delete(document *yaml_document_t)
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -506,47 +506,47 @@ func yaml_event_delete(event *yaml_event_t) {
 //    yaml_free(document.tag_directives.start)
 //
 //    memset(document, 0, sizeof(yaml_document_t))
-//}
+// }
 //
 ///**
 // * Get a document node.
 // */
 //
-//YAML_DECLARE(yaml_node_t *)
-//yaml_document_get_node(document *yaml_document_t, index int)
-//{
+// YAML_DECLARE(yaml_node_t *)
+// yaml_document_get_node(document *yaml_document_t, index int)
+// {
 //    assert(document) // Non-NULL document object is expected.
 //
 //    if (index > 0 && document.nodes.start + index <= document.nodes.top) {
 //        return document.nodes.start + index - 1
 //    }
 //    return NULL
-//}
+// }
 //
 ///**
 // * Get the root object.
 // */
 //
-//YAML_DECLARE(yaml_node_t *)
-//yaml_document_get_root_node(document *yaml_document_t)
-//{
+// YAML_DECLARE(yaml_node_t *)
+// yaml_document_get_root_node(document *yaml_document_t)
+// {
 //    assert(document) // Non-NULL document object is expected.
 //
 //    if (document.nodes.top != document.nodes.start) {
 //        return document.nodes.start
 //    }
 //    return NULL
-//}
+// }
 //
 ///*
 // * Add a scalar node to a document.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_add_scalar(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_add_scalar(document *yaml_document_t,
 //        tag *yaml_char_t, value *yaml_char_t, length int,
 //        style yaml_scalar_style_t)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -581,21 +581,21 @@ func yaml_event_delete(event *yaml_event_t) {
 //
 //    return document.nodes.top - document.nodes.start
 //
-//error:
+// error:
 //    yaml_free(tag_copy)
 //    yaml_free(value_copy)
 //
 //    return 0
-//}
+// }
 //
 ///*
 // * Add a sequence node to a document.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_add_sequence(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_add_sequence(document *yaml_document_t,
 //        tag *yaml_char_t, style yaml_sequence_style_t)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -626,21 +626,21 @@ func yaml_event_delete(event *yaml_event_t) {
 //
 //    return document.nodes.top - document.nodes.start
 //
-//error:
+// error:
 //    STACK_DEL(&context, items)
 //    yaml_free(tag_copy)
 //
 //    return 0
-//}
+// }
 //
 ///*
 // * Add a mapping node to a document.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_add_mapping(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_add_mapping(document *yaml_document_t,
 //        tag *yaml_char_t, style yaml_mapping_style_t)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -671,21 +671,21 @@ func yaml_event_delete(event *yaml_event_t) {
 //
 //    return document.nodes.top - document.nodes.start
 //
-//error:
+// error:
 //    STACK_DEL(&context, pairs)
 //    yaml_free(tag_copy)
 //
 //    return 0
-//}
+// }
 //
 ///*
 // * Append an item to a sequence node.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_append_sequence_item(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_append_sequence_item(document *yaml_document_t,
 //        sequence int, item int)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -704,16 +704,16 @@ func yaml_event_delete(event *yaml_event_t) {
 //        return 0
 //
 //    return 1
-//}
+// }
 //
 ///*
 // * Append a pair of a key and a value to a mapping node.
 // */
 //
-//YAML_DECLARE(int)
-//yaml_document_append_mapping_pair(document *yaml_document_t,
+// YAML_DECLARE(int)
+// yaml_document_append_mapping_pair(document *yaml_document_t,
 //        mapping int, key int, value int)
-//{
+// {
 //    struct {
 //        error yaml_error_type_t
 //    } context
@@ -739,6 +739,6 @@ func yaml_event_delete(event *yaml_event_t) {
 //        return 0
 //
 //    return 1
-//}
+// }
 //
 //

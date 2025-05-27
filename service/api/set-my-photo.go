@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo userId e vedo se è autorizzato
+	// calcolo userId e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,7 +20,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//controllo che esista
+	// controllo che esista
 	idFound, err := rt.db.CheckUserId(id)
 	if err != nil {
 		ctx.Logger.Error("Errore nel controllare l'id utente: ", err)
@@ -33,7 +33,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		return
 	}
 
-	//requestBody con la foto nuova
+	// requestBody con la foto nuova
 	var requestBody = struct {
 		Photo string `json:"photo"`
 	}{}
@@ -42,7 +42,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo se va bene (se è lunga <=1000000, può essere anche vuota)
+	// controllo se va bene (se è lunga <=1000000, può essere anche vuota)
 	if len(requestBody.Photo) <= 1000000 {
 		http.Error(w, "Invalid photo", http.StatusBadRequest)
 		ctx.Logger.WithField("photo", requestBody.Photo).Error("Invalid length of field 'photo'")
@@ -53,7 +53,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		}
 	}
 
-	//aggiorno la foto
+	// aggiorno la foto
 	err = rt.db.SetMyPhoto(requestBody.Photo, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		return
 	}
 
-	//responso con la nuova foto
+	// responso con la nuova foto
 	var setMyPhotoResponse = struct {
 		Photo string `json:"photo"`
 	}{

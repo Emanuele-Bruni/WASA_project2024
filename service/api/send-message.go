@@ -14,7 +14,7 @@ import (
 
 func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
 
-	//estraggo userId e controllo se è autorizzato
+	// estraggo userId e controllo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -22,8 +22,8 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//funzione che ritorna il nome dell'userId
-	//autore = username dell'utente
+	// funzione che ritorna il nome dell'userId
+	// autore = username dell'utente
 	name, err := rt.db.GetNameById(id)
 	if err != nil {
 		http.Error(w, "Autore non identificato", http.StatusInternalServerError)
@@ -31,21 +31,21 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		return
 	}
 
-	//request body -> messaggio da inviare
+	// request body -> messaggio da inviare
 	var requestBody = struct {
 		Text string `json:"text"`
 	}{}
-	//decodifico la richiesta secondo il request body
+	// decodifico la richiesta secondo il request body
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
 
-	//prendo il conversation id dal path
+	// prendo il conversation id dal path
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -64,8 +64,8 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		return
 	}
 
-	//controllo se l'utente fa parte della conversazione
-	//funzione che controlla se l'utente è nella conversazione
+	// controllo se l'utente fa parte della conversazione
+	// funzione che controlla se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -101,16 +101,16 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, p httprou
 		FinalMessage: message,
 	}
 
-	//preparo l'header
+	// preparo l'header
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	//ritorno il risultato
+	// ritorno il risultato
 	if err := json.NewEncoder(w).Encode(messageResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
-	//Logga il successo
+	// Logga il successo
 	ctx.Logger.Infof("Messaggio inviato con successo: messaggio: %v, conversazione: %v", msgId, cnvId)
 
 }

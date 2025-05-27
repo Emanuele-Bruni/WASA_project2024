@@ -10,8 +10,8 @@ import (
 )
 
 func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//--------- CONTROLLI ---------
-	//calcolo l'id utente e vedo se è autorizzato
+	// --------- CONTROLLI ---------
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,10 +20,10 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
-	//CONTROLLI CONVERSAZIONE
+	// CONTROLLI CONVERSAZIONE
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -39,7 +39,7 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -52,10 +52,10 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
-	//CONTROLLI MESSAGGIO
+	// CONTROLLI MESSAGGIO
 	messageId, err := strconv.Atoi(p.ByName("messageid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("messageId parametro non valido")
 		return
@@ -71,7 +71,7 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		ctx.Logger.Error("messaggio inesistente")
 		return
 	}
-	//vedo se esiste nella conversazione
+	// vedo se esiste nella conversazione
 	messageFound, err := rt.db.CheckMessage_Conversation(messageId, cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del messaggio", http.StatusInternalServerError)
@@ -84,15 +84,15 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
-	//CONTROLLI COMMENTO
+	// CONTROLLI COMMENTO
 	commentId, err := strconv.Atoi(p.ByName("commentid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("commentId parametro non valido")
 		return
 	}
-	//vedo se esiste
+	// vedo se esiste
 	exists, err = rt.db.CommentExists(commentId)
 	if err != nil {
 		http.Error(w, "Errore interno nel controllo del commento", http.StatusInternalServerError)
@@ -104,7 +104,7 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		ctx.Logger.Error("commento inesistente")
 		return
 	}
-	//vedo se è di quel messaggio
+	// vedo se è di quel messaggio
 	commentFound, err := rt.db.CheckComment_Message(commentId, messageId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del commento", http.StatusInternalServerError)
@@ -116,14 +116,14 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		ctx.Logger.Error("Errore perché il commento non appartiene al messaggio")
 		return
 	}
-	//controllo che chi sta cercando di eliminare il commento sia l'autore
+	// controllo che chi sta cercando di eliminare il commento sia l'autore
 	username, err := rt.db.GetNameById(id)
 	if err != nil {
 		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
 		ctx.Logger.Error("Errore durante la selezione del nome utente corrente")
 		return
 	}
-	//FUNZION CHECK COMMENT AUTHOR
+	// FUNZION CHECK COMMENT AUTHOR
 	matched, err := rt.db.CheckAuthorComment(commentId, username)
 	if err != nil {
 		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
@@ -136,7 +136,7 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 
-	//rimuovo il commento dal messaggio tramite la funzione
+	// rimuovo il commento dal messaggio tramite la funzione
 	err = rt.db.DeleteComment(commentId)
 	if err != nil {
 		http.Error(w, "Errore durante la rimozione del commento", http.StatusInternalServerError)

@@ -11,7 +11,7 @@ import (
 )
 
 func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'id utente e vedo se è autorizzato
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,7 +20,7 @@ func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	//creo funzione che ritorna tutti gli utenti della tabella -> GetUsers
+	// creo funzione che ritorna tutti gli utenti della tabella -> GetUsers
 	ids, names, err := rt.db.GetAllUsers(id)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la selezione degli utenti: ", err)
@@ -28,7 +28,7 @@ func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	//devo restituire ids,names
+	// devo restituire ids,names
 	var userResponse = struct {
 		Ids   []int
 		Names []string

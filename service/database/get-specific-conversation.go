@@ -17,7 +17,7 @@ func (db *appdbimpl) GetSpecificConversation(conversationId int) (Conversation, 
 
 	var membersIdList []int
 	var finalMembers []User
-	//devo creare una lista di utenti
+	// devo creare una lista di utenti
 	parti := strings.Split(members, ",")
 	for _, id_stringa := range parti {
 		id, err := strconv.Atoi(id_stringa)
@@ -27,7 +27,7 @@ func (db *appdbimpl) GetSpecificConversation(conversationId int) (Conversation, 
 		membersIdList = append(membersIdList, id)
 	}
 
-	//ora prendo l'id e ritorno l'utente, aggiungendolo ai membri finali
+	// ora prendo l'id e ritorno l'utente, aggiungendolo ai membri finali
 	for _, id := range membersIdList {
 		var utente User
 		utente.Id = id

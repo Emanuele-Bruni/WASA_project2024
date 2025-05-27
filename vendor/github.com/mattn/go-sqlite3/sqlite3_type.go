@@ -40,7 +40,7 @@ func (rc *SQLiteRows) ColumnTypeNullable(i int) (nullable, ok bool) {
 
 // ColumnTypeScanType implement RowsColumnTypeScanType.
 func (rc *SQLiteRows) ColumnTypeScanType(i int) reflect.Type {
-	//ct := C.sqlite3_column_type(rc.s.s, C.int(i))  // Always returns 5
+	// ct := C.sqlite3_column_type(rc.s.s, C.int(i))  // Always returns 5
 	return scanType(C.GoString(C.sqlite3_column_decltype(rc.s.s, C.int(i))))
 }
 

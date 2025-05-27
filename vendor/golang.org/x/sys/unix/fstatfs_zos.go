@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build zos && s390x
+// go:build zos && s390x
 // +build zos,s390x
 
 package unix
@@ -49,7 +49,7 @@ func Fstatfs(fd int, stat *Statfs_t) (err error) {
 			default:
 				break
 			}
-			//proceed to return if: err is nil (found), err is nonnil but not ERANGE (another error occurred)
+			// proceed to return if: err is nil (found), err is nonnil but not ERANGE (another error occurred)
 			if err == nil || err != nil && err != ERANGE {
 				break
 			}

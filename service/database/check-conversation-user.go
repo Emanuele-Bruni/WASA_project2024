@@ -6,13 +6,13 @@ import (
 )
 
 func (db *appdbimpl) CheckUser_Conversation(cnvId int, userId int) (bool, error) {
-	//prendo la conversazioni dalla tabella e prendo i membri
+	// prendo la conversazioni dalla tabella e prendo i membri
 	var members string
 	err := db.c.QueryRow("SELECT members FROM conversations_table WHERE conversation_id=?", cnvId).Scan(&members)
 	if err != nil {
 		return false, err
 	}
-	//controllo se l'id è tra i membri
+	// controllo se l'id è tra i membri
 	ids := strings.Split(members, ",")
 	for _, val := range ids {
 		val1, err := strconv.Atoi(val)
@@ -23,6 +23,6 @@ func (db *appdbimpl) CheckUser_Conversation(cnvId int, userId int) (bool, error)
 			return true, nil
 		}
 	}
-	//non è tra i membri
+	// non è tra i membri
 	return false, nil
 }

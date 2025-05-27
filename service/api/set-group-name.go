@@ -11,7 +11,7 @@ import (
 )
 
 func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo id e vedo se autorizzato
+	// calcolo id e vedo se autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -19,10 +19,10 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//controllo se la conversazione esiste
+	// controllo se la conversazione esiste
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -38,7 +38,7 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -50,7 +50,7 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 		return
 	}
-	//controllo se la conversazione è un gruppo
+	// controllo se la conversazione è un gruppo
 	isGroup, err := rt.db.Conversation_isGroup(cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del gruppo", http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		return
 	}
 
-	//requestBody con groupName = il titolo del gruppo
+	// requestBody con groupName = il titolo del gruppo
 	var requestBody = struct {
 		GroupName string `json:"groupName"`
 	}{}
@@ -72,14 +72,14 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo che sia >1 e <16
+	// controllo che sia >1 e <16
 	if len(requestBody.GroupName) < 1 || len(requestBody.GroupName) > 16 {
 		http.Error(w, "Invalid Group Name", http.StatusBadRequest)
 		ctx.Logger.WithField("groupName", requestBody.GroupName).Error("Invalid length of field 'groupName'")
 		return
 	}
 
-	//aggiorno con una funzione -> SetGroupName(groupName, cnvId)
+	// aggiorno con una funzione -> SetGroupName(groupName, cnvId)
 	err = rt.db.SetGroupName(requestBody.GroupName, cnvId)
 	if err != nil {
 		http.Error(w, "Nome gruppo non modificato", http.StatusInternalServerError)
@@ -87,7 +87,7 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		return
 	}
 
-	//responso con il titolo
+	// responso con il titolo
 	var setGroupNameResponse = struct {
 		GroupName string `json:"groupName"`
 	}{

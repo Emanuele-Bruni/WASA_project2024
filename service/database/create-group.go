@@ -8,22 +8,22 @@ import (
 )
 
 func (db *appdbimpl) CreateGroup(titolo string, members []int, userId int) (int, error) {
-	//titolo -> titolo
-	//photo -> default
-	//isGroup -> 1
-	//membri "1,2,3,4"
+	// titolo -> titolo
+	// photo -> default
+	// isGroup -> 1
+	// membri "1,2,3,4"
 
-	//controllo di non star aggiungendo me stesso
+	// controllo di non star aggiungendo me stesso
 	for _, num := range members {
 		if num == userId {
 			return -1, fmt.Errorf("impossible to add yourself into a group")
 		}
 	}
 
-	//aggiungo il creatore del gruppo ai membri
+	// aggiungo il creatore del gruppo ai membri
 	totalmembers := append(members, userId)
 
-	//devo trasformare totalmembers da lista di interi a stringa
+	// devo trasformare totalmembers da lista di interi a stringa
 	strMembers := make([]string, len(totalmembers))
 	for i, num := range totalmembers {
 		strMembers[i] = strconv.Itoa(num)
@@ -44,7 +44,7 @@ func (db *appdbimpl) CreateGroup(titolo string, members []int, userId int) (int,
 		return -1, fmt.Errorf("error getting last insert ID: %w", err)
 	}
 
-	//devo inserire il groupId alla lista delle conversazioni dell'utente per ogni membro
+	// devo inserire il groupId alla lista delle conversazioni dell'utente per ogni membro
 	for _, memberId := range totalmembers {
 		var conversazioniUtente sql.NullString
 		err = db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", memberId).Scan(&conversazioniUtente)
@@ -52,7 +52,7 @@ func (db *appdbimpl) CreateGroup(titolo string, members []int, userId int) (int,
 			return -1, fmt.Errorf("error during select users conversation_ids: %w", err)
 		}
 		var updatedConversazioniUtente string
-		//controllo se è non NULL e se non è vuota
+		// controllo se è non NULL e se non è vuota
 		if conversazioniUtente.Valid && conversazioniUtente.String != "" {
 			updatedConversazioniUtente = fmt.Sprintf("%s,%d", conversazioniUtente.String, groupId)
 		} else {

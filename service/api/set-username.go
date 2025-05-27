@@ -25,7 +25,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	//Calcolo l'id del nome utente da modificare nella tabella
+	// Calcolo l'id del nome utente da modificare nella tabella
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -34,7 +34,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	//controllo se l'id esiste
+	// controllo se l'id esiste
 	idFound, err := rt.db.CheckUserId(id)
 	if err != nil {
 		ctx.Logger.Error("Errore nel controllare l'id utente: ", err)
@@ -47,13 +47,13 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 		return
 	}
 
-	//controllo se l'username è lungo minimo 3 e massimo 16 (perché deve rispettare il login)
+	// controllo se l'username è lungo minimo 3 e massimo 16 (perché deve rispettare il login)
 	if len(requestBody.Username) < 3 || len(requestBody.Username) > 16 {
 		http.Error(w, "Invalid Username", http.StatusBadRequest)
 		ctx.Logger.WithField("username", requestBody.Username).Error("Invalid length of field 'username'")
 		return
 	}
-	//username valido, lo aggiorno tramite la funzione
+	// username valido, lo aggiorno tramite la funzione
 	err = rt.db.SetName(requestBody.Username, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -72,7 +72,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 		Username: requestBody.Username,
 	}
 
-	//Responso finale
+	// Responso finale
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(setUsernameResponse); err != nil {

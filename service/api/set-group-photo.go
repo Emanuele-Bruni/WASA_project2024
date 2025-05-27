@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo userId e vedo se è autorizzato
+	// calcolo userId e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,10 +20,10 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//controllo se la conversazione esiste
+	// controllo se la conversazione esiste
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -39,7 +39,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
 		return
 	}
-	//controllo se la conversazione è un gruppo
+	// controllo se la conversazione è un gruppo
 	isGroup, err := rt.db.Conversation_isGroup(cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del gruppo", http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		ctx.Logger.Error("La conversazione indicata non è un gruppo")
 		return
 	}
-	//requestBody con groupName = il titolo del gruppo
+	// requestBody con groupName = il titolo del gruppo
 	var requestBody = struct {
 		Photo string `json:"photo"`
 	}{}
@@ -72,7 +72,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	//controllo se va bene (se è lunga <=1000000, può essere anche vuota -> in quel caso uso una foto di default memorizzata nella variabile nel databse)
+	// controllo se va bene (se è lunga <=1000000, può essere anche vuota -> in quel caso uso una foto di default memorizzata nella variabile nel databse)
 	if len(requestBody.Photo) <= 1000000 {
 		http.Error(w, "Invalid photo", http.StatusBadRequest)
 		ctx.Logger.WithField("photo", requestBody.Photo).Error("Invalid length of field 'photo'")
@@ -83,7 +83,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		}
 	}
 
-	//aggiorno la foto della conversazione
+	// aggiorno la foto della conversazione
 	err = rt.db.SetGroupPhoto(requestBody.Photo, cnvId)
 	if err != nil {
 		http.Error(w, "Errore nella modifica della foto", http.StatusInternalServerError)
@@ -91,7 +91,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		return
 	}
 
-	//responso con la nuova foto
+	// responso con la nuova foto
 	var setGroupPhotoResponse = struct {
 		Photo string `json:"photo"`
 	}{

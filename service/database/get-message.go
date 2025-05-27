@@ -7,7 +7,7 @@ import (
 )
 
 func (db *appdbimpl) GetMessage(messageId int) (Message, error) {
-	//prendo il messaggio dalla tabella
+	// prendo il messaggio dalla tabella
 	var message Message
 	var commentsString sql.NullString
 	err := db.c.QueryRow("SELECT author,text,hours,comments FROM messages_table WHERE message_id=?", messageId).Scan(&message.Author, &message.Text, &message.Hours, &commentsString)
@@ -15,7 +15,7 @@ func (db *appdbimpl) GetMessage(messageId int) (Message, error) {
 		return Message{}, err
 	}
 
-	//calcolo i commenti
+	// calcolo i commenti
 	if commentsString.Valid && commentsString.String != "" {
 		commentIDs := strings.Split(commentsString.String, ",")
 

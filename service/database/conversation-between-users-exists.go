@@ -19,7 +19,7 @@ func (db *appdbimpl) Conversation2MembersExists(userId1 int, userId2 int) (bool,
 	}
 
 	var conversationId int
-	//seleziono la conversazione
+	// seleziono la conversazione
 	query := "SELECT conversation_id FROM conversations_table WHERE members = ? AND isGroup = 0"
 	err := db.c.QueryRow(query, membri).Scan(&conversationId)
 	if err != nil {
@@ -30,6 +30,6 @@ func (db *appdbimpl) Conversation2MembersExists(userId1 int, userId2 int) (bool,
 		// Errore DB
 		return false, 0, err
 	}
-	//conversazione trovata
+	// conversazione trovata
 	return true, conversationId, err
 }

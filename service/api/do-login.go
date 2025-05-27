@@ -17,14 +17,14 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		Name string `json:"name"` //"name" nel RequestBody dell'API
 	}{}
 
-	//decodifico la richiesta secondo il requestBody
+	// decodifico la richiesta secondo il requestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           //tipo di errore
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody") //descrizione errore
 		return
 	}
 
-	//controllo se il nome è lungo minimo 3 e massimo 16
+	// controllo se il nome è lungo minimo 3 e massimo 16
 	if len(requestBody.Name) < 3 || len(requestBody.Name) > 16 {
 		http.Error(w, "Invalid Name", http.StatusBadRequest)
 		ctx.Logger.WithField("name", requestBody.Name).Error("Invalid length of field 'name'")
@@ -35,7 +35,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		Identifier int `json:"identifier"`
 	}{}
 
-	//controllo se l'utente è nella tabella
+	// controllo se l'utente è nella tabella
 	var err error
 	loginResponse.Identifier, err = rt.db.GetIdByName(requestBody.Name)
 	if err != nil {
@@ -54,18 +54,18 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		}
 	}
 
-	//la risposta sarà in formato JSON, impostando il content-type della risposta
+	// la risposta sarà in formato JSON, impostando il content-type della risposta
 	w.Header().Set("content-type", "application/json")
 	w.Header().Set("Authorization", fmt.Sprintf("bearerAuth: %d", loginResponse.Identifier))
-	//w.WriteHeader(http.StatusCreated)
+	// w.WriteHeader(http.StatusCreated)
 
-	//json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
+	// json.NewEncoder() serve solo quando devo restituire un contenuto alla risposta (es con metodo GET)
 	if err := json.NewEncoder(w).Encode(loginResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
 
-	//Logga il successo
+	// Logga il successo
 	ctx.Logger.Infof("Login succesful: %s, %v", requestBody.Name, loginResponse.Identifier)
 }

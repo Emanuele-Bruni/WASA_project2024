@@ -793,9 +793,9 @@ func yaml_parser_fetch_next_token(parser *yaml_parser_t) bool {
 	//
 	// The last rule is more restrictive than the specification requires.
 	// [Go] Make this logic more reasonable.
-	//switch parser.buffer[parser.buffer_pos] {
-	//case '-', '?', ':', ',', '?', '-', ',', ':', ']', '[', '}', '{', '&', '#', '!', '*', '>', '|', '"', '\'', '@', '%', '-', '`':
-	//}
+	// switch parser.buffer[parser.buffer_pos] {
+	// case '-', '?', ':', ',', '?', '-', ',', ':', ']', '[', '}', '{', '&', '#', '!', '*', '>', '|', '"', '\'', '@', '%', '-', '`':
+	// }
 	if !(is_blankz(parser.buffer, parser.buffer_pos) || parser.buffer[parser.buffer_pos] == '-' ||
 		parser.buffer[parser.buffer_pos] == '?' || parser.buffer[parser.buffer_pos] == ':' ||
 		parser.buffer[parser.buffer_pos] == ',' || parser.buffer[parser.buffer_pos] == '[' ||
@@ -1966,7 +1966,7 @@ func yaml_parser_scan_tag_handle(parser *yaml_parser_t, directive bool, start_ma
 
 // Scan a tag.
 func yaml_parser_scan_tag_uri(parser *yaml_parser_t, directive bool, head []byte, start_mark yaml_mark_t, uri *[]byte) bool {
-	//size_t length = head ? strlen((char *)head) : 0
+	// size_t length = head ? strlen((char *)head) : 0
 	var s []byte
 	hasTag := len(head) > 0
 

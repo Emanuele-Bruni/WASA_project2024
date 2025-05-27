@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
-//go:build !sqlite_userauth
+// go:build !sqlite_userauth
 // +build !sqlite_userauth
 
 package sqlite3
@@ -36,9 +36,9 @@ func (c *SQLiteConn) Authenticate(username, password string) error {
 //
 // Returns:
 //
-//		C.SQLITE_OK (0)
-//		C.SQLITE_ERROR (1)
-//	 C.SQLITE_AUTH (23)
+// 		C.SQLITE_OK (0)
+// 		C.SQLITE_ERROR (1)
+// 	 C.SQLITE_AUTH (23)
 func (c *SQLiteConn) authenticate(username, password string) int {
 	// NOOP
 	return 0
@@ -68,9 +68,9 @@ func (c *SQLiteConn) AuthUserAdd(username, password string, admin bool) error {
 //
 // Returns:
 //
-//		C.SQLITE_OK (0)
-//		C.SQLITE_ERROR (1)
-//	 C.SQLITE_AUTH (23)
+// 		C.SQLITE_OK (0)
+// 		C.SQLITE_ERROR (1)
+// 	 C.SQLITE_AUTH (23)
 func (c *SQLiteConn) authUserAdd(username, password string, admin int) int {
 	// NOOP
 	return 0
@@ -100,9 +100,9 @@ func (c *SQLiteConn) AuthUserChange(username, password string, admin bool) error
 //
 // Returns:
 //
-//		C.SQLITE_OK (0)
-//		C.SQLITE_ERROR (1)
-//	 C.SQLITE_AUTH (23)
+// 		C.SQLITE_OK (0)
+// 		C.SQLITE_ERROR (1)
+// 	 C.SQLITE_AUTH (23)
 func (c *SQLiteConn) authUserChange(username, password string, admin int) int {
 	// NOOP
 	return 0
@@ -127,9 +127,9 @@ func (c *SQLiteConn) AuthUserDelete(username string) error {
 //
 // Returns:
 //
-//		C.SQLITE_OK (0)
-//		C.SQLITE_ERROR (1)
-//	 C.SQLITE_AUTH (23)
+// 		C.SQLITE_OK (0)
+// 		C.SQLITE_ERROR (1)
+// 	 C.SQLITE_AUTH (23)
 func (c *SQLiteConn) authUserDelete(username string) int {
 	// NOOP
 	return 0
@@ -148,8 +148,8 @@ func (c *SQLiteConn) AuthEnabled() (exists bool) {
 //
 // Returns:
 //
-//		0 - Disabled
-//	 1 - Enabled
+// 		0 - Disabled
+// 	 1 - Enabled
 func (c *SQLiteConn) authEnabled() int {
 	// NOOP
 	return 0

@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'id utente e vedo se è autorizzato
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	id, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,10 +20,10 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//CONTROLLI CONVERSAZIONE
+	// CONTROLLI CONVERSAZIONE
 	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("conversationId parametro non valido")
 		return
@@ -39,7 +39,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione
+	// controllo se l'utente è nella conversazione
 	found, err := rt.db.CheckUser_Conversation(cnvId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -52,10 +52,10 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
-	//CONTROLLI MESSAGGIO
+	// CONTROLLI MESSAGGIO
 	messageId, err := strconv.Atoi(p.ByName("messageid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("messageId parametro non valido")
 		return
@@ -71,7 +71,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.Error("messaggio inesistente")
 		return
 	}
-	//vedo se esiste nella conversazione
+	// vedo se esiste nella conversazione
 	messageFound, err := rt.db.CheckMessage_Conversation(messageId, cnvId)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del messaggio", http.StatusInternalServerError)
@@ -84,10 +84,10 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
-	//prendo forwardId, che sarebbe l'id della conversazione a cui inoltrare il messaggio e controllo se esiste
+	// prendo forwardId, che sarebbe l'id della conversazione a cui inoltrare il messaggio e controllo se esiste
 	forwardId, err := strconv.Atoi(p.ByName("forwardid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("forwardId parametro non valido")
 		return
@@ -103,7 +103,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.Error("conversazione inesistente")
 		return
 	}
-	//controllo se l'utente è nella conversazione a cui inoltro il messaggio
+	// controllo se l'utente è nella conversazione a cui inoltro il messaggio
 	found, err = rt.db.CheckUser_Conversation(forwardId, id)
 	if err != nil {
 		http.Error(w, "Errore nel controllo del membro", http.StatusInternalServerError)
@@ -116,16 +116,16 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 	// devo creare un nuovo messaggio, quindi con un nuovo id -> le uniche cose che rimangono uguali sono il contenuto e l'autore
-	//estrapolo le informazioni che mi servono del messaggio
+	// estrapolo le informazioni che mi servono del messaggio
 	message, err := rt.db.GetMessage(messageId)
 	if err != nil {
 		http.Error(w, "Errore durante l'acquisizione del messaggio", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Errore durante l'acquisizione del messaggio")
 		return
 	}
-	//calcolo il nuovo orario
+	// calcolo il nuovo orario
 	currentTime := time.Now().Format("15:04")
-	//devo richiamare la funzione che crea il messaggio
+	// devo richiamare la funzione che crea il messaggio
 	forwardResponse, fwdId, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -133,16 +133,16 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
-	//preparo l'header
+	// preparo l'header
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	//ritorno il risultato
+	// ritorno il risultato
 	if err := json.NewEncoder(w).Encode(forwardResponse); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Failed to encode response")
 		return
 	}
-	//Logga il successo
+	// Logga il successo
 	ctx.Logger.Infof("Messaggio inviato con successo: %s", fwdId)
 
 }

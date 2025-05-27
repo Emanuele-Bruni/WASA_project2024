@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build darwin && go1.13
+// go:build darwin && go1.13
 // +build darwin,go1.13
 
 package unix
@@ -13,8 +13,8 @@ import (
 	"golang.org/x/sys/internal/unsafeheader"
 )
 
-//sys	closedir(dir uintptr) (err error)
-//sys	readdir_r(dir uintptr, entry *Dirent, result **Dirent) (res Errno)
+// sys	closedir(dir uintptr) (err error)
+// sys	readdir_r(dir uintptr, entry *Dirent, result **Dirent) (res Errno)
 
 func fdopendir(fd int) (dir uintptr, err error) {
 	r0, _, e1 := syscall_syscallPtr(libc_fdopendir_trampoline_addr, uintptr(fd), 0, 0)
@@ -27,7 +27,7 @@ func fdopendir(fd int) (dir uintptr, err error) {
 
 var libc_fdopendir_trampoline_addr uintptr
 
-//go:cgo_import_dynamic libc_fdopendir fdopendir "/usr/lib/libSystem.B.dylib"
+// go:cgo_import_dynamic libc_fdopendir fdopendir "/usr/lib/libSystem.B.dylib"
 
 func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
 	// Simulate Getdirentries using fdopendir/readdir_r/closedir.

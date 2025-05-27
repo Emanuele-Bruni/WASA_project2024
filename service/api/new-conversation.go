@@ -12,7 +12,7 @@ import (
 )
 
 func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	//calcolo l'id utente e vedo se è autorizzato
+	// calcolo l'id utente e vedo se è autorizzato
 	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	userId1, err := strconv.Atoi(token)
 	if err != nil {
@@ -20,15 +20,15 @@ func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p htt
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
-	//prendo userId dal path
+	// prendo userId dal path
 	userId2, err := strconv.Atoi(p.ByName("userid"))
 	if err != nil {
-		//errore nel prendere il parametro
+		// errore nel prendere il parametro
 		http.Error(w, "Parametro non valido", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("userId parametro non valido")
 		return
 	}
-	//controllo se l'userId esiste
+	// controllo se l'userId esiste
 	exists, err := rt.db.CheckUserId(userId2)
 	if err != nil {
 		http.Error(w, "Errore nel controllo dell'utente con cui creare una conversazione", http.StatusInternalServerError)
@@ -40,8 +40,8 @@ func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p htt
 		ctx.Logger.WithError(err).Error("L'userId è di un utente che non esiste")
 		return
 	}
-	//controllo se la conversazione esiste già
-	//funzione che controlla se una conversazione tra i due utenti esiste già
+	// controllo se la conversazione esiste già
+	// funzione che controlla se una conversazione tra i due utenti esiste già
 	exists, cnvId, err := rt.db.Conversation2MembersExists(userId1, userId2)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -53,7 +53,7 @@ func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p htt
 		ctx.Logger.WithField("conversationId", cnvId).Error("Conversazione già esistente")
 		return
 	} else {
-		//creo la conversazione
+		// creo la conversazione
 		cnvId, err = rt.db.CreateConversation(userId1, userId2)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -62,7 +62,7 @@ func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p htt
 		}
 	}
 
-	//ritorno il conversationId
+	// ritorno il conversationId
 	var newConversationResponse = struct {
 		ConversationId int `json:"conversationId"`
 	}{

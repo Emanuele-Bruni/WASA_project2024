@@ -119,7 +119,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	var tableName string
-	//TABELLA UTENTI
+	// TABELLA UTENTI
 	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='users_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE users_table (	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -131,7 +131,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-	//TABELLA CONVERSAZIONI
+	// TABELLA CONVERSAZIONI
 	tableName = ""
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='conversations_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -145,7 +145,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-	//TABELLA MESSAGGIxCONVERSAZIONE
+	// TABELLA MESSAGGIxCONVERSAZIONE
 	tableName = ""
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='messages_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -163,7 +163,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-	//TABELLA COMMENTIxMESSAGGI
+	// TABELLA COMMENTIxMESSAGGI
 	tableName = ""
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='comments_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -184,4 +184,4 @@ func (db *appdbimpl) Ping() error {
 	return db.c.Ping()
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
