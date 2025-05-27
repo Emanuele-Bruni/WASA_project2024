@@ -3,6 +3,7 @@ export default {
 	data: function() {
 		return {
 			errormsg: null,
+			conversations: [],
 		}
 	},
 	methods: {
@@ -20,9 +21,22 @@ export default {
 		},
 		newGroup(){
 			//fare un pulsante sotto e fuori la navbar visto che l'endpoint ha lo stesso path in cui mi trovo
+		},
+		async getMyConversations(){
+			this.errormsg = null
+			try {
+				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
+				console.log(response.data);
+				if(response){
+					this.conversations = response.data.AllMyConversations;
+				}
+			} catch(e){
+				this.errormsg = e.toString();
+			}
 		}
 	},
 	mounted() {
+		this.getMyConversations();
 	}
 }
 </script>
@@ -38,12 +52,27 @@ export default {
 				<button type="button" class="logoutButton" @click="logout"> Logout </button>
 			</div> 
 		</div>
+		
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-
 		<div class="below-navbar">
+			<!-- Pulsante per creare nuovo gruppo -->
 			<button type="button" class="btnNewGroup"> Nuovo Gruppo </button>
+
+			<!-- Lista di tutte le conversazioni dell'utente -->
+			<div class="conversations-list">
+				<div v-if="conversations.length===0">
+					<p> Nessuna conversazione </p>
+				</div>
+				<div v-else>
+					<ConversationItem v-for="conv in conversations" 
+						:key="conv.conversationId" 
+						:photo="conv.photo" 
+						:title="conv.title" 
+						:is_group = "conv.isGroup"></ConversationItem>
+				</div>
+			</div>
+
 		</div>
-		<!-- Lista di tutte le conversazioni dell'utente -->
 	</div>
 </template>
 

@@ -68,6 +68,7 @@ export default {
 			<!-- BARRA PER IMPOSTARE USERNAME-->
 			<form id="newUsernameForm" @submit.prevent="setUsername">
 				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
+				<button class="saveButton" type="submit"> Salva </button>
             </form>	
 			<SuccessMsg v-if="successmsg" :msg="successmsg" />
 		</div>
@@ -168,5 +169,28 @@ p{
 	padding: 0.875rem;
 	width: 118px;
 	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+}
+.saveButton {
+	text-align: center;
+	font-family: "SF Pro";
+	color: rgb(4, 66, 85); 
+	background-color: #bad4e9;
+	border: 2px solid rgb(4, 103, 133);
+	border-radius: 1rem;
+	padding: 0.875rem;
+	width: 100%;
+	margin-top: 0.3rem;
+	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+}
+.saveButton:hover{
+	background-color:rgb(10, 146, 187);
+	color: white;
+}
+.saveButton:active{
+	box-shadow: 
+	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
+	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
+	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
+	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
 }
 </style>

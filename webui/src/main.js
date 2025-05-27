@@ -6,6 +6,7 @@ import ErrorMsg from './components/ErrorMsg.vue'
 import LoadingSpinner from './components/LoadingSpinner.vue'
 import UserItem from './components/UserItem.vue'
 import SuccessMsg from './components/SuccessMsg.vue'
+import ConversationItem from './components/ConversationItem.vue'
 
 import './assets/dashboard.css'
 import './assets/main.css'
@@ -16,5 +17,6 @@ app.component("ErrorMsg", ErrorMsg);
 app.component("LoadingSpinner", LoadingSpinner);
 app.component("UserItem",UserItem);
 app.component("SuccessMsg", SuccessMsg);
+app.component("ConversationItem",ConversationItem);
 app.use(router)
 app.mount('#app')

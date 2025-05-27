@@ -20,8 +20,7 @@ export default {
 	font-family: "SF Pro";
 	color: #f0f2f3; 
     box-shadow: 7px 5px 5px rgba(4, 103, 133, 1); /* x y sfocatura colore(trasparenza)*/
-    border: rgb(4,103,133);
-    border-radius: 5rem;
+    border: 1px rgb(4,103,133);
 }
 .usernameButton:hover{
     background-color: rgb(10, 146, 187);
