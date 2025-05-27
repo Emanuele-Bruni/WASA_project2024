@@ -36,7 +36,7 @@ import (
 	"fmt"
 )
 
-var ErrorNoConversation = errors.New("utente non ha conversazioni")
+var ErrorNoConversation = errors.New("non ha conversazioni")
 
 var DefaultGroupPhoto = "iVBORw0KGgoAAAANSUhEUgAABP8AAAUACAYAAAA4LfcjAAEAAElEQVR42uzdeXzV1Z3/8c855/u9CUurpdVRW621trXWpbIIam21tasz03V+WqtiWEMI4NbO1HamtTOd1gWUPYRERJQdVFqlVVuX4oIg2qptLXZ0RAghITd3377nnN8f5DK4g2zJzev5ePBAIQTyud/7vZ/7zuecowQAAKB3Ud57+elPf6o+9alPKRGR559/XomIfOpTn..."
 var DefaultContactPhoto = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAATlBMVEX///+ZmZn6+vqioqKUlJSXl5eQkJCOjo7m5uaKioqfn5/V1dW9vb2np6ft7e3Gxsb29vbf39+2trbS0tKsrKzExMTb29vLy8vr6+uxsbE203S4AAAHW0lEQVR4nO2dWberKgyAizIoDtU67f7/P3p1d/eeDg4EA9qa7+E+3LVOMRsISUjC6UQQBEEQBEEQB..."
