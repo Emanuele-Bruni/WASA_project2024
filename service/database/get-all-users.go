@@ -2,7 +2,7 @@ package database
 
 import "fmt"
 
-//devo ritornare [lista ids],[lista nomi],errore
+// devo ritornare [lista ids],[lista nomi],errore
 func (db *appdbimpl) GetAllUsers(userId int) ([]int, []string, error) {
 
 	righe, err := db.c.Query("SELECT id,name FROM users_table WHERE id!=?", userId)

@@ -7,7 +7,7 @@ import (
 )
 
 func (db *appdbimpl) AddUserToGroup(userId int, cnvId int) error {
-	//devo prendere la lista dei membri della conversazione
+	// devo prendere la lista dei membri della conversazione
 	var currentStringMembers string // "20,30,40"
 	err := db.c.QueryRow("SELECT members FROM conversations_table WHERE conversation_id=?", cnvId).Scan(&currentStringMembers)
 	if err != nil {
@@ -25,8 +25,8 @@ func (db *appdbimpl) AddUserToGroup(userId int, cnvId int) error {
 		return fmt.Errorf("errore nell'aggiornare i membri della conversazione: %w", err)
 	}
 
-	//devo aggiungere l'id della conversazione a conversation_ids della tabella users_table
-	//prendo l'array delle conversazioni
+	// devo aggiungere l'id della conversazione a conversation_ids della tabella users_table
+	// prendo l'array delle conversazioni
 	var currentStringConversations sql.NullString
 	err = db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", userId).Scan(&currentStringConversations)
 	if err != nil {
@@ -38,7 +38,7 @@ func (db *appdbimpl) AddUserToGroup(userId int, cnvId int) error {
 	} else {
 		updatedConversations = strconv.Itoa(cnvId)
 	}
-	//aggiorno users_table
+	// aggiorno users_table
 	_, err = db.c.Exec("UPDATE users_table SET conversation_ids=? WHERE id=?", updatedConversations, userId)
 	if err != nil {
 		return fmt.Errorf("errore nell'aggiornare le conversazioni dell'utente: %w", err)
