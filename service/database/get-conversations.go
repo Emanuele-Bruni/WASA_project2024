@@ -20,7 +20,7 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 		return []Conversation{}, err
 	}
 	if !stringaConversazioni.Valid && stringaConversazioni.String == "" {
-		return []Conversation{}, ErrorNoConversation
+		return []Conversation{}, ErrNoConversation
 	}
 
 	//prendo gli id delle conversazioni dell'utente e la aggiungo alla lista degli id
