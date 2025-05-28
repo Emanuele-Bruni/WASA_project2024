@@ -10,8 +10,8 @@ import (
 
 func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 
-	var userConversations []Conversation    //lista finale delle conversazioni
-	var stringaConversazioni sql.NullString //stringa "20,30,40"
+	var userConversations []Conversation    // lista finale delle conversazioni
+	var stringaConversazioni sql.NullString // stringa "20,30,40"
 	var lista_id []int                      // [20,30,40]
 
 	// controllo l'id nella tabella utenti e prendo la stringa di conversazioni
@@ -38,7 +38,7 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 		var conversation Conversation
 		conversation.ConversationId = conversation_id
 
-		var members string //"1,2,3"
+		var members string // "1,2,3"
 		var isGroup int
 
 		// recupero le info della conversazione

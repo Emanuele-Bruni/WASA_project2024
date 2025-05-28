@@ -13,7 +13,7 @@ func (db *appdbimpl) Conversation2MembersExists(userId1 int, userId2 int) (bool,
 
 	var membri string
 	if userId1 < userId2 {
-		membri = fmt.Sprintf("%d,%d", userId1, userId2) //"10,20"
+		membri = fmt.Sprintf("%d,%d", userId1, userId2) // "10,20"
 	} else {
 		membri = fmt.Sprintf("%d,%d", userId2, userId1)
 	}

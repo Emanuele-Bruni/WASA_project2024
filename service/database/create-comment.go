@@ -30,14 +30,14 @@ func (db *appdbimpl) CreateComment(author string, emoji string, messageId int) (
 	}
 
 	// recupero l'array con gli id dei commenti
-	var currentComments sql.NullString //stringa "20,30,40"
+	var currentComments sql.NullString // stringa "20,30,40"
 	err = db.c.QueryRow("SELECT comments FROM messages_table WHERE message_id=?", messageId).Scan(&currentComments)
 	if err != nil {
 		return Comment{}, -1, fmt.Errorf("errore nel recuperare i commenti attuali: %w", err)
 	}
 
 	if currentComments.Valid && currentComments.String != "" {
-		var commentsidList []int //[20,30,40]
+		var commentsidList []int // [20,30,40]
 		for _, id_stringa := range strings.Split(currentComments.String, ",") {
 			// converto in numero
 			num, err := strconv.Atoi(id_stringa)

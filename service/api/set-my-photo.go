@@ -47,10 +47,8 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		http.Error(w, "Invalid photo", http.StatusBadRequest)
 		ctx.Logger.WithField("photo", requestBody.Photo).Error("Invalid length of field 'photo'")
 		return
-	} else {
-		if len(requestBody.Photo) == 0 {
-			requestBody.Photo = database.DefaultContactPhoto
-		}
+	} else if len(requestBody.Photo) == 0 {
+		requestBody.Photo = database.DefaultContactPhoto
 	}
 
 	// aggiorno la foto

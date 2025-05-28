@@ -14,13 +14,13 @@ import (
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
 
 	var requestBody = struct {
-		Name string `json:"name"` //"name" nel RequestBody dell'API
+		Name string `json:"name"` // "name" nel RequestBody dell'API
 	}{}
 
 	// decodifico la richiesta secondo il requestBody
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           //tipo di errore
-		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody") //descrizione errore
+		http.Error(w, "Struttura non compatibile", http.StatusBadRequest)           // tipo di errore
+		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody") // descrizione errore
 		return
 	}
 

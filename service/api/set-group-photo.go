@@ -77,10 +77,8 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, p httpr
 		http.Error(w, "Invalid photo", http.StatusBadRequest)
 		ctx.Logger.WithField("photo", requestBody.Photo).Error("Invalid length of field 'photo'")
 		return
-	} else {
-		if len(requestBody.Photo) == 0 {
-			requestBody.Photo = database.DefaultGroupPhoto
-		}
+	} else if len(requestBody.Photo) == 0 {
+		requestBody.Photo = database.DefaultGroupPhoto
 	}
 
 	// aggiorno la foto della conversazione
