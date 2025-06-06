@@ -5,11 +5,10 @@ import (
 	"WASA_project2024/service/database"
 	"encoding/json"
 	"errors"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {

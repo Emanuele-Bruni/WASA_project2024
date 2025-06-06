@@ -2,9 +2,8 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
-	"net/http"
-
 	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
 // getContextReply is an example of HTTP endpoint that returns "Hello World!" as a plain text. The signature of this

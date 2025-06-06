@@ -2,10 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {

@@ -3,10 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // crea un commento, lo aggiunge alla tabella dei commenti e alla lista dei commenti del messaggio

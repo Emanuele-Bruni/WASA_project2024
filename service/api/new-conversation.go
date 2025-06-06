@@ -3,12 +3,11 @@ package api
 import (
 	"WASA_project2024/service/api/reqcontext"
 	"encoding/json"
+	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
 )
 
 func (rt *_router) newConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {

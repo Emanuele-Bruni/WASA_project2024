@@ -5,11 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 // Set your username
