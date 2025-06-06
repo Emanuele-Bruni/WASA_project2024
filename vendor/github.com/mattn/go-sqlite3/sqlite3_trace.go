@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
-// go:build sqlite_trace || trace
+//go:build sqlite_trace || trace
 // +build sqlite_trace trace
 
 package sqlite3
@@ -98,7 +98,7 @@ func fillExpandedSQL(info *TraceInfo, db *C.sqlite3, pStmt unsafe.Pointer) {
 	info.ExpandedSQL = C.GoString(expSQLiteCStr)
 }
 
-// export traceCallbackTrampoline
+//export traceCallbackTrampoline
 func traceCallbackTrampoline(
 	traceEventCode C.uint,
 	// Parameter named 'C' in SQLite docs = Context given at registration:

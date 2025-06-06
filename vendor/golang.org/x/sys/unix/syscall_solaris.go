@@ -55,7 +55,7 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	return reclen - uint64(unsafe.Offsetof(Dirent{}.Name)), true
 }
 
-// sysnb	pipe(p *[2]_C_int) (n int, err error)
+//sysnb	pipe(p *[2]_C_int) (n int, err error)
 
 func Pipe(p []int) (err error) {
 	if len(p) != 2 {
@@ -73,7 +73,7 @@ func Pipe(p []int) (err error) {
 	return nil
 }
 
-// sysnb	pipe2(p *[2]_C_int, flags int) (err error)
+//sysnb	pipe2(p *[2]_C_int, flags int) (err error)
 
 func Pipe2(p []int, flags int) error {
 	if len(p) != 2 {
@@ -137,7 +137,7 @@ func (sa *SockaddrUnix) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	return unsafe.Pointer(&sa.raw), sl, nil
 }
 
-// sys	getsockname(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getsockname
+//sys	getsockname(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getsockname
 
 func Getsockname(fd int) (sa Sockaddr, err error) {
 	var rsa RawSockaddrAny
@@ -162,7 +162,7 @@ func GetsockoptString(fd, level, opt int) (string, error) {
 
 const ImplementsGetwd = true
 
-// sys	Getcwd(buf []byte) (n int, err error)
+//sys	Getcwd(buf []byte) (n int, err error)
 
 func Getwd() (wd string, err error) {
 	var buf [PathMax]byte
@@ -182,8 +182,8 @@ func Getwd() (wd string, err error) {
  * Wrapped
  */
 
-// sysnb	getgroups(ngid int, gid *_Gid_t) (n int, err error)
-// sysnb	setgroups(ngid int, gid *_Gid_t) (err error)
+//sysnb	getgroups(ngid int, gid *_Gid_t) (n int, err error)
+//sysnb	setgroups(ngid int, gid *_Gid_t) (err error)
 
 func Getgroups() (gids []int, err error) {
 	n, err := getgroups(0, nil)
@@ -280,7 +280,7 @@ func (w WaitStatus) StopSignal() syscall.Signal {
 
 func (w WaitStatus) TrapCause() int { return -1 }
 
-// sys	wait4(pid int32, statusp *_C_int, options int, rusage *Rusage) (wpid int32, err error)
+//sys	wait4(pid int32, statusp *_C_int, options int, rusage *Rusage) (wpid int32, err error)
 
 func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (int, error) {
 	var status _C_int
@@ -295,7 +295,7 @@ func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (int, erro
 	return wpid, nil
 }
 
-// sys	gethostname(buf []byte) (n int, err error)
+//sys	gethostname(buf []byte) (n int, err error)
 
 func Gethostname() (name string, err error) {
 	var buf [MaxHostNameLen]byte
@@ -310,7 +310,7 @@ func Gethostname() (name string, err error) {
 	return string(buf[:n]), nil
 }
 
-// sys	utimes(path string, times *[2]Timeval) (err error)
+//sys	utimes(path string, times *[2]Timeval) (err error)
 
 func Utimes(path string, tv []Timeval) (err error) {
 	if tv == nil {
@@ -322,7 +322,7 @@ func Utimes(path string, tv []Timeval) (err error) {
 	return utimes(path, (*[2]Timeval)(unsafe.Pointer(&tv[0])))
 }
 
-// sys	utimensat(fd int, path string, times *[2]Timespec, flag int) (err error)
+//sys	utimensat(fd int, path string, times *[2]Timespec, flag int) (err error)
 
 func UtimesNano(path string, ts []Timespec) error {
 	if ts == nil {
@@ -344,7 +344,7 @@ func UtimesNanoAt(dirfd int, path string, ts []Timespec, flags int) error {
 	return utimensat(dirfd, path, (*[2]Timespec)(unsafe.Pointer(&ts[0])), flags)
 }
 
-// sys	fcntl(fd int, cmd int, arg int) (val int, err error)
+//sys	fcntl(fd int, cmd int, arg int) (val int, err error)
 
 // FcntlInt performs a fcntl syscall on fd with the provided command and argument.
 func FcntlInt(fd uintptr, cmd, arg int) (int, error) {
@@ -365,7 +365,7 @@ func FcntlFlock(fd uintptr, cmd int, lk *Flock_t) error {
 	return nil
 }
 
-// sys	futimesat(fildes int, path *byte, times *[2]Timeval) (err error)
+//sys	futimesat(fildes int, path *byte, times *[2]Timeval) (err error)
 
 func Futimesat(dirfd int, path string, tv []Timeval) error {
 	pathp, err := BytePtrFromString(path)
@@ -432,7 +432,7 @@ func anyToSockaddr(fd int, rsa *RawSockaddrAny) (Sockaddr, error) {
 	return nil, EAFNOSUPPORT
 }
 
-// sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error) = libsocket.accept
+//sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error) = libsocket.accept
 
 func Accept(fd int) (nfd int, sa Sockaddr, err error) {
 	var rsa RawSockaddrAny
@@ -449,7 +449,7 @@ func Accept(fd int) (nfd int, sa Sockaddr, err error) {
 	return
 }
 
-// sys	recvmsg(s int, msg *Msghdr, flags int) (n int, err error) = libsocket.__xnet_recvmsg
+//sys	recvmsg(s int, msg *Msghdr, flags int) (n int, err error) = libsocket.__xnet_recvmsg
 
 func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
@@ -477,7 +477,7 @@ func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny)
 	return
 }
 
-// sys	sendmsg(s int, msg *Msghdr, flags int) (n int, err error) = libsocket.__xnet_sendmsg
+//sys	sendmsg(s int, msg *Msghdr, flags int) (n int, err error) = libsocket.__xnet_sendmsg
 
 func sendmsgN(fd int, iov []Iovec, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags int) (n int, err error) {
 	var msg Msghdr
@@ -509,7 +509,7 @@ func sendmsgN(fd int, iov []Iovec, oob []byte, ptr unsafe.Pointer, salen _Sockle
 	return n, nil
 }
 
-// sys	acct(path *byte) (err error)
+//sys	acct(path *byte) (err error)
 
 func Acct(path string) (err error) {
 	if len(path) == 0 {
@@ -524,19 +524,19 @@ func Acct(path string) (err error) {
 	return acct(pathp)
 }
 
-// sys	__makedev(version int, major uint, minor uint) (val uint64)
+//sys	__makedev(version int, major uint, minor uint) (val uint64)
 
 func Mkdev(major, minor uint32) uint64 {
 	return __makedev(NEWDEV, uint(major), uint(minor))
 }
 
-// sys	__major(version int, dev uint64) (val uint)
+//sys	__major(version int, dev uint64) (val uint)
 
 func Major(dev uint64) uint32 {
 	return uint32(__major(NEWDEV, dev))
 }
 
-// sys	__minor(version int, dev uint64) (val uint)
+//sys	__minor(version int, dev uint64) (val uint)
 
 func Minor(dev uint64) uint32 {
 	return uint32(__minor(NEWDEV, dev))
@@ -546,7 +546,7 @@ func Minor(dev uint64) uint32 {
  * Expose the ioctl function
  */
 
-// sys	ioctlRet(fd int, req uint, arg uintptr) (ret int, err error) = libc.ioctl
+//sys	ioctlRet(fd int, req uint, arg uintptr) (ret int, err error) = libc.ioctl
 
 func ioctl(fd int, req uint, arg uintptr) (err error) {
 	_, err = ioctlRet(fd, req, arg)
@@ -565,7 +565,7 @@ func IoctlGetTermio(fd int, req uint) (*Termio, error) {
 	return &value, err
 }
 
-// sys	poll(fds *PollFd, nfds int, timeout int) (n int, err error)
+//sys	poll(fds *PollFd, nfds int, timeout int) (n int, err error)
 
 func Poll(fds []PollFd, timeout int) (n int, err error) {
 	if len(fds) == 0 {
@@ -584,116 +584,116 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 /*
  * Exposed directly
  */
-// sys	Access(path string, mode uint32) (err error)
-// sys	Adjtime(delta *Timeval, olddelta *Timeval) (err error)
-// sys	Chdir(path string) (err error)
-// sys	Chmod(path string, mode uint32) (err error)
-// sys	Chown(path string, uid int, gid int) (err error)
-// sys	Chroot(path string) (err error)
-// sys	Close(fd int) (err error)
-// sys	Creat(path string, mode uint32) (fd int, err error)
-// sys	Dup(fd int) (nfd int, err error)
-// sys	Dup2(oldfd int, newfd int) (err error)
-// sys	Exit(code int)
-// sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
-// sys	Fchdir(fd int) (err error)
-// sys	Fchmod(fd int, mode uint32) (err error)
-// sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
-// sys	Fchown(fd int, uid int, gid int) (err error)
-// sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
-// sys	Fdatasync(fd int) (err error)
-// sys	Flock(fd int, how int) (err error)
-// sys	Fpathconf(fd int, name int) (val int, err error)
-// sys	Fstat(fd int, stat *Stat_t) (err error)
-// sys	Fstatat(fd int, path string, stat *Stat_t, flags int) (err error)
-// sys	Fstatvfs(fd int, vfsstat *Statvfs_t) (err error)
-// sys	Getdents(fd int, buf []byte, basep *uintptr) (n int, err error)
-// sysnb	Getgid() (gid int)
-// sysnb	Getpid() (pid int)
-// sysnb	Getpgid(pid int) (pgid int, err error)
-// sysnb	Getpgrp() (pgid int, err error)
-// sys	Geteuid() (euid int)
-// sys	Getegid() (egid int)
-// sys	Getppid() (ppid int)
-// sys	Getpriority(which int, who int) (n int, err error)
-// sysnb	Getrlimit(which int, lim *Rlimit) (err error)
-// sysnb	Getrusage(who int, rusage *Rusage) (err error)
-// sysnb	Getsid(pid int) (sid int, err error)
-// sysnb	Gettimeofday(tv *Timeval) (err error)
-// sysnb	Getuid() (uid int)
-// sys	Kill(pid int, signum syscall.Signal) (err error)
-// sys	Lchown(path string, uid int, gid int) (err error)
-// sys	Link(path string, link string) (err error)
-// sys	Listen(s int, backlog int) (err error) = libsocket.__xnet_llisten
-// sys	Lstat(path string, stat *Stat_t) (err error)
-// sys	Madvise(b []byte, advice int) (err error)
-// sys	Mkdir(path string, mode uint32) (err error)
-// sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
-// sys	Mkfifo(path string, mode uint32) (err error)
-// sys	Mkfifoat(dirfd int, path string, mode uint32) (err error)
-// sys	Mknod(path string, mode uint32, dev int) (err error)
-// sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
-// sys	Mlock(b []byte) (err error)
-// sys	Mlockall(flags int) (err error)
-// sys	Mprotect(b []byte, prot int) (err error)
-// sys	Msync(b []byte, flags int) (err error)
-// sys	Munlock(b []byte) (err error)
-// sys	Munlockall() (err error)
-// sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
-// sys	Open(path string, mode int, perm uint32) (fd int, err error)
-// sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
-// sys	Pathconf(path string, name int) (val int, err error)
-// sys	Pause() (err error)
-// sys	pread(fd int, p []byte, offset int64) (n int, err error)
-// sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
-// sys	read(fd int, p []byte) (n int, err error)
-// sys	Readlink(path string, buf []byte) (n int, err error)
-// sys	Rename(from string, to string) (err error)
-// sys	Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error)
-// sys	Rmdir(path string) (err error)
-// sys	Seek(fd int, offset int64, whence int) (newoffset int64, err error) = lseek
-// sys	Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
-// sysnb	Setegid(egid int) (err error)
-// sysnb	Seteuid(euid int) (err error)
-// sysnb	Setgid(gid int) (err error)
-// sys	Sethostname(p []byte) (err error)
-// sysnb	Setpgid(pid int, pgid int) (err error)
-// sys	Setpriority(which int, who int, prio int) (err error)
-// sysnb	Setregid(rgid int, egid int) (err error)
-// sysnb	Setreuid(ruid int, euid int) (err error)
-// sysnb	Setrlimit(which int, lim *Rlimit) (err error)
-// sysnb	Setsid() (pid int, err error)
-// sysnb	Setuid(uid int) (err error)
-// sys	Shutdown(s int, how int) (err error) = libsocket.shutdown
-// sys	Stat(path string, stat *Stat_t) (err error)
-// sys	Statvfs(path string, vfsstat *Statvfs_t) (err error)
-// sys	Symlink(path string, link string) (err error)
-// sys	Sync() (err error)
-// sys	Sysconf(which int) (n int64, err error)
-// sysnb	Times(tms *Tms) (ticks uintptr, err error)
-// sys	Truncate(path string, length int64) (err error)
-// sys	Fsync(fd int) (err error)
-// sys	Ftruncate(fd int, length int64) (err error)
-// sys	Umask(mask int) (oldmask int)
-// sysnb	Uname(buf *Utsname) (err error)
-// sys	Unmount(target string, flags int) (err error) = libc.umount
-// sys	Unlink(path string) (err error)
-// sys	Unlinkat(dirfd int, path string, flags int) (err error)
-// sys	Ustat(dev int, ubuf *Ustat_t) (err error)
-// sys	Utime(path string, buf *Utimbuf) (err error)
-// sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_bind
-// sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_connect
-// sys	mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
-// sys	munmap(addr uintptr, length uintptr) (err error)
-// sys	sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) = libsendfile.sendfile
-// sys	sendto(s int, buf []byte, flags int, to unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_sendto
-// sys	socket(domain int, typ int, proto int) (fd int, err error) = libsocket.__xnet_socket
-// sysnb	socketpair(domain int, typ int, proto int, fd *[2]int32) (err error) = libsocket.__xnet_socketpair
-// sys	write(fd int, p []byte) (n int, err error)
-// sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error) = libsocket.__xnet_getsockopt
-// sysnb	getpeername(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getpeername
-// sys	setsockopt(s int, level int, name int, val unsafe.Pointer, vallen uintptr) (err error) = libsocket.setsockopt
-// sys	recvfrom(fd int, p []byte, flags int, from *RawSockaddrAny, fromlen *_Socklen) (n int, err error) = libsocket.recvfrom
+//sys	Access(path string, mode uint32) (err error)
+//sys	Adjtime(delta *Timeval, olddelta *Timeval) (err error)
+//sys	Chdir(path string) (err error)
+//sys	Chmod(path string, mode uint32) (err error)
+//sys	Chown(path string, uid int, gid int) (err error)
+//sys	Chroot(path string) (err error)
+//sys	Close(fd int) (err error)
+//sys	Creat(path string, mode uint32) (fd int, err error)
+//sys	Dup(fd int) (nfd int, err error)
+//sys	Dup2(oldfd int, newfd int) (err error)
+//sys	Exit(code int)
+//sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
+//sys	Fchdir(fd int) (err error)
+//sys	Fchmod(fd int, mode uint32) (err error)
+//sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
+//sys	Fchown(fd int, uid int, gid int) (err error)
+//sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
+//sys	Fdatasync(fd int) (err error)
+//sys	Flock(fd int, how int) (err error)
+//sys	Fpathconf(fd int, name int) (val int, err error)
+//sys	Fstat(fd int, stat *Stat_t) (err error)
+//sys	Fstatat(fd int, path string, stat *Stat_t, flags int) (err error)
+//sys	Fstatvfs(fd int, vfsstat *Statvfs_t) (err error)
+//sys	Getdents(fd int, buf []byte, basep *uintptr) (n int, err error)
+//sysnb	Getgid() (gid int)
+//sysnb	Getpid() (pid int)
+//sysnb	Getpgid(pid int) (pgid int, err error)
+//sysnb	Getpgrp() (pgid int, err error)
+//sys	Geteuid() (euid int)
+//sys	Getegid() (egid int)
+//sys	Getppid() (ppid int)
+//sys	Getpriority(which int, who int) (n int, err error)
+//sysnb	Getrlimit(which int, lim *Rlimit) (err error)
+//sysnb	Getrusage(who int, rusage *Rusage) (err error)
+//sysnb	Getsid(pid int) (sid int, err error)
+//sysnb	Gettimeofday(tv *Timeval) (err error)
+//sysnb	Getuid() (uid int)
+//sys	Kill(pid int, signum syscall.Signal) (err error)
+//sys	Lchown(path string, uid int, gid int) (err error)
+//sys	Link(path string, link string) (err error)
+//sys	Listen(s int, backlog int) (err error) = libsocket.__xnet_llisten
+//sys	Lstat(path string, stat *Stat_t) (err error)
+//sys	Madvise(b []byte, advice int) (err error)
+//sys	Mkdir(path string, mode uint32) (err error)
+//sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
+//sys	Mkfifo(path string, mode uint32) (err error)
+//sys	Mkfifoat(dirfd int, path string, mode uint32) (err error)
+//sys	Mknod(path string, mode uint32, dev int) (err error)
+//sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
+//sys	Mlock(b []byte) (err error)
+//sys	Mlockall(flags int) (err error)
+//sys	Mprotect(b []byte, prot int) (err error)
+//sys	Msync(b []byte, flags int) (err error)
+//sys	Munlock(b []byte) (err error)
+//sys	Munlockall() (err error)
+//sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
+//sys	Open(path string, mode int, perm uint32) (fd int, err error)
+//sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
+//sys	Pathconf(path string, name int) (val int, err error)
+//sys	Pause() (err error)
+//sys	pread(fd int, p []byte, offset int64) (n int, err error)
+//sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
+//sys	read(fd int, p []byte) (n int, err error)
+//sys	Readlink(path string, buf []byte) (n int, err error)
+//sys	Rename(from string, to string) (err error)
+//sys	Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error)
+//sys	Rmdir(path string) (err error)
+//sys	Seek(fd int, offset int64, whence int) (newoffset int64, err error) = lseek
+//sys	Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
+//sysnb	Setegid(egid int) (err error)
+//sysnb	Seteuid(euid int) (err error)
+//sysnb	Setgid(gid int) (err error)
+//sys	Sethostname(p []byte) (err error)
+//sysnb	Setpgid(pid int, pgid int) (err error)
+//sys	Setpriority(which int, who int, prio int) (err error)
+//sysnb	Setregid(rgid int, egid int) (err error)
+//sysnb	Setreuid(ruid int, euid int) (err error)
+//sysnb	Setrlimit(which int, lim *Rlimit) (err error)
+//sysnb	Setsid() (pid int, err error)
+//sysnb	Setuid(uid int) (err error)
+//sys	Shutdown(s int, how int) (err error) = libsocket.shutdown
+//sys	Stat(path string, stat *Stat_t) (err error)
+//sys	Statvfs(path string, vfsstat *Statvfs_t) (err error)
+//sys	Symlink(path string, link string) (err error)
+//sys	Sync() (err error)
+//sys	Sysconf(which int) (n int64, err error)
+//sysnb	Times(tms *Tms) (ticks uintptr, err error)
+//sys	Truncate(path string, length int64) (err error)
+//sys	Fsync(fd int) (err error)
+//sys	Ftruncate(fd int, length int64) (err error)
+//sys	Umask(mask int) (oldmask int)
+//sysnb	Uname(buf *Utsname) (err error)
+//sys	Unmount(target string, flags int) (err error) = libc.umount
+//sys	Unlink(path string) (err error)
+//sys	Unlinkat(dirfd int, path string, flags int) (err error)
+//sys	Ustat(dev int, ubuf *Ustat_t) (err error)
+//sys	Utime(path string, buf *Utimbuf) (err error)
+//sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_bind
+//sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_connect
+//sys	mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
+//sys	munmap(addr uintptr, length uintptr) (err error)
+//sys	sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) = libsendfile.sendfile
+//sys	sendto(s int, buf []byte, flags int, to unsafe.Pointer, addrlen _Socklen) (err error) = libsocket.__xnet_sendto
+//sys	socket(domain int, typ int, proto int) (fd int, err error) = libsocket.__xnet_socket
+//sysnb	socketpair(domain int, typ int, proto int, fd *[2]int32) (err error) = libsocket.__xnet_socketpair
+//sys	write(fd int, p []byte) (n int, err error)
+//sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error) = libsocket.__xnet_getsockopt
+//sysnb	getpeername(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getpeername
+//sys	setsockopt(s int, level int, name int, val unsafe.Pointer, vallen uintptr) (err error) = libsocket.setsockopt
+//sys	recvfrom(fd int, p []byte, flags int, from *RawSockaddrAny, fromlen *_Socklen) (n int, err error) = libsocket.recvfrom
 
 func readlen(fd int, buf *byte, nbuf int) (n int, err error) {
 	r0, _, e1 := sysvicall6(uintptr(unsafe.Pointer(&procread)), 3, uintptr(fd), uintptr(unsafe.Pointer(buf)), uintptr(nbuf), 0, 0, 0)
@@ -783,11 +783,11 @@ func NewEventPort() (*EventPort, error) {
 	return e, nil
 }
 
-// sys	port_create() (n int, err error)
-// sys	port_associate(port int, source int, object uintptr, events int, user *byte) (n int, err error)
-// sys	port_dissociate(port int, source int, object uintptr) (n int, err error)
-// sys	port_get(port int, pe *portEvent, timeout *Timespec) (n int, err error)
-// sys	port_getn(port int, pe *portEvent, max uint32, nget *uint32, timeout *Timespec) (n int, err error)
+//sys	port_create() (n int, err error)
+//sys	port_associate(port int, source int, object uintptr, events int, user *byte) (n int, err error)
+//sys	port_dissociate(port int, source int, object uintptr) (n int, err error)
+//sys	port_get(port int, pe *portEvent, timeout *Timespec) (n int, err error)
+//sys	port_getn(port int, pe *portEvent, max uint32, nget *uint32, timeout *Timespec) (n int, err error)
 
 // Close closes the event port.
 func (e *EventPort) Close() error {

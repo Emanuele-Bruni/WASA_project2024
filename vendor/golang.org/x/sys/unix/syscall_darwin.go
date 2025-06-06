@@ -141,7 +141,7 @@ func direntNamlen(buf []byte) (uint64, bool) {
 func PtraceAttach(pid int) (err error) { return ptrace(PT_ATTACH, pid, 0, 0) }
 func PtraceDetach(pid int) (err error) { return ptrace(PT_DETACH, pid, 0, 0) }
 
-// sysnb	pipe(p *[2]int32) (err error)
+//sysnb	pipe(p *[2]int32) (err error)
 
 func Pipe(p []int) (err error) {
 	if len(p) != 2 {
@@ -179,7 +179,7 @@ func xattrPointer(dest []byte) *byte {
 	return destp
 }
 
-// sys	getxattr(path string, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
+//sys	getxattr(path string, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
 
 func Getxattr(path string, attr string, dest []byte) (sz int, err error) {
 	return getxattr(path, attr, xattrPointer(dest), len(dest), 0, 0)
@@ -189,13 +189,13 @@ func Lgetxattr(link string, attr string, dest []byte) (sz int, err error) {
 	return getxattr(link, attr, xattrPointer(dest), len(dest), 0, XATTR_NOFOLLOW)
 }
 
-// sys	fgetxattr(fd int, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
+//sys	fgetxattr(fd int, attr string, dest *byte, size int, position uint32, options int) (sz int, err error)
 
 func Fgetxattr(fd int, attr string, dest []byte) (sz int, err error) {
 	return fgetxattr(fd, attr, xattrPointer(dest), len(dest), 0, 0)
 }
 
-// sys	setxattr(path string, attr string, data *byte, size int, position uint32, options int) (err error)
+//sys	setxattr(path string, attr string, data *byte, size int, position uint32, options int) (err error)
 
 func Setxattr(path string, attr string, data []byte, flags int) (err error) {
 	// The parameters for the OS X implementation vary slightly compared to the
@@ -231,13 +231,13 @@ func Lsetxattr(link string, attr string, data []byte, flags int) (err error) {
 	return setxattr(link, attr, xattrPointer(data), len(data), 0, flags|XATTR_NOFOLLOW)
 }
 
-// sys	fsetxattr(fd int, attr string, data *byte, size int, position uint32, options int) (err error)
+//sys	fsetxattr(fd int, attr string, data *byte, size int, position uint32, options int) (err error)
 
 func Fsetxattr(fd int, attr string, data []byte, flags int) (err error) {
 	return fsetxattr(fd, attr, xattrPointer(data), len(data), 0, 0)
 }
 
-// sys	removexattr(path string, attr string, options int) (err error)
+//sys	removexattr(path string, attr string, options int) (err error)
 
 func Removexattr(path string, attr string) (err error) {
 	// We wrap around and explicitly zero out the options provided to the OS X
@@ -250,13 +250,13 @@ func Lremovexattr(link string, attr string) (err error) {
 	return removexattr(link, attr, XATTR_NOFOLLOW)
 }
 
-// sys	fremovexattr(fd int, attr string, options int) (err error)
+//sys	fremovexattr(fd int, attr string, options int) (err error)
 
 func Fremovexattr(fd int, attr string) (err error) {
 	return fremovexattr(fd, attr, 0)
 }
 
-// sys	listxattr(path string, dest *byte, size int, options int) (sz int, err error)
+//sys	listxattr(path string, dest *byte, size int, options int) (sz int, err error)
 
 func Listxattr(path string, dest []byte) (sz int, err error) {
 	return listxattr(path, xattrPointer(dest), len(dest), 0)
@@ -266,25 +266,25 @@ func Llistxattr(link string, dest []byte) (sz int, err error) {
 	return listxattr(link, xattrPointer(dest), len(dest), XATTR_NOFOLLOW)
 }
 
-// sys	flistxattr(fd int, dest *byte, size int, options int) (sz int, err error)
+//sys	flistxattr(fd int, dest *byte, size int, options int) (sz int, err error)
 
 func Flistxattr(fd int, dest []byte) (sz int, err error) {
 	return flistxattr(fd, xattrPointer(dest), len(dest), 0)
 }
 
-// sys	utimensat(dirfd int, path string, times *[2]Timespec, flags int) (err error)
+//sys	utimensat(dirfd int, path string, times *[2]Timespec, flags int) (err error)
 
 /*
  * Wrapped
  */
 
-// sys	fcntl(fd int, cmd int, arg int) (val int, err error)
+//sys	fcntl(fd int, cmd int, arg int) (val int, err error)
 
-// sys	kill(pid int, signum int, posix int) (err error)
+//sys	kill(pid int, signum int, posix int) (err error)
 
 func Kill(pid int, signum syscall.Signal) (err error) { return kill(pid, int(signum), 1) }
 
-// sys	ioctl(fd int, req uint, arg uintptr) (err error)
+//sys	ioctl(fd int, req uint, arg uintptr) (err error)
 
 func IoctlCtlInfo(fd int, ctlInfo *CtlInfo) error {
 	err := ioctl(fd, CTLIOCGINFO, uintptr(unsafe.Pointer(ctlInfo)))
@@ -315,7 +315,7 @@ func IoctlSetIfreqMTU(fd int, ifreq *IfreqMTU) error {
 	return err
 }
 
-// sys	sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS_SYSCTL
+//sys	sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS_SYSCTL
 
 func Uname(uname *Utsname) error {
 	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
@@ -449,110 +449,110 @@ func SysctlKinfoProcSlice(name string, args ...int) ([]KinfoProc, error) {
 	return buf[:n/SizeofKinfoProc], nil
 }
 
-// sys	sendfile(infd int, outfd int, offset int64, len *int64, hdtr unsafe.Pointer, flags int) (err error)
+//sys	sendfile(infd int, outfd int, offset int64, len *int64, hdtr unsafe.Pointer, flags int) (err error)
 
-// sys	shmat(id int, addr uintptr, flag int) (ret uintptr, err error)
-// sys	shmctl(id int, cmd int, buf *SysvShmDesc) (result int, err error)
-// sys	shmdt(addr uintptr) (err error)
-// sys	shmget(key int, size int, flag int) (id int, err error)
+//sys	shmat(id int, addr uintptr, flag int) (ret uintptr, err error)
+//sys	shmctl(id int, cmd int, buf *SysvShmDesc) (result int, err error)
+//sys	shmdt(addr uintptr) (err error)
+//sys	shmget(key int, size int, flag int) (id int, err error)
 
 /*
  * Exposed directly
  */
-// sys	Access(path string, mode uint32) (err error)
-// sys	Adjtime(delta *Timeval, olddelta *Timeval) (err error)
-// sys	Chdir(path string) (err error)
-// sys	Chflags(path string, flags int) (err error)
-// sys	Chmod(path string, mode uint32) (err error)
-// sys	Chown(path string, uid int, gid int) (err error)
-// sys	Chroot(path string) (err error)
-// sys	ClockGettime(clockid int32, time *Timespec) (err error)
-// sys	Close(fd int) (err error)
-// sys	Clonefile(src string, dst string, flags int) (err error)
-// sys	Clonefileat(srcDirfd int, src string, dstDirfd int, dst string, flags int) (err error)
-// sys	Dup(fd int) (nfd int, err error)
-// sys	Dup2(from int, to int) (err error)
-// sys	Exchangedata(path1 string, path2 string, options int) (err error)
-// sys	Exit(code int)
-// sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
-// sys	Fchdir(fd int) (err error)
-// sys	Fchflags(fd int, flags int) (err error)
-// sys	Fchmod(fd int, mode uint32) (err error)
-// sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
-// sys	Fchown(fd int, uid int, gid int) (err error)
-// sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
-// sys	Fclonefileat(srcDirfd int, dstDirfd int, dst string, flags int) (err error)
-// sys	Flock(fd int, how int) (err error)
-// sys	Fpathconf(fd int, name int) (val int, err error)
-// sys	Fsync(fd int) (err error)
-// sys	Ftruncate(fd int, length int64) (err error)
-// sys	Getcwd(buf []byte) (n int, err error)
-// sys	Getdtablesize() (size int)
-// sysnb	Getegid() (egid int)
-// sysnb	Geteuid() (uid int)
-// sysnb	Getgid() (gid int)
-// sysnb	Getpgid(pid int) (pgid int, err error)
-// sysnb	Getpgrp() (pgrp int)
-// sysnb	Getpid() (pid int)
-// sysnb	Getppid() (ppid int)
-// sys	Getpriority(which int, who int) (prio int, err error)
-// sysnb	Getrlimit(which int, lim *Rlimit) (err error)
-// sysnb	Getrusage(who int, rusage *Rusage) (err error)
-// sysnb	Getsid(pid int) (sid int, err error)
-// sysnb	Gettimeofday(tp *Timeval) (err error)
-// sysnb	Getuid() (uid int)
-// sysnb	Issetugid() (tainted bool)
-// sys	Kqueue() (fd int, err error)
-// sys	Lchown(path string, uid int, gid int) (err error)
-// sys	Link(path string, link string) (err error)
-// sys	Linkat(pathfd int, path string, linkfd int, link string, flags int) (err error)
-// sys	Listen(s int, backlog int) (err error)
-// sys	Mkdir(path string, mode uint32) (err error)
-// sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
-// sys	Mkfifo(path string, mode uint32) (err error)
-// sys	Mknod(path string, mode uint32, dev int) (err error)
-// sys	Mount(fsType string, dir string, flags int, data unsafe.Pointer) (err error)
-// sys	Open(path string, mode int, perm uint32) (fd int, err error)
-// sys	Openat(dirfd int, path string, mode int, perm uint32) (fd int, err error)
-// sys	Pathconf(path string, name int) (val int, err error)
-// sys	pread(fd int, p []byte, offset int64) (n int, err error)
-// sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
-// sys	read(fd int, p []byte) (n int, err error)
-// sys	Readlink(path string, buf []byte) (n int, err error)
-// sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
-// sys	Rename(from string, to string) (err error)
-// sys	Renameat(fromfd int, from string, tofd int, to string) (err error)
-// sys	Revoke(path string) (err error)
-// sys	Rmdir(path string) (err error)
-// sys	Seek(fd int, offset int64, whence int) (newoffset int64, err error) = SYS_LSEEK
-// sys	Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
-// sys	Setegid(egid int) (err error)
-// sysnb	Seteuid(euid int) (err error)
-// sysnb	Setgid(gid int) (err error)
-// sys	Setlogin(name string) (err error)
-// sysnb	Setpgid(pid int, pgid int) (err error)
-// sys	Setpriority(which int, who int, prio int) (err error)
-// sys	Setprivexec(flag int) (err error)
-// sysnb	Setregid(rgid int, egid int) (err error)
-// sysnb	Setreuid(ruid int, euid int) (err error)
-// sysnb	Setrlimit(which int, lim *Rlimit) (err error)
-// sysnb	Setsid() (pid int, err error)
-// sysnb	Settimeofday(tp *Timeval) (err error)
-// sysnb	Setuid(uid int) (err error)
-// sys	Symlink(path string, link string) (err error)
-// sys	Symlinkat(oldpath string, newdirfd int, newpath string) (err error)
-// sys	Sync() (err error)
-// sys	Truncate(path string, length int64) (err error)
-// sys	Umask(newmask int) (oldmask int)
-// sys	Undelete(path string) (err error)
-// sys	Unlink(path string) (err error)
-// sys	Unlinkat(dirfd int, path string, flags int) (err error)
-// sys	Unmount(path string, flags int) (err error)
-// sys	write(fd int, p []byte) (n int, err error)
-// sys	mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
-// sys	munmap(addr uintptr, length uintptr) (err error)
-// sys	readlen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_READ
-// sys	writelen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_WRITE
+//sys	Access(path string, mode uint32) (err error)
+//sys	Adjtime(delta *Timeval, olddelta *Timeval) (err error)
+//sys	Chdir(path string) (err error)
+//sys	Chflags(path string, flags int) (err error)
+//sys	Chmod(path string, mode uint32) (err error)
+//sys	Chown(path string, uid int, gid int) (err error)
+//sys	Chroot(path string) (err error)
+//sys	ClockGettime(clockid int32, time *Timespec) (err error)
+//sys	Close(fd int) (err error)
+//sys	Clonefile(src string, dst string, flags int) (err error)
+//sys	Clonefileat(srcDirfd int, src string, dstDirfd int, dst string, flags int) (err error)
+//sys	Dup(fd int) (nfd int, err error)
+//sys	Dup2(from int, to int) (err error)
+//sys	Exchangedata(path1 string, path2 string, options int) (err error)
+//sys	Exit(code int)
+//sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
+//sys	Fchdir(fd int) (err error)
+//sys	Fchflags(fd int, flags int) (err error)
+//sys	Fchmod(fd int, mode uint32) (err error)
+//sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
+//sys	Fchown(fd int, uid int, gid int) (err error)
+//sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
+//sys	Fclonefileat(srcDirfd int, dstDirfd int, dst string, flags int) (err error)
+//sys	Flock(fd int, how int) (err error)
+//sys	Fpathconf(fd int, name int) (val int, err error)
+//sys	Fsync(fd int) (err error)
+//sys	Ftruncate(fd int, length int64) (err error)
+//sys	Getcwd(buf []byte) (n int, err error)
+//sys	Getdtablesize() (size int)
+//sysnb	Getegid() (egid int)
+//sysnb	Geteuid() (uid int)
+//sysnb	Getgid() (gid int)
+//sysnb	Getpgid(pid int) (pgid int, err error)
+//sysnb	Getpgrp() (pgrp int)
+//sysnb	Getpid() (pid int)
+//sysnb	Getppid() (ppid int)
+//sys	Getpriority(which int, who int) (prio int, err error)
+//sysnb	Getrlimit(which int, lim *Rlimit) (err error)
+//sysnb	Getrusage(who int, rusage *Rusage) (err error)
+//sysnb	Getsid(pid int) (sid int, err error)
+//sysnb	Gettimeofday(tp *Timeval) (err error)
+//sysnb	Getuid() (uid int)
+//sysnb	Issetugid() (tainted bool)
+//sys	Kqueue() (fd int, err error)
+//sys	Lchown(path string, uid int, gid int) (err error)
+//sys	Link(path string, link string) (err error)
+//sys	Linkat(pathfd int, path string, linkfd int, link string, flags int) (err error)
+//sys	Listen(s int, backlog int) (err error)
+//sys	Mkdir(path string, mode uint32) (err error)
+//sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
+//sys	Mkfifo(path string, mode uint32) (err error)
+//sys	Mknod(path string, mode uint32, dev int) (err error)
+//sys	Mount(fsType string, dir string, flags int, data unsafe.Pointer) (err error)
+//sys	Open(path string, mode int, perm uint32) (fd int, err error)
+//sys	Openat(dirfd int, path string, mode int, perm uint32) (fd int, err error)
+//sys	Pathconf(path string, name int) (val int, err error)
+//sys	pread(fd int, p []byte, offset int64) (n int, err error)
+//sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
+//sys	read(fd int, p []byte) (n int, err error)
+//sys	Readlink(path string, buf []byte) (n int, err error)
+//sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
+//sys	Rename(from string, to string) (err error)
+//sys	Renameat(fromfd int, from string, tofd int, to string) (err error)
+//sys	Revoke(path string) (err error)
+//sys	Rmdir(path string) (err error)
+//sys	Seek(fd int, offset int64, whence int) (newoffset int64, err error) = SYS_LSEEK
+//sys	Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
+//sys	Setegid(egid int) (err error)
+//sysnb	Seteuid(euid int) (err error)
+//sysnb	Setgid(gid int) (err error)
+//sys	Setlogin(name string) (err error)
+//sysnb	Setpgid(pid int, pgid int) (err error)
+//sys	Setpriority(which int, who int, prio int) (err error)
+//sys	Setprivexec(flag int) (err error)
+//sysnb	Setregid(rgid int, egid int) (err error)
+//sysnb	Setreuid(ruid int, euid int) (err error)
+//sysnb	Setrlimit(which int, lim *Rlimit) (err error)
+//sysnb	Setsid() (pid int, err error)
+//sysnb	Settimeofday(tp *Timeval) (err error)
+//sysnb	Setuid(uid int) (err error)
+//sys	Symlink(path string, link string) (err error)
+//sys	Symlinkat(oldpath string, newdirfd int, newpath string) (err error)
+//sys	Sync() (err error)
+//sys	Truncate(path string, length int64) (err error)
+//sys	Umask(newmask int) (oldmask int)
+//sys	Undelete(path string) (err error)
+//sys	Unlink(path string) (err error)
+//sys	Unlinkat(dirfd int, path string, flags int) (err error)
+//sys	Unmount(path string, flags int) (err error)
+//sys	write(fd int, p []byte) (n int, err error)
+//sys	mmap(addr uintptr, length uintptr, prot int, flag int, fd int, pos int64) (ret uintptr, err error)
+//sys	munmap(addr uintptr, length uintptr) (err error)
+//sys	readlen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_READ
+//sys	writelen(fd int, buf *byte, nbuf int) (n int, err error) = SYS_WRITE
 
 /*
  * Unimplemented

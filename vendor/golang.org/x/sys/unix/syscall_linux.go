@@ -45,8 +45,8 @@ func EpollCreate(size int) (fd int, err error) {
 	return EpollCreate1(0)
 }
 
-// sys	FanotifyInit(flags uint, event_f_flags uint) (fd int, err error)
-// sys	fanotifyMark(fd int, flags uint, mask uint64, dirFd int, pathname *byte) (err error)
+//sys	FanotifyInit(flags uint, event_f_flags uint) (fd int, err error)
+//sys	fanotifyMark(fd int, flags uint, mask uint64, dirFd int, pathname *byte) (err error)
 
 func FanotifyMark(fd int, flags uint, mask uint64, dirFd int, pathname string) (err error) {
 	if pathname == "" {
@@ -59,7 +59,7 @@ func FanotifyMark(fd int, flags uint, mask uint64, dirFd int, pathname string) (
 	return fanotifyMark(fd, flags, mask, dirFd, p)
 }
 
-// sys	fchmodat(dirfd int, path string, mode uint32) (err error)
+//sys	fchmodat(dirfd int, path string, mode uint32) (err error)
 
 func Fchmodat(dirfd int, path string, mode uint32, flags int) (err error) {
 	// Linux fchmodat doesn't support the flags parameter. Mimick glibc's behavior
@@ -77,8 +77,8 @@ func InotifyInit() (fd int, err error) {
 	return InotifyInit1(0)
 }
 
-// sys	ioctl(fd int, req uint, arg uintptr) (err error) = SYS_IOCTL
-// sys	ioctlPtr(fd int, req uint, arg unsafe.Pointer) (err error) = SYS_IOCTL
+//sys	ioctl(fd int, req uint, arg uintptr) (err error) = SYS_IOCTL
+//sys	ioctlPtr(fd int, req uint, arg unsafe.Pointer) (err error) = SYS_IOCTL
 
 // ioctl itself should not be exposed directly, but additional get/set functions
 // for specific types are permissible. These are defined in ioctl.go and
@@ -90,7 +90,7 @@ func InotifyInit() (fd int, err error) {
 //
 // TODO: some existing code incorrectly uses ioctl when it should use ioctlPtr.
 
-// sys	Linkat(olddirfd int, oldpath string, newdirfd int, newpath string, flags int) (err error)
+//sys	Linkat(olddirfd int, oldpath string, newdirfd int, newpath string, flags int) (err error)
 
 func Link(oldpath string, newpath string) (err error) {
 	return Linkat(AT_FDCWD, oldpath, AT_FDCWD, newpath, 0)
@@ -108,13 +108,13 @@ func Open(path string, mode int, perm uint32) (fd int, err error) {
 	return openat(AT_FDCWD, path, mode|O_LARGEFILE, perm)
 }
 
-// sys	openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
+//sys	openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
 
 func Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error) {
 	return openat(dirfd, path, flags|O_LARGEFILE, mode)
 }
 
-// sys	openat2(dirfd int, path string, open_how *OpenHow, size int) (fd int, err error)
+//sys	openat2(dirfd int, path string, open_how *OpenHow, size int) (fd int, err error)
 
 func Openat2(dirfd int, path string, how *OpenHow) (fd int, err error) {
 	return openat2(dirfd, path, how, SizeofOpenHow)
@@ -124,7 +124,7 @@ func Pipe(p []int) error {
 	return Pipe2(p, 0)
 }
 
-// sysnb	pipe2(p *[2]_C_int, flags int) (err error)
+//sysnb	pipe2(p *[2]_C_int, flags int) (err error)
 
 func Pipe2(p []int, flags int) error {
 	if len(p) != 2 {
@@ -139,7 +139,7 @@ func Pipe2(p []int, flags int) error {
 	return err
 }
 
-// sys	ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)
+//sys	ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)
 
 func Ppoll(fds []PollFd, timeout *Timespec, sigmask *Sigset_t) (n int, err error) {
 	if len(fds) == 0 {
@@ -157,7 +157,7 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 	return Ppoll(fds, ts, nil)
 }
 
-// sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
+//sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)
 
 func Readlink(path string, buf []byte) (n int, err error) {
 	return Readlinkat(AT_FDCWD, path, buf)
@@ -171,7 +171,7 @@ func Rmdir(path string) error {
 	return Unlinkat(AT_FDCWD, path, AT_REMOVEDIR)
 }
 
-// sys	Symlinkat(oldpath string, newdirfd int, newpath string) (err error)
+//sys	Symlinkat(oldpath string, newdirfd int, newpath string) (err error)
 
 func Symlink(oldpath string, newpath string) (err error) {
 	return Symlinkat(oldpath, AT_FDCWD, newpath)
@@ -181,7 +181,7 @@ func Unlink(path string) error {
 	return Unlinkat(AT_FDCWD, path, 0)
 }
 
-// sys	Unlinkat(dirfd int, path string, flags int) (err error)
+//sys	Unlinkat(dirfd int, path string, flags int) (err error)
 
 func Utimes(path string, tv []Timeval) error {
 	if tv == nil {
@@ -204,7 +204,7 @@ func Utimes(path string, tv []Timeval) error {
 	return utimes(path, (*[2]Timeval)(unsafe.Pointer(&tv[0])))
 }
 
-// sys	utimensat(dirfd int, path string, times *[2]Timespec, flags int) (err error)
+//sys	utimensat(dirfd int, path string, times *[2]Timespec, flags int) (err error)
 
 func UtimesNano(path string, ts []Timespec) error {
 	return UtimesNanoAt(AT_FDCWD, path, ts, 0)
@@ -238,7 +238,7 @@ func Futimes(fd int, tv []Timeval) (err error) {
 
 const ImplementsGetwd = true
 
-// sys	Getcwd(buf []byte) (n int, err error)
+//sys	Getcwd(buf []byte) (n int, err error)
 
 func Getwd() (wd string, err error) {
 	var buf [PathMax]byte
@@ -355,7 +355,7 @@ func (w WaitStatus) TrapCause() int {
 	return int(w>>shift) >> 8
 }
 
-// sys	wait4(pid int, wstatus *_C_int, options int, rusage *Rusage) (wpid int, err error)
+//sys	wait4(pid int, wstatus *_C_int, options int, rusage *Rusage) (wpid int, err error)
 
 func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, err error) {
 	var status _C_int
@@ -366,7 +366,7 @@ func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int,
 	return
 }
 
-// sys	Waitid(idType int, id int, info *Siginfo, options int, rusage *Rusage) (err error)
+//sys	Waitid(idType int, id int, info *Siginfo, options int, rusage *Rusage) (err error)
 
 func Mkfifo(path string, mode uint32) error {
 	return Mknod(path, mode|S_IFIFO, 0)
@@ -512,24 +512,24 @@ func (sa *SockaddrL2) sockaddr() (unsafe.Pointer, _Socklen, error) {
 //
 // Server example:
 //
-// 	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
-// 	_ = unix.Bind(fd, &unix.SockaddrRFCOMM{
-// 		Channel: 1,
-// 		Addr:    [6]uint8{0, 0, 0, 0, 0, 0}, // BDADDR_ANY or 00:00:00:00:00:00
-// 	})
-// 	_ = Listen(fd, 1)
-// 	nfd, sa, _ := Accept(fd)
-// 	fmt.Printf("conn addr=%v fd=%d", sa.(*unix.SockaddrRFCOMM).Addr, nfd)
-// 	Read(nfd, buf)
+//	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
+//	_ = unix.Bind(fd, &unix.SockaddrRFCOMM{
+//		Channel: 1,
+//		Addr:    [6]uint8{0, 0, 0, 0, 0, 0}, // BDADDR_ANY or 00:00:00:00:00:00
+//	})
+//	_ = Listen(fd, 1)
+//	nfd, sa, _ := Accept(fd)
+//	fmt.Printf("conn addr=%v fd=%d", sa.(*unix.SockaddrRFCOMM).Addr, nfd)
+//	Read(nfd, buf)
 //
 // Client example:
 //
-// 	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
-// 	_ = Connect(fd, &SockaddrRFCOMM{
-// 		Channel: 1,
-// 		Addr:    [6]byte{0x11, 0x22, 0x33, 0xaa, 0xbb, 0xcc}, // CC:BB:AA:33:22:11
-// 	})
-// 	Write(fd, []byte(`hello`))
+//	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
+//	_ = Connect(fd, &SockaddrRFCOMM{
+//		Channel: 1,
+//		Addr:    [6]byte{0x11, 0x22, 0x33, 0xaa, 0xbb, 0xcc}, // CC:BB:AA:33:22:11
+//	})
+//	Write(fd, []byte(`hello`))
 type SockaddrRFCOMM struct {
 	// Addr represents a bluetooth address, byte ordering is little-endian.
 	Addr [6]uint8
@@ -556,12 +556,12 @@ func (sa *SockaddrRFCOMM) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // The SockaddrCAN struct must be bound to the socket file descriptor
 // using Bind before the CAN socket can be used.
 //
-// 	// Read one raw CAN frame
-// 	fd, _ := Socket(AF_CAN, SOCK_RAW, CAN_RAW)
-// 	addr := &SockaddrCAN{Ifindex: index}
-// 	Bind(fd, addr)
-// 	frame := make([]byte, 16)
-// 	Read(fd, frame)
+//	// Read one raw CAN frame
+//	fd, _ := Socket(AF_CAN, SOCK_RAW, CAN_RAW)
+//	addr := &SockaddrCAN{Ifindex: index}
+//	Bind(fd, addr)
+//	frame := make([]byte, 16)
+//	Read(fd, frame)
 //
 // The full SocketCAN documentation can be found in the linux kernel
 // archives at: https://www.kernel.org/doc/Documentation/networking/can.txt
@@ -632,13 +632,13 @@ func (sa *SockaddrCANJ1939) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // Here is an example of using an AF_ALG socket with SHA1 hashing.
 // The initial socket setup process is as follows:
 //
-// 	// Open a socket to perform SHA1 hashing.
-// 	fd, _ := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
-// 	addr := &unix.SockaddrALG{Type: "hash", Name: "sha1"}
-// 	unix.Bind(fd, addr)
-// 	// Note: unix.Accept does not work at this time; must invoke accept()
-// 	// manually using unix.Syscall.
-// 	hashfd, _, _ := unix.Syscall(unix.SYS_ACCEPT, uintptr(fd), 0, 0)
+//	// Open a socket to perform SHA1 hashing.
+//	fd, _ := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
+//	addr := &unix.SockaddrALG{Type: "hash", Name: "sha1"}
+//	unix.Bind(fd, addr)
+//	// Note: unix.Accept does not work at this time; must invoke accept()
+//	// manually using unix.Syscall.
+//	hashfd, _, _ := unix.Syscall(unix.SYS_ACCEPT, uintptr(fd), 0, 0)
 //
 // Once a file descriptor has been returned from Accept, it may be used to
 // perform SHA1 hashing. The descriptor is not safe for concurrent use, but
@@ -647,39 +647,39 @@ func (sa *SockaddrCANJ1939) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // When hashing a small byte slice or string, a single Write and Read may
 // be used:
 //
-// 	// Assume hashfd is already configured using the setup process.
-// 	hash := os.NewFile(hashfd, "sha1")
-// 	// Hash an input string and read the results. Each Write discards
-// 	// previous hash state. Read always reads the current state.
-// 	b := make([]byte, 20)
-// 	for i := 0; i < 2; i++ {
-// 	    io.WriteString(hash, "Hello, world.")
-// 	    hash.Read(b)
-// 	    fmt.Println(hex.EncodeToString(b))
-// 	}
-// 	// Output:
-// 	// 2ae01472317d1935a84797ec1983ae243fc6aa28
-// 	// 2ae01472317d1935a84797ec1983ae243fc6aa28
+//	// Assume hashfd is already configured using the setup process.
+//	hash := os.NewFile(hashfd, "sha1")
+//	// Hash an input string and read the results. Each Write discards
+//	// previous hash state. Read always reads the current state.
+//	b := make([]byte, 20)
+//	for i := 0; i < 2; i++ {
+//	    io.WriteString(hash, "Hello, world.")
+//	    hash.Read(b)
+//	    fmt.Println(hex.EncodeToString(b))
+//	}
+//	// Output:
+//	// 2ae01472317d1935a84797ec1983ae243fc6aa28
+//	// 2ae01472317d1935a84797ec1983ae243fc6aa28
 //
 // For hashing larger byte slices, or byte streams such as those read from
 // a file or socket, use Sendto with MSG_MORE to instruct the kernel to update
 // the hash digest instead of creating a new one for a given chunk and finalizing it.
 //
-// 	// Assume hashfd and addr are already configured using the setup process.
-// 	hash := os.NewFile(hashfd, "sha1")
-// 	// Hash the contents of a file.
-// 	f, _ := os.Open("/tmp/linux-4.10-rc7.tar.xz")
-// 	b := make([]byte, 4096)
-// 	for {
-// 	    n, err := f.Read(b)
-// 	    if err == io.EOF {
-// 	        break
-// 	    }
-// 	    unix.Sendto(hashfd, b[:n], unix.MSG_MORE, addr)
-// 	}
-// 	hash.Read(b)
-// 	fmt.Println(hex.EncodeToString(b))
-// 	// Output: 85cdcad0c06eef66f805ecce353bec9accbeecc5
+//	// Assume hashfd and addr are already configured using the setup process.
+//	hash := os.NewFile(hashfd, "sha1")
+//	// Hash the contents of a file.
+//	f, _ := os.Open("/tmp/linux-4.10-rc7.tar.xz")
+//	b := make([]byte, 4096)
+//	for {
+//	    n, err := f.Read(b)
+//	    if err == io.EOF {
+//	        break
+//	    }
+//	    unix.Sendto(hashfd, b[:n], unix.MSG_MORE, addr)
+//	}
+//	hash.Read(b)
+//	fmt.Println(hex.EncodeToString(b))
+//	// Output: 85cdcad0c06eef66f805ecce353bec9accbeecc5
 //
 // For more information, see: http://www.chronox.de/crypto-API/crypto/userspace-if.html.
 type SockaddrALG struct {
@@ -1371,12 +1371,12 @@ func SetsockoptTCPRepairOpt(fd, level, opt int, o []TCPRepairOpt) (err error) {
 // KEYCTL_UNLINK, KEYCTL_NEGATE, KEYCTL_SET_REQKEY_KEYRING, KEYCTL_SET_TIMEOUT,
 // KEYCTL_ASSUME_AUTHORITY, KEYCTL_SESSION_TO_PARENT, KEYCTL_REJECT,
 // KEYCTL_INVALIDATE, and KEYCTL_GET_PERSISTENT.
-// sys	KeyctlInt(cmd int, arg2 int, arg3 int, arg4 int, arg5 int) (ret int, err error) = SYS_KEYCTL
+//sys	KeyctlInt(cmd int, arg2 int, arg3 int, arg4 int, arg5 int) (ret int, err error) = SYS_KEYCTL
 
 // KeyctlBuffer calls keyctl commands in which the third and fourth
 // arguments are a buffer and its length, respectively.
 // These commands are KEYCTL_UPDATE, KEYCTL_READ, and KEYCTL_INSTANTIATE.
-// sys	KeyctlBuffer(cmd int, arg2 int, buf []byte, arg5 int) (ret int, err error) = SYS_KEYCTL
+//sys	KeyctlBuffer(cmd int, arg2 int, buf []byte, arg5 int) (ret int, err error) = SYS_KEYCTL
 
 // KeyctlString calls keyctl commands which return a string.
 // These commands are KEYCTL_DESCRIBE and KEYCTL_GET_SECURITY.
@@ -1427,7 +1427,7 @@ func KeyctlSetperm(id int, perm uint32) error {
 	return err
 }
 
-// sys	keyctlJoin(cmd int, arg2 string) (ret int, err error) = SYS_KEYCTL
+//sys	keyctlJoin(cmd int, arg2 string) (ret int, err error) = SYS_KEYCTL
 
 // KeyctlJoinSessionKeyring implements the KEYCTL_JOIN_SESSION_KEYRING command.
 // See the full documentation at:
@@ -1436,7 +1436,7 @@ func KeyctlJoinSessionKeyring(name string) (ringid int, err error) {
 	return keyctlJoin(KEYCTL_JOIN_SESSION_KEYRING, name)
 }
 
-// sys	keyctlSearch(cmd int, arg2 int, arg3 string, arg4 string, arg5 int) (ret int, err error) = SYS_KEYCTL
+//sys	keyctlSearch(cmd int, arg2 int, arg3 string, arg4 string, arg5 int) (ret int, err error) = SYS_KEYCTL
 
 // KeyctlSearch implements the KEYCTL_SEARCH command.
 // See the full documentation at:
@@ -1445,7 +1445,7 @@ func KeyctlSearch(ringid int, keyType, description string, destRingid int) (id i
 	return keyctlSearch(KEYCTL_SEARCH, ringid, keyType, description, destRingid)
 }
 
-// sys	keyctlIOV(cmd int, arg2 int, payload []Iovec, arg5 int) (err error) = SYS_KEYCTL
+//sys	keyctlIOV(cmd int, arg2 int, payload []Iovec, arg5 int) (err error) = SYS_KEYCTL
 
 // KeyctlInstantiateIOV implements the KEYCTL_INSTANTIATE_IOV command. This
 // command is similar to KEYCTL_INSTANTIATE, except that the payload is a slice
@@ -1456,7 +1456,7 @@ func KeyctlInstantiateIOV(id int, payload []Iovec, ringid int) error {
 	return keyctlIOV(KEYCTL_INSTANTIATE_IOV, id, payload, ringid)
 }
 
-// sys	keyctlDH(cmd int, arg2 *KeyctlDHParams, buf []byte) (ret int, err error) = SYS_KEYCTL
+//sys	keyctlDH(cmd int, arg2 *KeyctlDHParams, buf []byte) (ret int, err error) = SYS_KEYCTL
 
 // KeyctlDHCompute implements the KEYCTL_DH_COMPUTE command. This command
 // computes a Diffie-Hellman shared secret based on the provide params. The
@@ -1496,8 +1496,8 @@ func KeyctlRestrictKeyring(ringid int, keyType string, restriction string) error
 	return keyctlRestrictKeyringByType(KEYCTL_RESTRICT_KEYRING, ringid, keyType, restriction)
 }
 
-// sys	keyctlRestrictKeyringByType(cmd int, arg2 int, keyType string, restriction string) (err error) = SYS_KEYCTL
-// sys	keyctlRestrictKeyring(cmd int, arg2 int) (err error) = SYS_KEYCTL
+//sys	keyctlRestrictKeyringByType(cmd int, arg2 int, keyType string, restriction string) (err error) = SYS_KEYCTL
+//sys	keyctlRestrictKeyring(cmd int, arg2 int) (err error) = SYS_KEYCTL
 
 func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
@@ -1576,7 +1576,7 @@ func BindToDevice(fd int, device string) (err error) {
 	return SetsockoptString(fd, SOL_SOCKET, SO_BINDTODEVICE, device)
 }
 
-// sys	ptrace(request int, pid int, addr uintptr, data uintptr) (err error)
+//sys	ptrace(request int, pid int, addr uintptr, data uintptr) (err error)
 
 func ptracePeek(req int, pid int, addr uintptr, out []byte) (count int, err error) {
 	// The peek requests are machine-size oriented, so we wrap it
@@ -1730,7 +1730,7 @@ func PtraceSeize(pid int) (err error) { return ptrace(PTRACE_SEIZE, pid, 0, 0) }
 
 func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0) }
 
-// sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
+//sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
 
 func Reboot(cmd int) (err error) {
 	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
@@ -1752,7 +1752,7 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	return reclen - uint64(unsafe.Offsetof(Dirent{}.Name)), true
 }
 
-// sys	mount(source string, target string, fstype string, flags uintptr, data *byte) (err error)
+//sys	mount(source string, target string, fstype string, flags uintptr, data *byte) (err error)
 
 func Mount(source string, target string, fstype string, flags uintptr, data string) (err error) {
 	// Certain file systems get rather angry and EINVAL if you give
@@ -1767,7 +1767,7 @@ func Mount(source string, target string, fstype string, flags uintptr, data stri
 	return mount(source, target, fstype, flags, datap)
 }
 
-// sys	mountSetattr(dirfd int, pathname string, flags uint, attr *MountAttr, size uintptr) (err error) = SYS_MOUNT_SETATTR
+//sys	mountSetattr(dirfd int, pathname string, flags uint, attr *MountAttr, size uintptr) (err error) = SYS_MOUNT_SETATTR
 
 // MountSetattr is a wrapper for mount_setattr(2).
 // https://man7.org/linux/man-pages/man2/mount_setattr.2.html
@@ -1791,94 +1791,94 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 /*
  * Direct access
  */
-// sys	Acct(path string) (err error)
-// sys	AddKey(keyType string, description string, payload []byte, ringid int) (id int, err error)
-// sys	Adjtimex(buf *Timex) (state int, err error)
-// sysnb	Capget(hdr *CapUserHeader, data *CapUserData) (err error)
-// sysnb	Capset(hdr *CapUserHeader, data *CapUserData) (err error)
-// sys	Chdir(path string) (err error)
-// sys	Chroot(path string) (err error)
-// sys	ClockGetres(clockid int32, res *Timespec) (err error)
-// sys	ClockGettime(clockid int32, time *Timespec) (err error)
-// sys	ClockNanosleep(clockid int32, flags int, request *Timespec, remain *Timespec) (err error)
-// sys	Close(fd int) (err error)
-// sys	CloseRange(first uint, last uint, flags uint) (err error)
-// sys	CopyFileRange(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int, err error)
-// sys	DeleteModule(name string, flags int) (err error)
-// sys	Dup(oldfd int) (fd int, err error)
+//sys	Acct(path string) (err error)
+//sys	AddKey(keyType string, description string, payload []byte, ringid int) (id int, err error)
+//sys	Adjtimex(buf *Timex) (state int, err error)
+//sysnb	Capget(hdr *CapUserHeader, data *CapUserData) (err error)
+//sysnb	Capset(hdr *CapUserHeader, data *CapUserData) (err error)
+//sys	Chdir(path string) (err error)
+//sys	Chroot(path string) (err error)
+//sys	ClockGetres(clockid int32, res *Timespec) (err error)
+//sys	ClockGettime(clockid int32, time *Timespec) (err error)
+//sys	ClockNanosleep(clockid int32, flags int, request *Timespec, remain *Timespec) (err error)
+//sys	Close(fd int) (err error)
+//sys	CloseRange(first uint, last uint, flags uint) (err error)
+//sys	CopyFileRange(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int, err error)
+//sys	DeleteModule(name string, flags int) (err error)
+//sys	Dup(oldfd int) (fd int, err error)
 
 func Dup2(oldfd, newfd int) error {
 	return Dup3(oldfd, newfd, 0)
 }
 
-// sys	Dup3(oldfd int, newfd int, flags int) (err error)
-// sysnb	EpollCreate1(flag int) (fd int, err error)
-// sysnb	EpollCtl(epfd int, op int, fd int, event *EpollEvent) (err error)
-// sys	Eventfd(initval uint, flags int) (fd int, err error) = SYS_EVENTFD2
-// sys	Exit(code int) = SYS_EXIT_GROUP
-// sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
-// sys	Fchdir(fd int) (err error)
-// sys	Fchmod(fd int, mode uint32) (err error)
-// sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
-// sys	Fdatasync(fd int) (err error)
-// sys	Fgetxattr(fd int, attr string, dest []byte) (sz int, err error)
-// sys	FinitModule(fd int, params string, flags int) (err error)
-// sys	Flistxattr(fd int, dest []byte) (sz int, err error)
-// sys	Flock(fd int, how int) (err error)
-// sys	Fremovexattr(fd int, attr string) (err error)
-// sys	Fsetxattr(fd int, attr string, dest []byte, flags int) (err error)
-// sys	Fsync(fd int) (err error)
-// sys	Fsmount(fd int, flags int, mountAttrs int) (fsfd int, err error)
-// sys	Fsopen(fsName string, flags int) (fd int, err error)
-// sys	Fspick(dirfd int, pathName string, flags int) (fd int, err error)
-// sys	Getdents(fd int, buf []byte) (n int, err error) = SYS_GETDENTS64
-// sysnb	Getpgid(pid int) (pgid int, err error)
+//sys	Dup3(oldfd int, newfd int, flags int) (err error)
+//sysnb	EpollCreate1(flag int) (fd int, err error)
+//sysnb	EpollCtl(epfd int, op int, fd int, event *EpollEvent) (err error)
+//sys	Eventfd(initval uint, flags int) (fd int, err error) = SYS_EVENTFD2
+//sys	Exit(code int) = SYS_EXIT_GROUP
+//sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
+//sys	Fchdir(fd int) (err error)
+//sys	Fchmod(fd int, mode uint32) (err error)
+//sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
+//sys	Fdatasync(fd int) (err error)
+//sys	Fgetxattr(fd int, attr string, dest []byte) (sz int, err error)
+//sys	FinitModule(fd int, params string, flags int) (err error)
+//sys	Flistxattr(fd int, dest []byte) (sz int, err error)
+//sys	Flock(fd int, how int) (err error)
+//sys	Fremovexattr(fd int, attr string) (err error)
+//sys	Fsetxattr(fd int, attr string, dest []byte, flags int) (err error)
+//sys	Fsync(fd int) (err error)
+//sys	Fsmount(fd int, flags int, mountAttrs int) (fsfd int, err error)
+//sys	Fsopen(fsName string, flags int) (fd int, err error)
+//sys	Fspick(dirfd int, pathName string, flags int) (fd int, err error)
+//sys	Getdents(fd int, buf []byte) (n int, err error) = SYS_GETDENTS64
+//sysnb	Getpgid(pid int) (pgid int, err error)
 
 func Getpgrp() (pid int) {
 	pid, _ = Getpgid(0)
 	return
 }
 
-// sysnb	Getpid() (pid int)
-// sysnb	Getppid() (ppid int)
-// sys	Getpriority(which int, who int) (prio int, err error)
-// sys	Getrandom(buf []byte, flags int) (n int, err error)
-// sysnb	Getrusage(who int, rusage *Rusage) (err error)
-// sysnb	Getsid(pid int) (sid int, err error)
-// sysnb	Gettid() (tid int)
-// sys	Getxattr(path string, attr string, dest []byte) (sz int, err error)
-// sys	InitModule(moduleImage []byte, params string) (err error)
-// sys	InotifyAddWatch(fd int, pathname string, mask uint32) (watchdesc int, err error)
-// sysnb	InotifyInit1(flags int) (fd int, err error)
-// sysnb	InotifyRmWatch(fd int, watchdesc uint32) (success int, err error)
-// sysnb	Kill(pid int, sig syscall.Signal) (err error)
-// sys	Klogctl(typ int, buf []byte) (n int, err error) = SYS_SYSLOG
-// sys	Lgetxattr(path string, attr string, dest []byte) (sz int, err error)
-// sys	Listxattr(path string, dest []byte) (sz int, err error)
-// sys	Llistxattr(path string, dest []byte) (sz int, err error)
-// sys	Lremovexattr(path string, attr string) (err error)
-// sys	Lsetxattr(path string, attr string, data []byte, flags int) (err error)
-// sys	MemfdCreate(name string, flags int) (fd int, err error)
-// sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
-// sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
-// sys	MoveMount(fromDirfd int, fromPathName string, toDirfd int, toPathName string, flags int) (err error)
-// sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
-// sys	OpenTree(dfd int, fileName string, flags uint) (r int, err error)
-// sys	PerfEventOpen(attr *PerfEventAttr, pid int, cpu int, groupFd int, flags int) (fd int, err error)
-// sys	PivotRoot(newroot string, putold string) (err error) = SYS_PIVOT_ROOT
-// sysnb	Prlimit(pid int, resource int, newlimit *Rlimit, old *Rlimit) (err error) = SYS_PRLIMIT64
-// sys	Prctl(option int, arg2 uintptr, arg3 uintptr, arg4 uintptr, arg5 uintptr) (err error)
-// sys	Pselect(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timespec, sigmask *Sigset_t) (n int, err error) = SYS_PSELECT6
-// sys	read(fd int, p []byte) (n int, err error)
-// sys	Removexattr(path string, attr string) (err error)
-// sys	Renameat2(olddirfd int, oldpath string, newdirfd int, newpath string, flags uint) (err error)
-// sys	RequestKey(keyType string, description string, callback string, destRingid int) (id int, err error)
-// sys	Setdomainname(p []byte) (err error)
-// sys	Sethostname(p []byte) (err error)
-// sysnb	Setpgid(pid int, pgid int) (err error)
-// sysnb	Setsid() (pid int, err error)
-// sysnb	Settimeofday(tv *Timeval) (err error)
-// sys	Setns(fd int, nstype int) (err error)
+//sysnb	Getpid() (pid int)
+//sysnb	Getppid() (ppid int)
+//sys	Getpriority(which int, who int) (prio int, err error)
+//sys	Getrandom(buf []byte, flags int) (n int, err error)
+//sysnb	Getrusage(who int, rusage *Rusage) (err error)
+//sysnb	Getsid(pid int) (sid int, err error)
+//sysnb	Gettid() (tid int)
+//sys	Getxattr(path string, attr string, dest []byte) (sz int, err error)
+//sys	InitModule(moduleImage []byte, params string) (err error)
+//sys	InotifyAddWatch(fd int, pathname string, mask uint32) (watchdesc int, err error)
+//sysnb	InotifyInit1(flags int) (fd int, err error)
+//sysnb	InotifyRmWatch(fd int, watchdesc uint32) (success int, err error)
+//sysnb	Kill(pid int, sig syscall.Signal) (err error)
+//sys	Klogctl(typ int, buf []byte) (n int, err error) = SYS_SYSLOG
+//sys	Lgetxattr(path string, attr string, dest []byte) (sz int, err error)
+//sys	Listxattr(path string, dest []byte) (sz int, err error)
+//sys	Llistxattr(path string, dest []byte) (sz int, err error)
+//sys	Lremovexattr(path string, attr string) (err error)
+//sys	Lsetxattr(path string, attr string, data []byte, flags int) (err error)
+//sys	MemfdCreate(name string, flags int) (fd int, err error)
+//sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
+//sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
+//sys	MoveMount(fromDirfd int, fromPathName string, toDirfd int, toPathName string, flags int) (err error)
+//sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
+//sys	OpenTree(dfd int, fileName string, flags uint) (r int, err error)
+//sys	PerfEventOpen(attr *PerfEventAttr, pid int, cpu int, groupFd int, flags int) (fd int, err error)
+//sys	PivotRoot(newroot string, putold string) (err error) = SYS_PIVOT_ROOT
+//sysnb	Prlimit(pid int, resource int, newlimit *Rlimit, old *Rlimit) (err error) = SYS_PRLIMIT64
+//sys	Prctl(option int, arg2 uintptr, arg3 uintptr, arg4 uintptr, arg5 uintptr) (err error)
+//sys	Pselect(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timespec, sigmask *Sigset_t) (n int, err error) = SYS_PSELECT6
+//sys	read(fd int, p []byte) (n int, err error)
+//sys	Removexattr(path string, attr string) (err error)
+//sys	Renameat2(olddirfd int, oldpath string, newdirfd int, newpath string, flags uint) (err error)
+//sys	RequestKey(keyType string, description string, callback string, destRingid int) (id int, err error)
+//sys	Setdomainname(p []byte) (err error)
+//sys	Sethostname(p []byte) (err error)
+//sysnb	Setpgid(pid int, pgid int) (err error)
+//sysnb	Setsid() (pid int, err error)
+//sysnb	Settimeofday(tv *Timeval) (err error)
+//sys	Setns(fd int, nstype int) (err error)
 
 // PrctlRetInt performs a prctl operation specified by option and further
 // optional arguments arg2 through arg5 depending on option. It returns a
@@ -1932,33 +1932,33 @@ func Signalfd(fd int, sigmask *Sigset_t, flags int) (newfd int, err error) {
 	return signalfd(fd, sigmask, _C__NSIG/8, flags)
 }
 
-// sys	Setpriority(which int, who int, prio int) (err error)
-// sys	Setxattr(path string, attr string, data []byte, flags int) (err error)
-// sys	signalfd(fd int, sigmask *Sigset_t, maskSize uintptr, flags int) (newfd int, err error) = SYS_SIGNALFD4
-// sys	Statx(dirfd int, path string, flags int, mask int, stat *Statx_t) (err error)
-// sys	Sync()
-// sys	Syncfs(fd int) (err error)
-// sysnb	Sysinfo(info *Sysinfo_t) (err error)
-// sys	Tee(rfd int, wfd int, len int, flags int) (n int64, err error)
-// sysnb	TimerfdCreate(clockid int, flags int) (fd int, err error)
-// sysnb	TimerfdGettime(fd int, currValue *ItimerSpec) (err error)
-// sysnb	TimerfdSettime(fd int, flags int, newValue *ItimerSpec, oldValue *ItimerSpec) (err error)
-// sysnb	Tgkill(tgid int, tid int, sig syscall.Signal) (err error)
-// sysnb	Times(tms *Tms) (ticks uintptr, err error)
-// sysnb	Umask(mask int) (oldmask int)
-// sysnb	Uname(buf *Utsname) (err error)
-// sys	Unmount(target string, flags int) (err error) = SYS_UMOUNT2
-// sys	Unshare(flags int) (err error)
-// sys	write(fd int, p []byte) (n int, err error)
-// sys	exitThread(code int) (err error) = SYS_EXIT
-// sys	readlen(fd int, p *byte, np int) (n int, err error) = SYS_READ
-// sys	writelen(fd int, p *byte, np int) (n int, err error) = SYS_WRITE
-// sys	readv(fd int, iovs []Iovec) (n int, err error) = SYS_READV
-// sys	writev(fd int, iovs []Iovec) (n int, err error) = SYS_WRITEV
-// sys	preadv(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PREADV
-// sys	pwritev(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PWRITEV
-// sys	preadv2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PREADV2
-// sys	pwritev2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PWRITEV2
+//sys	Setpriority(which int, who int, prio int) (err error)
+//sys	Setxattr(path string, attr string, data []byte, flags int) (err error)
+//sys	signalfd(fd int, sigmask *Sigset_t, maskSize uintptr, flags int) (newfd int, err error) = SYS_SIGNALFD4
+//sys	Statx(dirfd int, path string, flags int, mask int, stat *Statx_t) (err error)
+//sys	Sync()
+//sys	Syncfs(fd int) (err error)
+//sysnb	Sysinfo(info *Sysinfo_t) (err error)
+//sys	Tee(rfd int, wfd int, len int, flags int) (n int64, err error)
+//sysnb	TimerfdCreate(clockid int, flags int) (fd int, err error)
+//sysnb	TimerfdGettime(fd int, currValue *ItimerSpec) (err error)
+//sysnb	TimerfdSettime(fd int, flags int, newValue *ItimerSpec, oldValue *ItimerSpec) (err error)
+//sysnb	Tgkill(tgid int, tid int, sig syscall.Signal) (err error)
+//sysnb	Times(tms *Tms) (ticks uintptr, err error)
+//sysnb	Umask(mask int) (oldmask int)
+//sysnb	Uname(buf *Utsname) (err error)
+//sys	Unmount(target string, flags int) (err error) = SYS_UMOUNT2
+//sys	Unshare(flags int) (err error)
+//sys	write(fd int, p []byte) (n int, err error)
+//sys	exitThread(code int) (err error) = SYS_EXIT
+//sys	readlen(fd int, p *byte, np int) (n int, err error) = SYS_READ
+//sys	writelen(fd int, p *byte, np int) (n int, err error) = SYS_WRITE
+//sys	readv(fd int, iovs []Iovec) (n int, err error) = SYS_READV
+//sys	writev(fd int, iovs []Iovec) (n int, err error) = SYS_WRITEV
+//sys	preadv(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PREADV
+//sys	pwritev(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr) (n int, err error) = SYS_PWRITEV
+//sys	preadv2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PREADV2
+//sys	pwritev2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PWRITEV2
 
 func bytes2iovec(bs [][]byte) []Iovec {
 	iovecs := make([]Iovec, len(bs))
@@ -2072,7 +2072,7 @@ func writevRacedetect(iovecs []Iovec, n int) {
 }
 
 // mmap varies by architecture; see syscall_linux_*.go.
-// sys	munmap(addr uintptr, length uintptr) (err error)
+//sys	munmap(addr uintptr, length uintptr) (err error)
 
 var mapper = &mmapper{
 	active: make(map[*byte][]byte),
@@ -2088,13 +2088,13 @@ func Munmap(b []byte) (err error) {
 	return mapper.Munmap(b)
 }
 
-// sys	Madvise(b []byte, advice int) (err error)
-// sys	Mprotect(b []byte, prot int) (err error)
-// sys	Mlock(b []byte) (err error)
-// sys	Mlockall(flags int) (err error)
-// sys	Msync(b []byte, flags int) (err error)
-// sys	Munlock(b []byte) (err error)
-// sys	Munlockall() (err error)
+//sys	Madvise(b []byte, advice int) (err error)
+//sys	Mprotect(b []byte, prot int) (err error)
+//sys	Mlock(b []byte) (err error)
+//sys	Mlockall(flags int) (err error)
+//sys	Msync(b []byte, flags int) (err error)
+//sys	Munlock(b []byte) (err error)
+//sys	Munlockall() (err error)
 
 // Vmsplice splices user pages from a slice of Iovecs into a pipe specified by fd,
 // using the specified flags.
@@ -2126,8 +2126,8 @@ func isGroupMember(gid int) bool {
 	return false
 }
 
-// sys	faccessat(dirfd int, path string, mode uint32) (err error)
-// sys	Faccessat2(dirfd int, path string, mode uint32, flags int) (err error)
+//sys	faccessat(dirfd int, path string, mode uint32) (err error)
+//sys	Faccessat2(dirfd int, path string, mode uint32, flags int) (err error)
 
 func Faccessat(dirfd int, path string, mode uint32, flags int) (err error) {
 	if flags == 0 {
@@ -2202,8 +2202,8 @@ func Faccessat(dirfd int, path string, mode uint32, flags int) (err error) {
 	return EACCES
 }
 
-// sys	nameToHandleAt(dirFD int, pathname string, fh *fileHandle, mountID *_C_int, flags int) (err error) = SYS_NAME_TO_HANDLE_AT
-// sys	openByHandleAt(mountFD int, fh *fileHandle, flags int) (fd int, err error) = SYS_OPEN_BY_HANDLE_AT
+//sys	nameToHandleAt(dirFD int, pathname string, fh *fileHandle, mountID *_C_int, flags int) (err error) = SYS_NAME_TO_HANDLE_AT
+//sys	openByHandleAt(mountFD int, fh *fileHandle, flags int) (fd int, err error) = SYS_OPEN_BY_HANDLE_AT
 
 // fileHandle is the argument to nameToHandleAt and openByHandleAt. We
 // originally tried to generate it via unix/linux/types.go with "type
@@ -2298,20 +2298,20 @@ type RemoteIovec struct {
 	Len  int
 }
 
-// sys	ProcessVMReadv(pid int, localIov []Iovec, remoteIov []RemoteIovec, flags uint) (n int, err error) = SYS_PROCESS_VM_READV
-// sys	ProcessVMWritev(pid int, localIov []Iovec, remoteIov []RemoteIovec, flags uint) (n int, err error) = SYS_PROCESS_VM_WRITEV
+//sys	ProcessVMReadv(pid int, localIov []Iovec, remoteIov []RemoteIovec, flags uint) (n int, err error) = SYS_PROCESS_VM_READV
+//sys	ProcessVMWritev(pid int, localIov []Iovec, remoteIov []RemoteIovec, flags uint) (n int, err error) = SYS_PROCESS_VM_WRITEV
 
-// sys	PidfdOpen(pid int, flags int) (fd int, err error) = SYS_PIDFD_OPEN
-// sys	PidfdGetfd(pidfd int, targetfd int, flags int) (fd int, err error) = SYS_PIDFD_GETFD
-// sys	PidfdSendSignal(pidfd int, sig Signal, info *Siginfo, flags int) (err error) = SYS_PIDFD_SEND_SIGNAL
+//sys	PidfdOpen(pid int, flags int) (fd int, err error) = SYS_PIDFD_OPEN
+//sys	PidfdGetfd(pidfd int, targetfd int, flags int) (fd int, err error) = SYS_PIDFD_GETFD
+//sys	PidfdSendSignal(pidfd int, sig Signal, info *Siginfo, flags int) (err error) = SYS_PIDFD_SEND_SIGNAL
 
-// sys	shmat(id int, addr uintptr, flag int) (ret uintptr, err error)
-// sys	shmctl(id int, cmd int, buf *SysvShmDesc) (result int, err error)
-// sys	shmdt(addr uintptr) (err error)
-// sys	shmget(key int, size int, flag int) (id int, err error)
+//sys	shmat(id int, addr uintptr, flag int) (ret uintptr, err error)
+//sys	shmctl(id int, cmd int, buf *SysvShmDesc) (result int, err error)
+//sys	shmdt(addr uintptr) (err error)
+//sys	shmget(key int, size int, flag int) (id int, err error)
 
-// sys	getitimer(which int, currValue *Itimerval) (err error)
-// sys	setitimer(which int, newValue *Itimerval, oldValue *Itimerval) (err error)
+//sys	getitimer(which int, currValue *Itimerval) (err error)
+//sys	setitimer(which int, newValue *Itimerval, oldValue *Itimerval) (err error)
 
 // MakeItimerval creates an Itimerval from interval and value durations.
 func MakeItimerval(interval, value time.Duration) Itimerval {

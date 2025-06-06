@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// go:build darwin || dragonfly || freebsd || netbsd || openbsd
+//go:build darwin || dragonfly || freebsd || netbsd || openbsd
 // +build darwin dragonfly freebsd netbsd openbsd
 
 // BSD system call wrappers shared by *BSD based systems
@@ -38,8 +38,8 @@ func Getwd() (string, error) {
  * Wrapped
  */
 
-// sysnb	getgroups(ngid int, gid *_Gid_t) (n int, err error)
-// sysnb	setgroups(ngid int, gid *_Gid_t) (err error)
+//sysnb	getgroups(ngid int, gid *_Gid_t) (n int, err error)
+//sysnb	setgroups(ngid int, gid *_Gid_t) (err error)
 
 func Getgroups() (gids []int, err error) {
 	n, err := getgroups(0, nil)
@@ -133,7 +133,7 @@ func (w WaitStatus) StopSignal() syscall.Signal {
 
 func (w WaitStatus) TrapCause() int { return -1 }
 
-// sys	wait4(pid int, wstatus *_C_int, options int, rusage *Rusage) (wpid int, err error)
+//sys	wait4(pid int, wstatus *_C_int, options int, rusage *Rusage) (wpid int, err error)
 
 func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, err error) {
 	var status _C_int
@@ -144,15 +144,15 @@ func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int,
 	return
 }
 
-// sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error)
-// sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
-// sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
-// sysnb	socket(domain int, typ int, proto int) (fd int, err error)
-// sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error)
-// sys	setsockopt(s int, level int, name int, val unsafe.Pointer, vallen uintptr) (err error)
-// sysnb	getpeername(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error)
-// sysnb	getsockname(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error)
-// sys	Shutdown(s int, how int) (err error)
+//sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error)
+//sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
+//sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
+//sysnb	socket(domain int, typ int, proto int) (fd int, err error)
+//sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error)
+//sys	setsockopt(s int, level int, name int, val unsafe.Pointer, vallen uintptr) (err error)
+//sysnb	getpeername(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error)
+//sysnb	getsockname(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error)
+//sys	Shutdown(s int, how int) (err error)
 
 func (sa *SockaddrInet4) sockaddr() (unsafe.Pointer, _Socklen, error) {
 	if sa.Port < 0 || sa.Port > 0xFFFF {
@@ -307,7 +307,7 @@ func Getsockname(fd int) (sa Sockaddr, err error) {
 	return anyToSockaddr(fd, &rsa)
 }
 
-// sysnb	socketpair(domain int, typ int, proto int, fd *[2]int32) (err error)
+//sysnb	socketpair(domain int, typ int, proto int, fd *[2]int32) (err error)
 
 // GetsockoptString returns the string value of the socket option opt for the
 // socket associated with fd at the given socket level.
@@ -321,9 +321,9 @@ func GetsockoptString(fd, level, opt int) (string, error) {
 	return string(buf[:vallen-1]), nil
 }
 
-// sys	recvfrom(fd int, p []byte, flags int, from *RawSockaddrAny, fromlen *_Socklen) (n int, err error)
-// sys	sendto(s int, buf []byte, flags int, to unsafe.Pointer, addrlen _Socklen) (err error)
-// sys	recvmsg(s int, msg *Msghdr, flags int) (n int, err error)
+//sys	recvfrom(fd int, p []byte, flags int, from *RawSockaddrAny, fromlen *_Socklen) (n int, err error)
+//sys	sendto(s int, buf []byte, flags int, to unsafe.Pointer, addrlen _Socklen) (err error)
+//sys	recvmsg(s int, msg *Msghdr, flags int) (n int, err error)
 
 func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
@@ -353,7 +353,7 @@ func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny)
 	return
 }
 
-// sys	sendmsg(s int, msg *Msghdr, flags int) (n int, err error)
+//sys	sendmsg(s int, msg *Msghdr, flags int) (n int, err error)
 
 func sendmsgN(fd int, iov []Iovec, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags int) (n int, err error) {
 	var msg Msghdr
@@ -386,7 +386,7 @@ func sendmsgN(fd int, iov []Iovec, oob []byte, ptr unsafe.Pointer, salen _Sockle
 	return n, nil
 }
 
-// sys	kevent(kq int, change unsafe.Pointer, nchange int, event unsafe.Pointer, nevent int, timeout *Timespec) (n int, err error)
+//sys	kevent(kq int, change unsafe.Pointer, nchange int, event unsafe.Pointer, nevent int, timeout *Timespec) (n int, err error)
 
 func Kevent(kq int, changes, events []Kevent_t, timeout *Timespec) (n int, err error) {
 	var change, event unsafe.Pointer
@@ -530,7 +530,7 @@ func SysctlTimeval(name string) (*Timeval, error) {
 	return &tv, nil
 }
 
-// sys	utimes(path string, timeval *[2]Timeval) (err error)
+//sys	utimes(path string, timeval *[2]Timeval) (err error)
 
 func Utimes(path string, tv []Timeval) error {
 	if tv == nil {
@@ -576,7 +576,7 @@ func UtimesNanoAt(dirfd int, path string, ts []Timespec, flags int) error {
 	return utimensat(dirfd, path, (*[2]Timespec)(unsafe.Pointer(&ts[0])), flags)
 }
 
-// sys	futimes(fd int, timeval *[2]Timeval) (err error)
+//sys	futimes(fd int, timeval *[2]Timeval) (err error)
 
 func Futimes(fd int, tv []Timeval) error {
 	if tv == nil {
@@ -588,7 +588,7 @@ func Futimes(fd int, tv []Timeval) error {
 	return futimes(fd, (*[2]Timeval)(unsafe.Pointer(&tv[0])))
 }
 
-// sys	poll(fds *PollFd, nfds int, timeout int) (n int, err error)
+//sys	poll(fds *PollFd, nfds int, timeout int) (n int, err error)
 
 func Poll(fds []PollFd, timeout int) (n int, err error) {
 	if len(fds) == 0 {
@@ -598,9 +598,9 @@ func Poll(fds []PollFd, timeout int) (n int, err error) {
 }
 
 // TODO: wrap
-// 	Acct(name nil-string) (err error)
-// 	Gethostuuid(uuid *byte, timeout *Timespec) (err error)
-// 	Ptrace(req int, pid int, addr uintptr, data int) (ret uintptr, err error)
+//	Acct(name nil-string) (err error)
+//	Gethostuuid(uuid *byte, timeout *Timespec) (err error)
+//	Ptrace(req int, pid int, addr uintptr, data int) (ret uintptr, err error)
 
 var mapper = &mmapper{
 	active: make(map[*byte][]byte),
@@ -616,10 +616,10 @@ func Munmap(b []byte) (err error) {
 	return mapper.Munmap(b)
 }
 
-// sys	Madvise(b []byte, behav int) (err error)
-// sys	Mlock(b []byte) (err error)
-// sys	Mlockall(flags int) (err error)
-// sys	Mprotect(b []byte, prot int) (err error)
-// sys	Msync(b []byte, flags int) (err error)
-// sys	Munlock(b []byte) (err error)
-// sys	Munlockall() (err error)
+//sys	Madvise(b []byte, behav int) (err error)
+//sys	Mlock(b []byte) (err error)
+//sys	Mlockall(flags int) (err error)
+//sys	Mprotect(b []byte, prot int) (err error)
+//sys	Msync(b []byte, flags int) (err error)
+//sys	Munlock(b []byte) (err error)
+//sys	Munlockall() (err error)

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// go:build gccgo && linux && amd64
+//go:build gccgo && linux && amd64
 // +build gccgo,linux,amd64
 
 package unix
 
 import "syscall"
 
-// extern gettimeofday
+//extern gettimeofday
 func realGettimeofday(*Timeval, *byte) int32
 
 func gettimeofday(tv *Timeval) (err syscall.Errno) {

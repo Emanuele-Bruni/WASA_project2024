@@ -32,57 +32,57 @@ import (
 	"unsafe"
 )
 
-// export callbackTrampoline
+//export callbackTrampoline
 func callbackTrampoline(ctx *C.sqlite3_context, argc int, argv **C.sqlite3_value) {
 	args := (*[(math.MaxInt32 - 1) / unsafe.Sizeof((*C.sqlite3_value)(nil))]*C.sqlite3_value)(unsafe.Pointer(argv))[:argc:argc]
 	fi := lookupHandle(C.sqlite3_user_data(ctx)).(*functionInfo)
 	fi.Call(ctx, args)
 }
 
-// export stepTrampoline
+//export stepTrampoline
 func stepTrampoline(ctx *C.sqlite3_context, argc C.int, argv **C.sqlite3_value) {
 	args := (*[(math.MaxInt32 - 1) / unsafe.Sizeof((*C.sqlite3_value)(nil))]*C.sqlite3_value)(unsafe.Pointer(argv))[:int(argc):int(argc)]
 	ai := lookupHandle(C.sqlite3_user_data(ctx)).(*aggInfo)
 	ai.Step(ctx, args)
 }
 
-// export doneTrampoline
+//export doneTrampoline
 func doneTrampoline(ctx *C.sqlite3_context) {
 	ai := lookupHandle(C.sqlite3_user_data(ctx)).(*aggInfo)
 	ai.Done(ctx)
 }
 
-// export compareTrampoline
+//export compareTrampoline
 func compareTrampoline(handlePtr unsafe.Pointer, la C.int, a *C.char, lb C.int, b *C.char) C.int {
 	cmp := lookupHandle(handlePtr).(func(string, string) int)
 	return C.int(cmp(C.GoStringN(a, la), C.GoStringN(b, lb)))
 }
 
-// export commitHookTrampoline
+//export commitHookTrampoline
 func commitHookTrampoline(handle unsafe.Pointer) int {
 	callback := lookupHandle(handle).(func() int)
 	return callback()
 }
 
-// export rollbackHookTrampoline
+//export rollbackHookTrampoline
 func rollbackHookTrampoline(handle unsafe.Pointer) {
 	callback := lookupHandle(handle).(func())
 	callback()
 }
 
-// export updateHookTrampoline
+//export updateHookTrampoline
 func updateHookTrampoline(handle unsafe.Pointer, op int, db *C.char, table *C.char, rowid int64) {
 	callback := lookupHandle(handle).(func(int, string, string, int64))
 	callback(op, C.GoString(db), C.GoString(table), rowid)
 }
 
-// export authorizerTrampoline
+//export authorizerTrampoline
 func authorizerTrampoline(handle unsafe.Pointer, op int, arg1 *C.char, arg2 *C.char, arg3 *C.char) int {
 	callback := lookupHandle(handle).(func(int, string, string, string) int)
 	return callback(op, C.GoString(arg1), C.GoString(arg2), C.GoString(arg3))
 }
 
-// export preUpdateHookTrampoline
+//export preUpdateHookTrampoline
 func preUpdateHookTrampoline(handle unsafe.Pointer, dbHandle uintptr, op int, db *C.char, table *C.char, oldrowid int64, newrowid int64) {
 	hval := lookupHandleVal(handle)
 	data := SQLitePreUpdateData{
@@ -345,7 +345,8 @@ func callbackRetText(ctx *C.sqlite3_context, v reflect.Value) error {
 	if v.Type().Kind() != reflect.String {
 		return fmt.Errorf("cannot convert %s to TEXT", v.Type())
 	}
-	C._sqlite3_result_text(ctx, C.CString(v.Interface().(string)))
+	cstr := C.CString(v.Interface().(string))
+	C._sqlite3_result_text(ctx, cstr)
 	return nil
 }
 

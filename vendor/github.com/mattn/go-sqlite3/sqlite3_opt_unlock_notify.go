@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
-// go:build cgo && sqlite_unlock_notify
+//go:build cgo && sqlite_unlock_notify
 // +build cgo,sqlite_unlock_notify
 
 package sqlite3
@@ -12,7 +12,11 @@ package sqlite3
 #cgo CFLAGS: -DSQLITE_ENABLE_UNLOCK_NOTIFY
 
 #include <stdlib.h>
+#ifndef USE_LIBSQLITE3
 #include "sqlite3-binding.h"
+#else
+#include <sqlite3.h>
+#endif
 
 extern void unlock_notify_callback(void *arg, int argc);
 */
@@ -57,7 +61,7 @@ func (t *unlock_notify_table) get(h uint) chan struct{} {
 	return c
 }
 
-// export unlock_notify_callback
+//export unlock_notify_callback
 func unlock_notify_callback(argv unsafe.Pointer, argc C.int) {
 	for i := 0; i < int(argc); i++ {
 		parg := ((*(*[(math.MaxInt32 - 1) / unsafe.Sizeof((*C.uint)(nil))]*[1]uint)(argv))[i])
@@ -68,7 +72,7 @@ func unlock_notify_callback(argv unsafe.Pointer, argc C.int) {
 	}
 }
 
-// export unlock_notify_wait
+//export unlock_notify_wait
 func unlock_notify_wait(db *C.sqlite3) C.int {
 	// It has to be a bufferred channel to not block in sqlite_unlock_notify
 	// as sqlite_unlock_notify could invoke the callback before it returns.

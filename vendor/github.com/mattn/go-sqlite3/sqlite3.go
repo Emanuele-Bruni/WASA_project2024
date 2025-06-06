@@ -4,7 +4,7 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
-// go:build cgo
+//go:build cgo
 // +build cgo
 
 package sqlite3
@@ -381,7 +381,7 @@ type SQLiteStmt struct {
 	s      *C.sqlite3_stmt
 	t      string
 	closed bool
-	cls    bool
+	cls    bool // True if the statement was created by SQLiteConn.Query
 }
 
 // SQLiteResult implements sql.Result.
@@ -393,12 +393,12 @@ type SQLiteResult struct {
 // SQLiteRows implements driver.Rows.
 type SQLiteRows struct {
 	s        *SQLiteStmt
-	nc       int
+	nc       int32 // Number of columns
+	cls      bool  // True if we need to close the parent statement in Close
 	cols     []string
 	decltype []string
-	cls      bool
-	closed   bool
 	ctx      context.Context // no better alternative to pass context into Next() method
+	closemu  sync.Mutex
 }
 
 type functionInfo struct {
@@ -929,6 +929,7 @@ func (c *SQLiteConn) query(ctx context.Context, query string, args []driver.Name
 		s.(*SQLiteStmt).cls = true
 		na := s.NumInput()
 		if len(args)-start < na {
+			s.Close()
 			return nil, fmt.Errorf("not enough args to execute query: want %d got %d", na, len(args)-start)
 		}
 		// consume the number of arguments used in the current
@@ -978,103 +979,103 @@ func (c *SQLiteConn) begin(ctx context.Context) (driver.Tx, error) {
 // the pragma name by an equal sign. The two syntaxes yield identical results.
 // In many pragmas, the argument is a boolean. The boolean can be one of:
 //
-// 	1 yes true on
-// 	0 no false off
+//	1 yes true on
+//	0 no false off
 //
 // You can specify a DSN string using a URI as the filename.
 //
-// 	test.db
-// 	file:test.db?cache=shared&mode=memory
-// 	:memory:
-// 	file::memory:
+//	test.db
+//	file:test.db?cache=shared&mode=memory
+//	:memory:
+//	file::memory:
 //
-// 	mode
-// 	  Access mode of the database.
-// 	  https://www.sqlite.org/c3ref/open.html
-// 	  Values:
-// 	   - ro
-// 	   - rw
-// 	   - rwc
-// 	   - memory
+//	mode
+//	  Access mode of the database.
+//	  https://www.sqlite.org/c3ref/open.html
+//	  Values:
+//	   - ro
+//	   - rw
+//	   - rwc
+//	   - memory
 //
-// 	cache
-// 	  SQLite Shared-Cache Mode
-// 	  https://www.sqlite.org/sharedcache.html
-// 	  Values:
-// 	    - shared
-// 	    - private
+//	cache
+//	  SQLite Shared-Cache Mode
+//	  https://www.sqlite.org/sharedcache.html
+//	  Values:
+//	    - shared
+//	    - private
 //
-// 	immutable=Boolean
-// 	  The immutable parameter is a boolean query parameter that indicates
-// 	  that the database file is stored on read-only media. When immutable is set,
-// 	  SQLite assumes that the database file cannot be changed,
-// 	  even by a process with higher privilege,
-// 	  and so the database is opened read-only and all locking and change detection is disabled.
-// 	  Caution: Setting the immutable property on a database file that
-// 	  does in fact change can result in incorrect query results and/or SQLITE_CORRUPT errors.
+//	immutable=Boolean
+//	  The immutable parameter is a boolean query parameter that indicates
+//	  that the database file is stored on read-only media. When immutable is set,
+//	  SQLite assumes that the database file cannot be changed,
+//	  even by a process with higher privilege,
+//	  and so the database is opened read-only and all locking and change detection is disabled.
+//	  Caution: Setting the immutable property on a database file that
+//	  does in fact change can result in incorrect query results and/or SQLITE_CORRUPT errors.
 //
 // go-sqlite3 adds the following query parameters to those used by SQLite:
 //
-// 	_loc=XXX
-// 	  Specify location of time format. It's possible to specify "auto".
+//	_loc=XXX
+//	  Specify location of time format. It's possible to specify "auto".
 //
-// 	_mutex=XXX
-// 	  Specify mutex mode. XXX can be "no", "full".
+//	_mutex=XXX
+//	  Specify mutex mode. XXX can be "no", "full".
 //
-// 	_txlock=XXX
-// 	  Specify locking behavior for transactions.  XXX can be "immediate",
-// 	  "deferred", "exclusive".
+//	_txlock=XXX
+//	  Specify locking behavior for transactions.  XXX can be "immediate",
+//	  "deferred", "exclusive".
 //
-// 	_auto_vacuum=X | _vacuum=X
-// 	  0 | none - Auto Vacuum disabled
-// 	  1 | full - Auto Vacuum FULL
-// 	  2 | incremental - Auto Vacuum Incremental
+//	_auto_vacuum=X | _vacuum=X
+//	  0 | none - Auto Vacuum disabled
+//	  1 | full - Auto Vacuum FULL
+//	  2 | incremental - Auto Vacuum Incremental
 //
-// 	_busy_timeout=XXX"| _timeout=XXX
-// 	  Specify value for sqlite3_busy_timeout.
+//	_busy_timeout=XXX"| _timeout=XXX
+//	  Specify value for sqlite3_busy_timeout.
 //
-// 	_case_sensitive_like=Boolean | _cslike=Boolean
-// 	  https://www.sqlite.org/pragma.html#pragma_case_sensitive_like
-// 	  Default or disabled the LIKE operation is case-insensitive.
-// 	  When enabling this options behaviour of LIKE will become case-sensitive.
+//	_case_sensitive_like=Boolean | _cslike=Boolean
+//	  https://www.sqlite.org/pragma.html#pragma_case_sensitive_like
+//	  Default or disabled the LIKE operation is case-insensitive.
+//	  When enabling this options behaviour of LIKE will become case-sensitive.
 //
-// 	_defer_foreign_keys=Boolean | _defer_fk=Boolean
-// 	  Defer Foreign Keys until outermost transaction is committed.
+//	_defer_foreign_keys=Boolean | _defer_fk=Boolean
+//	  Defer Foreign Keys until outermost transaction is committed.
 //
-// 	_foreign_keys=Boolean | _fk=Boolean
-// 	  Enable or disable enforcement of foreign keys.
+//	_foreign_keys=Boolean | _fk=Boolean
+//	  Enable or disable enforcement of foreign keys.
 //
-// 	_ignore_check_constraints=Boolean
-// 	  This pragma enables or disables the enforcement of CHECK constraints.
-// 	  The default setting is off, meaning that CHECK constraints are enforced by default.
+//	_ignore_check_constraints=Boolean
+//	  This pragma enables or disables the enforcement of CHECK constraints.
+//	  The default setting is off, meaning that CHECK constraints are enforced by default.
 //
-// 	_journal_mode=MODE | _journal=MODE
-// 	  Set journal mode for the databases associated with the current connection.
-// 	  https://www.sqlite.org/pragma.html#pragma_journal_mode
+//	_journal_mode=MODE | _journal=MODE
+//	  Set journal mode for the databases associated with the current connection.
+//	  https://www.sqlite.org/pragma.html#pragma_journal_mode
 //
-// 	_locking_mode=X | _locking=X
-// 	  Sets the database connection locking-mode.
-// 	  The locking-mode is either NORMAL or EXCLUSIVE.
-// 	  https://www.sqlite.org/pragma.html#pragma_locking_mode
+//	_locking_mode=X | _locking=X
+//	  Sets the database connection locking-mode.
+//	  The locking-mode is either NORMAL or EXCLUSIVE.
+//	  https://www.sqlite.org/pragma.html#pragma_locking_mode
 //
-// 	_query_only=Boolean
-// 	  The query_only pragma prevents all changes to database files when enabled.
+//	_query_only=Boolean
+//	  The query_only pragma prevents all changes to database files when enabled.
 //
-// 	_recursive_triggers=Boolean | _rt=Boolean
-// 	  Enable or disable recursive triggers.
+//	_recursive_triggers=Boolean | _rt=Boolean
+//	  Enable or disable recursive triggers.
 //
-// 	_secure_delete=Boolean|FAST
-// 	  When secure_delete is on, SQLite overwrites deleted content with zeros.
-// 	  https://www.sqlite.org/pragma.html#pragma_secure_delete
+//	_secure_delete=Boolean|FAST
+//	  When secure_delete is on, SQLite overwrites deleted content with zeros.
+//	  https://www.sqlite.org/pragma.html#pragma_secure_delete
 //
-// 	_synchronous=X | _sync=X
-// 	  Change the setting of the "synchronous" flag.
-// 	  https://www.sqlite.org/pragma.html#pragma_synchronous
+//	_synchronous=X | _sync=X
+//	  Change the setting of the "synchronous" flag.
+//	  https://www.sqlite.org/pragma.html#pragma_synchronous
 //
-// 	_writable_schema=Boolean
-// 	  When this pragma is on, the SQLITE_MASTER tables in which database
-// 	  can be changed using ordinary UPDATE, INSERT, and DELETE statements.
-// 	  Warning: misuse of this pragma can easily result in a corrupt database file.
+//	_writable_schema=Boolean
+//	  When this pragma is on, the SQLITE_MASTER tables in which database
+//	  can be changed using ordinary UPDATE, INSERT, and DELETE statements.
+//	  Warning: misuse of this pragma can easily result in a corrupt database file.
 func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	if C.sqlite3_threadsafe() == 0 {
 		return nil, errors.New("sqlite library was not compiled for thread-safe operation")
@@ -1499,19 +1500,19 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	// the authentication is a no-op.
 	//
 	// Workflow
-	// 	- Authenticate
-	// 		ON::SUCCESS		=> Continue
-	// 		ON::SQLITE_AUTH => Return error and exit Open(...)
+	//	- Authenticate
+	//		ON::SUCCESS		=> Continue
+	//		ON::SQLITE_AUTH => Return error and exit Open(...)
 	//
 	//  - Activate User Authentication
-	// 		Check if the user wants to activate User Authentication.
-	// 		If so then first create a temporary AuthConn to the database
-	// 		This is possible because we are already successfully authenticated.
+	//		Check if the user wants to activate User Authentication.
+	//		If so then first create a temporary AuthConn to the database
+	//		This is possible because we are already successfully authenticated.
 	//
-	// 	- Check if `sqlite_user`` table exists
-	// 		YES				=> Add the provided user from DSN as Admin User and
-	// 						   activate user authentication.
-	// 		NO				=> Continue
+	//	- Check if `sqlite_user`` table exists
+	//		YES				=> Add the provided user from DSN as Admin User and
+	//						   activate user authentication.
+	//		NO				=> Continue
 	//
 
 	// Create connection to SQLite
@@ -1579,7 +1580,7 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	// If a database contains the SQLITE_USER table, then the
 	// call to Authenticate must be invoked with an
 	// appropriate username and password prior to enable read and write
-	// access to the database.
+	//access to the database.
 	//
 	// Return SQLITE_OK on success or SQLITE_ERROR if the username/password
 	// combination is incorrect or unknown.
@@ -1875,6 +1876,9 @@ func (c *SQLiteConn) SetLimit(id int, newVal int) int {
 // This method is not thread-safe as the returned error code can be changed by
 // another call if invoked concurrently.
 //
+// Use SetFileControlInt64 instead if the argument for the opcode is documented
+// as a pointer to a sqlite3_int64.
+//
 // See: sqlite3_file_control, https://www.sqlite.org/c3ref/file_control.html
 func (c *SQLiteConn) SetFileControlInt(dbName string, op int, arg int) error {
 	if dbName == "" {
@@ -1885,6 +1889,34 @@ func (c *SQLiteConn) SetFileControlInt(dbName string, op int, arg int) error {
 	defer C.free(unsafe.Pointer(cDBName))
 
 	cArg := C.int(arg)
+	rv := C.sqlite3_file_control(c.db, cDBName, C.int(op), unsafe.Pointer(&cArg))
+	if rv != C.SQLITE_OK {
+		return c.lastError()
+	}
+	return nil
+}
+
+// SetFileControlInt64 invokes the xFileControl method on a given database. The
+// dbName is the name of the database. It will default to "main" if left blank.
+// The op is one of the opcodes prefixed by "SQLITE_FCNTL_". The arg argument
+// and return code are both opcode-specific. Please see the SQLite documentation.
+//
+// This method is not thread-safe as the returned error code can be changed by
+// another call if invoked concurrently.
+//
+// Only use this method if the argument for the opcode is documented as a pointer
+// to a sqlite3_int64.
+//
+// See: sqlite3_file_control, https://www.sqlite.org/c3ref/file_control.html
+func (c *SQLiteConn) SetFileControlInt64(dbName string, op int, arg int64) error {
+	if dbName == "" {
+		dbName = "main"
+	}
+
+	cDBName := C.CString(dbName)
+	defer C.free(unsafe.Pointer(cDBName))
+
+	cArg := C.sqlite3_int64(arg)
 	rv := C.sqlite3_file_control(c.db, cDBName, C.int(op), unsafe.Pointer(&cArg))
 	if rv != C.SQLITE_OK {
 		return c.lastError()
@@ -2007,14 +2039,12 @@ func (s *SQLiteStmt) query(ctx context.Context, args []driver.NamedValue) (drive
 
 	rows := &SQLiteRows{
 		s:        s,
-		nc:       int(C.sqlite3_column_count(s.s)),
+		nc:       int32(C.sqlite3_column_count(s.s)),
+		cls:      s.cls,
 		cols:     nil,
 		decltype: nil,
-		cls:      s.cls,
-		closed:   false,
 		ctx:      ctx,
 	}
-	runtime.SetFinalizer(rows, (*SQLiteRows).Close)
 
 	return rows, nil
 }
@@ -2111,24 +2141,28 @@ func (s *SQLiteStmt) Readonly() bool {
 
 // Close the rows.
 func (rc *SQLiteRows) Close() error {
-	rc.s.mu.Lock()
-	if rc.s.closed || rc.closed {
-		rc.s.mu.Unlock()
+	rc.closemu.Lock()
+	defer rc.closemu.Unlock()
+	s := rc.s
+	if s == nil {
 		return nil
 	}
-	rc.closed = true
+	rc.s = nil // remove reference to SQLiteStmt
+	s.mu.Lock()
+	if s.closed {
+		s.mu.Unlock()
+		return nil
+	}
 	if rc.cls {
-		rc.s.mu.Unlock()
-		return rc.s.Close()
+		s.mu.Unlock()
+		return s.Close()
 	}
-	rv := C.sqlite3_reset(rc.s.s)
+	rv := C.sqlite3_reset(s.s)
 	if rv != C.SQLITE_OK {
-		rc.s.mu.Unlock()
-		return rc.s.c.lastError()
+		s.mu.Unlock()
+		return s.c.lastError()
 	}
-	rc.s.mu.Unlock()
-	rc.s = nil
-	runtime.SetFinalizer(rc, nil)
+	s.mu.Unlock()
 	return nil
 }
 
@@ -2136,9 +2170,9 @@ func (rc *SQLiteRows) Close() error {
 func (rc *SQLiteRows) Columns() []string {
 	rc.s.mu.Lock()
 	defer rc.s.mu.Unlock()
-	if rc.s.s != nil && rc.nc != len(rc.cols) {
+	if rc.s.s != nil && int(rc.nc) != len(rc.cols) {
 		rc.cols = make([]string, rc.nc)
-		for i := 0; i < rc.nc; i++ {
+		for i := 0; i < int(rc.nc); i++ {
 			rc.cols[i] = C.GoString(C.sqlite3_column_name(rc.s.s, C.int(i)))
 		}
 	}
@@ -2148,7 +2182,7 @@ func (rc *SQLiteRows) Columns() []string {
 func (rc *SQLiteRows) declTypes() []string {
 	if rc.s.s != nil && rc.decltype == nil {
 		rc.decltype = make([]string, rc.nc)
-		for i := 0; i < rc.nc; i++ {
+		for i := 0; i < int(rc.nc); i++ {
 			rc.decltype[i] = strings.ToLower(C.GoString(C.sqlite3_column_decltype(rc.s.s, C.int(i))))
 		}
 	}
