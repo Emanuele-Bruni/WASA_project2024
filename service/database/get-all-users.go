@@ -28,5 +28,9 @@ func (db *appdbimpl) GetAllUsers(userId int) ([]int, []string, error) {
 		names = append(names, name)
 	}
 
+	if err := righe.Err(); err != nil {
+		return nil, nil, fmt.Errorf("errore durante l'iterazione delle righe: %w", err)
+	}
+
 	return ids, names, nil
 }

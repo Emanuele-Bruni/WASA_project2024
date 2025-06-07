@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
@@ -70,7 +71,7 @@ func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
 			}
 			// 0 -> no gruppo
 			if isGroup == 0 && userId != memberId {
-				conversation.Photo = utente.Photo //se non è un gruppo, allora la foto e il nome sono quelle dell'altro utente
+				conversation.Photo = utente.Photo // se non è un gruppo, allora la foto e il nome sono quelle dell'altro utente
 				conversation.Title = utente.Name
 			}
 		}
