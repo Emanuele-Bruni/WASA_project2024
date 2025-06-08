@@ -1,40 +1,60 @@
 <script>
 export default {
-    props : ['username']
+    props : ['userId','username'],
+    methods: {
+        newConversation(){
+            this.$emit('new-conversation', this.userId);
+        }
+    }
 }
 </script>
 
 <template>
     <div class="userItem">
         <!-- Sarebbero le card degli utenti -->
-        <button type="button" class="usernameButton" > {{username}} <br> </button>
+        <!-- Nome -->
+        <h3 class="username">{{ username }}</h3>
+        <!-- Pulsante a destra -->
+        <button class="Button" @click="newConversation"> + </button>
     </div>
 </template>
 
-<style>
-.usernameButton{
-    font-size: 2rem;
+
+
+<style scoped>
+.userItem{
+    width: 60%;
+    display: flex;
+    justify-content: space-between;
+    background-color: white;
+    border-radius: 10px;
+    border: 2px solid rgb(4, 103, 133);
+    padding: 10px;
+    margin-bottom: 8px;
+}
+.username{
+    font-family: "SF Pro";
+    color: rgb(4, 66, 85);
+}
+.Button{
     text-align: center;
-    background-color: rgb(106, 160, 177);
-    width: 100%;
 	font-family: "SF Pro";
-	color: #f0f2f3; 
-    box-shadow: 7px 5px 5px rgba(4, 103, 133, 1); /* x y sfocatura colore(trasparenza)*/
-    border: 1px rgb(4,103,133);
+	color: rgb(4, 66, 85); 
+	background-color: #bad4e9;
+	border: 2px solid rgb(4, 103, 133);
+	border-radius: 1rem;
+    width: 50px;
+	box-shadow: 1px 1px 0 rgb(4, 103, 133);
 }
-.usernameButton:hover{
-    background-color: rgb(10, 146, 187);
+.Button:hover{
+	color: white;
+	background-color: rgb(10, 146, 187);
 }
-.usernameButton:active{
-    box-shadow: 
+.Button:active{
+	box-shadow: 
 	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
 	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
 	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
 	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.userItem{
-    align-items: center;
-	width: 60%;
-    margin-bottom: 10px;
 }
 </style>

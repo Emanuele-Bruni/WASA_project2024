@@ -60,24 +60,33 @@ export default {
 			<button type="button" class="logoutButton" @click="logout"> Logout </button>
 		</div> 
 	</div>
+
 	<div class="settings">
-		<div>
-			<p>Modifica la tua foto </p>
-			<!-- CERCHIO PER IMPOSTARE LA FOTO CHE VOGLIO IN ANTEPRIMA-->
-			<p>Modifica il tuo username </p>
-			<!-- BARRA PER IMPOSTARE USERNAME-->
-			<form id="newUsernameForm" @submit.prevent="setUsername">
-				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
-				<button class="saveButton" type="submit"> Salva </button>
-            </form>	
-			<SuccessMsg v-if="successmsg" :msg="successmsg" />
-		</div>
+		<p>Modifica la tua foto </p>
+		<!-- CERCHIO PER IMPOSTARE LA FOTO CHE VOGLIO IN ANTEPRIMA-->
+		<div class="photo">
+			<button type="button"> Photo </button>
+		</div> <br>
+		<p>Modifica il tuo username </p>
+		<!-- BARRA PER IMPOSTARE USERNAME-->
+		<form id="newUsernameForm" @submit.prevent="setUsername">
+			<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
+			<button class="saveButton" type="submit"> Salva </button>
+		</form>	
+		<SuccessMsg v-if="successmsg" :msg="successmsg" />
 	</div>
 	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 
 
 <style scoped>
+.photo{
+	background-color: white;
+	width: 260px;
+	height: 260px;
+	border-radius: 130px;
+
+}
 input{
 	font-family: "SF Pro";
 	width: 100%;
@@ -92,6 +101,7 @@ p{
 	font-size: 1.4rem;
 	font-family: "SF Pro";
 	color: rgb(4, 78, 100); 
+	text-align: center;
 }
 .settings{
 	margin-top: 100px;

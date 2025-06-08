@@ -4,7 +4,9 @@ export default {
         return {
 			errormsg: null,
 			ids: [],
-			names: []
+			names: [],
+			conversationId: null,
+			successmsg: null
 		}
     },
     methods: {
@@ -24,13 +26,39 @@ export default {
 			try{
 				//console.log("Authorization Header:", localStorage.getItem("auth"));
 				let response = await this.$axios.get("/users", {headers:{Authorization: localStorage.getItem("id")}});
-				console.log("Response Data: ",response.data);
+				//console.log("Response Data: ",response.data);
 				if(response) {
 					this.ids = response.data.Ids;
 					this.names = response.data.Names;
 				}
 			} catch(e){
 				this.errormsg = e.toString();
+			}
+		},
+		async newConversation(userId){
+			try{
+				let response = await this.$axios.post(`/users/${userId}`, {}, {headers:{Authorization: localStorage.getItem("id")}});
+				if (response) {
+					this.conversationId = response.data.ConversationId;
+
+					this.successmsg = "Conversazione creata con successo!";
+					setTimeout(()=> {
+						this.successmsg = null;
+						this.$router.push("/conversations"); //path della prossima pagina
+					},500);								//1 secondo di attesa prima del redirect
+				}
+			} catch(e){
+				if(e.response) {
+					const status = e.response.status;
+					if (status === 400){
+						this.errormsg = "Conversazione già esistente";
+						setTimeout(()=> {
+							this.errormsg = null;
+						},1000);
+				} else {
+						this.errormsg = e.toString();
+				}
+				}
 			}
 		}
     },
@@ -49,8 +77,9 @@ export default {
 		</div> 
 	</div>
 	<div class="userList">
-		<UserItem v-for="(name,index) in names" :key="ids[index]" :username="name"> </UserItem>
+		<UserItem v-for="(name,index) in names" :key="ids[index]" :userId="ids[index]" :username="name" @new-conversation="newConversation"> </UserItem>
 	</div>
+	<SuccessMsg v-if="successmsg" :msg="successmsg" />
 	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 

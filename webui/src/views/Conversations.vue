@@ -31,7 +31,14 @@ export default {
 					this.conversations = response.data.AllMyConversations;
 				}
 			} catch(e){
-				this.errormsg = e.toString();
+				if(e.response) {
+					const status = e.response.status;
+					if (status === 404){
+						this.errormsg = "Nessuna Conversazione";
+				} else {
+						this.errormsg = e.toString();
+				}
+				}
 			}
 		}
 	},
@@ -48,39 +55,39 @@ export default {
 				<button type="button"class="currentButton"> Conversazioni </button>
 				<button type="button"class="btn" @click="usersSection"> Utenti </button>
 				<button type="button" class="btn" @click="settingsSection"> Impostazioni </button>
-				<!-- <button type="button" class="btn"> New Group </button> -->
 				<button type="button" class="logoutButton" @click="logout"> Logout </button>
 			</div> 
 		</div>
 		
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		<div class="below-navbar">
 			<!-- Pulsante per creare nuovo gruppo -->
 			<button type="button" class="btnNewGroup"> Nuovo Gruppo </button>
+		</div>
 
-			<!-- Lista di tutte le conversazioni dell'utente -->
-			<div class="conversations-list">
-				<div v-if="conversations.length===0">
-					<p> Nessuna conversazione </p>
-				</div>
-				<div v-else>
-					<ConversationItem v-for="conv in conversations" 
-						:key="conv.conversationId" 
-						:photo="conv.photo" 
-						:title="conv.title" 
-						:is_group = "conv.isGroup"></ConversationItem>
-				</div>
+		<!-- Lista di tutte le conversazioni dell'utente -->
+		<div class="conversations-list">
+			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg> 
+			<div>
+				<ConversationItem v-for="conv in conversations" 
+					:key="conv.conversationId" 
+					:photo="conv.photo" 
+					:title="conv.title" 
+					:is_group = "conv.isGroup"></ConversationItem>
 			</div>
-
 		</div>
 	</div>
 </template>
 
 <style scoped>
+.conversations-list{
+	justify-content: center;
+	margin-top: 10px;
+}
 .below-navbar{
 	margin-top: 100px; /* o quanto è alta la tua navbar */
 	display: flex;
 	justify-content: center;
+	position: sticky;
 }
 .btnNewGroup{
 	text-align: center;
@@ -92,6 +99,7 @@ export default {
 	padding: 0.5rem;
 	width: 80%;
 	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+	position: sticky;
 }
 .btnNewGroup:hover{
 	color: white;
