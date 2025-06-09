@@ -28,7 +28,7 @@ export default {
 				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
 				console.log(response.data);
 				if(response){
-					this.conversations = response.data.AllMyConversations;
+					this.conversations = response.data.conversations;
 				}
 			} catch(e){
 				if(e.response) {
@@ -63,25 +63,31 @@ export default {
 			<!-- Pulsante per creare nuovo gruppo -->
 			<button type="button" class="btnNewGroup"> Nuovo Gruppo </button>
 		</div>
-
 		<!-- Lista di tutte le conversazioni dell'utente -->
-		<div class="conversations-list">
-			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg> 
-			<div>
-				<ConversationItem v-for="conv in conversations" 
-					:key="conv.conversationId" 
-					:photo="conv.photo" 
-					:title="conv.title" 
-					:is_group = "conv.isGroup"></ConversationItem>
-			</div>
-		</div>
+		 <div class="listWrapper">
+			 <div class="conversations-list">
+				 <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg> 
+				 <div>
+					 <ConversationItem v-for="conv in conversations" 
+						 :key="conv.conversationId" 
+						 :photo="conv.photo" 
+						 :title="conv.title" 
+						 :is_group = "conv.isGroup"></ConversationItem>
+				 </div>
+			 </div>
+		 </div>
+
 	</div>
 </template>
 
 <style scoped>
-.conversations-list{
+.listWrapper{
+	width: 100%;
+	display: flex;
 	justify-content: center;
-	margin-top: 10px;
+}
+.conversations-list{
+	width: 80%;
 }
 .below-navbar{
 	margin-top: 100px; /* o quanto è alta la tua navbar */

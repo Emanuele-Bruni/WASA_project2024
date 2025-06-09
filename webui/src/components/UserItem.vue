@@ -15,7 +15,7 @@ export default {
         <!-- Nome -->
         <h3 class="username">{{ username }}</h3>
         <!-- Pulsante a destra -->
-        <button class="Button" @click="newConversation"> + </button>
+        <button class="Button" @click="newConversation"> NEW </button>
     </div>
 </template>
 
@@ -43,7 +43,7 @@ export default {
 	background-color: #bad4e9;
 	border: 2px solid rgb(4, 103, 133);
 	border-radius: 1rem;
-    width: 50px;
+    width: 70px;
 	box-shadow: 1px 1px 0 rgb(4, 103, 133);
 }
 .Button:hover{

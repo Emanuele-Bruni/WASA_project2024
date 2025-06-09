@@ -40,7 +40,8 @@ export default {
 
 .info h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-family: "SF Pro";
+  font-size: 30px;
 }
 
 /* Pallino in basso a destra */

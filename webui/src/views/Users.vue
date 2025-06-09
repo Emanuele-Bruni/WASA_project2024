@@ -35,7 +35,7 @@ export default {
 				this.errormsg = e.toString();
 			}
 		},
-		async newConversation(userId){
+		async newConversation(key){
 			try{
 				let response = await this.$axios.post(`/users/${userId}`, {}, {headers:{Authorization: localStorage.getItem("id")}});
 				if (response) {
@@ -77,7 +77,7 @@ export default {
 		</div> 
 	</div>
 	<div class="userList">
-		<UserItem v-for="(name,index) in names" :key="ids[index]" :userId="ids[index]" :username="name" @new-conversation="newConversation"> </UserItem>
+		<UserItem v-for="(name,index) in names" :key="ids[index]" :username="name" @new-conversation="newConversation"> </UserItem>
 	</div>
 	<SuccessMsg v-if="successmsg" :msg="successmsg" />
 	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
