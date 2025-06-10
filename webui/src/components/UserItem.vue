@@ -1,11 +1,6 @@
 <script>
 export default {
-    props : ['userId','username'],
-    methods: {
-        newConversation(){
-            this.$emit('new-conversation', this.userId);
-        }
-    }
+    props : ['userId','username']
 }
 </script>
 
@@ -15,7 +10,7 @@ export default {
         <!-- Nome -->
         <h3 class="username">{{ username }}</h3>
         <!-- Pulsante a destra -->
-        <button class="Button" @click="newConversation"> NEW </button>
+        <button class="Button" @click="$emit('new-conversation', userId)"> ✍🏼 </button>
     </div>
 </template>
 

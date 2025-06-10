@@ -40,7 +40,14 @@ export default {
 					setTimeout(()=> {this.successmsg=null},1000);
 				}
 			}catch(e){
-				this.errormsg = e.toString();
+				if (e.response){
+					const status = e.response.status;
+					if(status===400){
+						this.errormsg = "Lunghezza del nome non valida";
+					} else {
+						this.errormsg = e.toString();
+					}
+				}
 			}
 		}
     },
@@ -72,19 +79,19 @@ export default {
 		<form id="newUsernameForm" @submit.prevent="setUsername">
 			<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
 			<button class="saveButton" type="submit"> Salva </button>
-		</form>	
+		</form>	<br>
 		<SuccessMsg v-if="successmsg" :msg="successmsg" />
+		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
-	<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 </template>
 
 
 <style scoped>
 .photo{
 	background-color: white;
-	width: 260px;
-	height: 260px;
-	border-radius: 130px;
+	width: 160px;
+	height: 160px;
+	border-radius: 80px;
 
 }
 input{

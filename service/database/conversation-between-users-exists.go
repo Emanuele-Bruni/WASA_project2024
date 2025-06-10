@@ -11,17 +11,13 @@ func (db *appdbimpl) Conversation2MembersExists(userId1 int, userId2 int) (bool,
 		return false, 0, fmt.Errorf("conversazione con se stessi non ammessa")
 	}
 
-	var membri string
-	if userId1 < userId2 {
-		membri = fmt.Sprintf("%d,%d", userId1, userId2) // "10,20"
-	} else {
-		membri = fmt.Sprintf("%d,%d", userId2, userId1)
-	}
+	members1 := fmt.Sprintf("%d,%d", userId1, userId2)
+	members2 := fmt.Sprintf("%d,%d", userId2, userId1)
 
 	var conversationId int
 	// seleziono la conversazione
-	query := "SELECT conversation_id FROM conversations_table WHERE members = ? AND isGroup = 0"
-	err := db.c.QueryRow(query, membri).Scan(&conversationId)
+	query := "SELECT conversation_id FROM conversations_table WHERE (members = ? OR members = ?)AND isGroup = 0"
+	err := db.c.QueryRow(query, members1, members2).Scan(&conversationId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Non esiste conversazione
@@ -31,5 +27,5 @@ func (db *appdbimpl) Conversation2MembersExists(userId1 int, userId2 int) (bool,
 		return false, 0, err
 	}
 	// conversazione trovata
-	return true, conversationId, err
+	return true, conversationId, nil
 }

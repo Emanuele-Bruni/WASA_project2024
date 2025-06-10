@@ -40,6 +40,9 @@ export default {
 				}
 				}
 			}
+		},
+		chatSection(){
+			this.$router.push("/conversations/:conversationId")
 		}
 	},
 	mounted() {
@@ -72,7 +75,8 @@ export default {
 						 :key="conv.conversationId" 
 						 :photo="conv.photo" 
 						 :title="conv.title" 
-						 :is_group = "conv.isGroup"></ConversationItem>
+						 :is_group = "conv.isGroup"
+						 @click="chatSection"></ConversationItem>
 				 </div>
 			 </div>
 		 </div>
