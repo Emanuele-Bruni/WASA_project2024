@@ -28,6 +28,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/users", rt.wrap(rt.getUsers))
 	rt.router.POST("/users/:userid", rt.wrap(rt.newConversation))
 	rt.router.POST("/conversations", rt.wrap(rt.newGroup))
+	//rt.router.GET("/conversations/:conversationid/messages", rt.wrap(rt.getMessages))
 
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)

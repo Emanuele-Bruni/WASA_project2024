@@ -501,10 +501,11 @@ paths:
                       name: "Franca"
                       photo: "nsadoNISABDnsd..."
           
-  #sendMessage 
+  #sendMessage  e getMessages
   /conversations/{conversationid}/messages:
     parameters:
       - $ref: "#/components/parameters/conversationId"
+
     post:
       tags: ["Messages"]
       summary: send a new message
@@ -556,6 +557,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    #getMessages 
+    get:
+      tags: ["Messages"]
+      summary: get all the messages of a specific conversation
+      description: |
+        You can see all the conversation and its messages
+      operationId: getMessages
+      responses:
+        "200":
+            description: messages received
+            content:
+              application/json:
+                schema:
+                  type: object
+                  description: all the messages ids of the conversation
+                  properties:
+                    messagesiIds:
+                      description: array of messageIds
+                      type: array
+                      minItems: 0
+                      maxItems: 50
+                      items:
+                        $ref: "#/components/schemas/Message/properties/messageId"
+                example: 
+                  messagesIds: [2,5,8]
+        "400":
+            description: unable to get conversation's messages
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+            
+        "500":
+            description: Internal server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+      
               
   
   #forwardMessage
