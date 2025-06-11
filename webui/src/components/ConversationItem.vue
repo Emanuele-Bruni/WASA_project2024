@@ -1,6 +1,10 @@
 <script>
 export default {
-    props : ['photo','title','isGroup']
+    props : {
+        photo: String,
+        title: String,
+        isGroup: Boolean
+    }
 }
 </script>
 

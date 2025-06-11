@@ -4,6 +4,11 @@ export default {
 		return {
 			errormsg: null,
 			conversations: [],
+			showGroupModal: false,
+			groupTitle: "",
+			userOptions: [],
+			selectedUserIds: [],
+			groupError: null,
 		}
 	},
 	methods: {
@@ -41,8 +46,42 @@ export default {
 				}
 			}
 		},
-		chatSection(){
-			this.$router.push("/conversations/:conversationId")
+		chatSection(conversationId){
+			this.$router.push(`/conversations/${conversationId}`)
+		},
+		async newGroup(){
+			this.groupTitle="";
+			this.selectedUserIds=[];
+			this.groupError = null;
+			try{
+				let response = await this.$axios.get("/users",{headers:{Authorization: localStorage.getItem("id")}});
+				console.log(response.data);
+				if(response && response.data.Ids && response.data.Names) {
+					// Combino Ids e Names
+					this.userOptions = response.data.Ids.map((id,index) => {
+						return {id: id, name: response.data.Names[index]};});
+					this.showGroupModal = true;
+				}
+
+			}catch(e) {
+				this.groupError = "Errore nel caricamento utenti: " + e.toString();
+			}
+		},
+		async createGroup(){
+			this.groupError = null;
+			if (this.groupTitle.trim() === "" || this.selectedUserIds.length < 2) {
+				this.groupError = "Inserisci un titolo valido e seleziona almeno due utenti.";
+				return;
+			}
+			try {
+				let response = await this.$axios.post("/conversations",
+					{title: this.groupTitle.trim(), users: this.selectedUserIds,},
+					{headers:{Authorization: localStorage.getItem("id")}});
+				this.showGroupModal = false;
+				this.getMyConversations(); // aggiorno lista conversazioni
+			} catch(e){
+				this.groupError = "Errore durante la creazione del gruppo: " + e.tostring();
+			}
 		}
 	},
 	mounted() {
@@ -64,7 +103,7 @@ export default {
 		
 		<div class="below-navbar">
 			<!-- Pulsante per creare nuovo gruppo -->
-			<button type="button" class="btnNewGroup"> Nuovo Gruppo </button>
+			<button type="button" class="btnNewGroup" @click="newGroup"> Nuovo Gruppo </button>
 		</div>
 		<!-- Lista di tutte le conversazioni dell'utente -->
 		 <div class="listWrapper">
@@ -75,10 +114,39 @@ export default {
 						 :key="conv.conversationId" 
 						 :photo="conv.photo" 
 						 :title="conv.title" 
-						 :is_group = "conv.isGroup"
-						 @click="chatSection"></ConversationItem>
+						 :isGroup = "conv.isGroup"
+						 @click="chatSection(conv.conversationId)"></ConversationItem>
 				 </div>
 			 </div>
+		 </div>
+
+		 <!-- Card che appare una volta premuto il pulsante per il nuovo gruppo -->
+		 <div v-if="showGroupModal" class="modal-overlay">
+			<div class="modal-content">
+				<h2> Nuovo Gruppo </h2>
+				<label> Titolo: </label> 
+				<input type="text" v-model="groupTitle" placeholder="Titolo del gruppo"/>
+
+				<label> Seleziona utenti: </label>
+				<div class="user-list">
+					<div v-for="user in userOptions" :key="user.id" class="user-option">
+						<input
+							type="checkbox"
+							:id="'user-' + user.id"
+							:value="user.id"
+							v-model="selectedUserIds"
+						/>
+						<label :for="'user-' + user.id">{{ user.name }}</label>
+					</div>
+				</div>
+
+				<div class="modal-buttons">
+					<button @click="createGroup">Crea</button>
+					<button @click="showGroupModal = false">Annulla</button>
+				</div>
+
+				<ErrorMsg v-if="groupError" :msg="groupError"></ErrorMsg>
+			</div>
 		 </div>
 
 	</div>
@@ -192,4 +260,78 @@ export default {
 	width: 118px;
 	box-shadow: 1px 3px 0 rgb(4, 103, 133);
 }
+.modal-overlay {
+	position: fixed;
+	top: 0; left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.6);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 1rem;
+	padding: 2rem;
+	width: 90%;
+	max-width: 400px;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+	font-family: "SF Pro", sans-serif;
+}
+
+.modal-content h2 {
+	margin-bottom: 1rem;
+}
+
+.modal-content label {
+	display: block;
+	margin-top: 1rem;
+	font-weight: bold;
+}
+
+.modal-content input[type="text"] {
+	width: 100%;
+	padding: 0.5rem;
+	margin-top: 0.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid #ccc;
+}
+
+.user-list {
+	max-height: 200px;
+	overflow-y: auto;
+	margin-top: 0.5rem;
+}
+
+.user-option {
+	margin-bottom: 0.5rem;
+}
+
+.modal-buttons {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+}
+
+.modal-buttons button {
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	font-family: "SF Pro", sans-serif;
+}
+
+.modal-buttons button:first-child {
+	background-color: #4CAF50;
+	color: white;
+}
+
+.modal-buttons button:last-child {
+	background-color: #ccc;
+}
+
+
 </style>
