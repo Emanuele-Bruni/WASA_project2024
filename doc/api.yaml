@@ -571,17 +571,36 @@ paths:
               application/json:
                 schema:
                   type: object
-                  description: all the messages ids of the conversation
+                  description: all the messages of the conversation
                   properties:
-                    messagesiIds:
-                      description: array of messageIds
+                    messages:
+                      description: array of messages
                       type: array
                       minItems: 0
                       maxItems: 50
                       items:
-                        $ref: "#/components/schemas/Message/properties/messageId"
+                        $ref: "#/components/schemas/Message"
                 example: 
-                  messagesIds: [2,5,8]
+                  messages:
+                    - messageId: 13
+                      author: "MarcoL"
+                      text: "Ciao, posso parlarti?"
+                      hours: "22:20"
+                      comments:
+                        - commentId: 125
+                          author: "Stef"
+                          emoji: "😁"
+                        - commentId: 541
+                          author: "Gio"
+                          emoji: "😒"
+                    - messageId: 14
+                      author: Federico
+                      text: "ei"
+                      hours: "13:03"
+                      comments:
+                        - commentId: 111
+                          author: "Max"
+                          emoji: "😁"
         "400":
             description: unable to get conversation's messages
             content:

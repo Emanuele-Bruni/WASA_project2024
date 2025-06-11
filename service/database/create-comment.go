@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // crea un commento, lo aggiunge alla tabella dei commenti e alla lista dei commenti del messaggio
@@ -35,8 +36,8 @@ func (db *appdbimpl) CreateComment(author string, emoji string, messageId int) (
 		return Comment{}, -1, fmt.Errorf("errore nel recuperare i commenti attuali: %w", err)
 	}
 
+	var commentsidList []int // [20,30,40]
 	if currentComments.Valid && currentComments.String != "" {
-		var commentsidList []int // [20,30,40]
 		for _, id_stringa := range strings.Split(currentComments.String, ",") {
 			// converto in numero
 			num, err := strconv.Atoi(id_stringa)
@@ -46,15 +47,15 @@ func (db *appdbimpl) CreateComment(author string, emoji string, messageId int) (
 				commentsidList = append(commentsidList, num)
 			}
 		}
-		// aggiungo il commento creato
-		commentsidList = append(commentsidList, finalComment.CommentId)
-		// converto la lista in stringa
-		updatedComments := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(commentsidList)), ","), "[]")
-		// aggiorno la colonna "comments" del database
-		_, err = db.c.Exec("UPDATE messages_table SET comments=? WHERE message_id=?", updatedComments, messageId)
-		if err != nil {
-			return Comment{}, -1, fmt.Errorf("errore nell'aggiornare la lista dei commenti: %w", err)
-		}
+	}
+	// aggiungo il commento creato
+	commentsidList = append(commentsidList, finalComment.CommentId)
+	// converto la lista in stringa
+	updatedComments := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(commentsidList)), ","), "[]")
+	// aggiorno la colonna "comments" del database
+	_, err = db.c.Exec("UPDATE messages_table SET comments=? WHERE message_id=?", updatedComments, messageId)
+	if err != nil {
+		return Comment{}, -1, fmt.Errorf("errore nell'aggiornare la lista dei commenti: %w", err)
 	}
 
 	return finalComment, int(commentId), nil
