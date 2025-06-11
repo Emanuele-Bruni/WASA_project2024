@@ -54,7 +54,7 @@ func (rt *_router) getMessages(w http.ResponseWriter, r *http.Request, p httprou
 		return
 	}
 
-	//funzione che ritorna tutti gli ids dei messaggi della conversazione
+	// funzione che ritorna tutti gli ids dei messaggi della conversazione
 	messages, err := rt.db.GetConversationMessages(cnvId)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -62,7 +62,7 @@ func (rt *_router) getMessages(w http.ResponseWriter, r *http.Request, p httprou
 		return
 	}
 
-	//responso
+	// responso
 	var messagesResponse = struct {
 		Messages []database.Message
 	}{
