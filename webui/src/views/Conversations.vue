@@ -24,9 +24,6 @@ export default {
 		settingsSection(){
 			this.$router.push("/settings")
 		},
-		newGroup(){
-			//fare un pulsante sotto e fuori la navbar visto che l'endpoint ha lo stesso path in cui mi trovo
-		},
 		async getMyConversations(){
 			this.errormsg = null
 			try {
@@ -94,8 +91,8 @@ export default {
 	<div>
 		<div class="navbar">
 			<div class="container">
-				<button type="button"class="currentButton"> Conversazioni </button>
-				<button type="button"class="btn" @click="usersSection"> Utenti </button>
+				<button type="button" class="currentButton"> Conversazioni </button>
+				<button type="button" class="btn" @click="usersSection"> Utenti </button>
 				<button type="button" class="btn" @click="settingsSection"> Impostazioni </button>
 				<button type="button" class="logoutButton" @click="logout"> Logout </button>
 			</div> 

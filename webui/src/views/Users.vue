@@ -70,8 +70,8 @@ export default {
 <template>
     <div class="navbar">
 		<div class="container">
-			<button type="button"class="btn" @click="conversationsSection"> Conversazioni </button>
-			<button type="button"class="currentButton"> Utenti </button>
+			<button type="button" class="btn" @click="conversationsSection"> Conversazioni </button>
+			<button type="button" class="currentButton"> Utenti </button>
 			<button type="button" class="btn" @click="settingsSection"> Impostazioni </button>
 			<button type="button" class="logoutButton" @click="logout"> Logout </button>
 		</div> 
