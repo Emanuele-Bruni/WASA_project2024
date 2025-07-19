@@ -52,7 +52,7 @@ export default {
 			this.groupError = null;
 			try{
 				let response = await this.$axios.get("/users",{headers:{Authorization: localStorage.getItem("id")}});
-				console.log(response.data);
+				//console.log(response.data);
 				if(response && response.data.Ids && response.data.Names) {
 					// Combino Ids e Names
 					this.userOptions = response.data.Ids.map((id,index) => {
@@ -61,7 +61,7 @@ export default {
 				}
 
 			}catch(e) {
-				this.groupError = "Errore nel caricamento utenti: " + e.toString();
+				this.groupError = e.toString();
 			}
 		},
 		async createGroup(){
@@ -77,7 +77,14 @@ export default {
 				this.showGroupModal = false;
 				this.getMyConversations(); // aggiorno lista conversazioni
 			} catch(e){
-				this.groupError = "Errore durante la creazione del gruppo: " + e.tostring();
+				if (e.response){
+					const status = e.response.status;
+					if(status === 400){
+						this.groupError = "Nome gruppo troppo lungo";
+					}
+				} else {
+					this.groupError = e.toString();
+				}
 			}
 		}
 	},
@@ -121,28 +128,30 @@ export default {
 		 <div v-if="showGroupModal" class="modal-overlay">
 			<div class="modal-content">
 				<h2> Nuovo Gruppo </h2>
-				<label> Titolo: </label> 
-				<input type="text" v-model="groupTitle" placeholder="Titolo del gruppo"/>
+				<form @submit.prevent="createGroup">
+					<label> Titolo: </label> 
+					<input type="text" v-model="groupTitle" placeholder="Titolo del gruppo"/>
 
-				<label> Seleziona utenti: </label>
-				<div class="user-list">
-					<div v-for="user in userOptions" :key="user.id" class="user-option">
-						<input
-							type="checkbox"
-							:id="'user-' + user.id"
-							:value="user.id"
-							v-model="selectedUserIds"
-						/>
-						<label :for="'user-' + user.id">{{ user.name }}</label>
+					<label> Seleziona utenti: </label>
+					<div class="user-list">
+						<div v-for="user in userOptions" :key="user.id" class="user-option">
+							<input
+								type="checkbox"
+								:id="user.id"
+								:value="user.id"
+								v-model="selectedUserIds"
+							/>
+							<label :for="user.id">{{ user.name }}</label>
+						</div>
 					</div>
-				</div>
 
-				<div class="modal-buttons">
-					<button @click="createGroup">Crea</button>
-					<button @click="showGroupModal = false">Annulla</button>
-				</div>
+					<div class="modal-buttons">
+						<button @click="createGroup"> Crea </button>
+						<button @click="showGroupModal = false"> Annulla </button>
+					</div>
 
-				<ErrorMsg v-if="groupError" :msg="groupError"></ErrorMsg>
+					<ErrorMsg v-if="groupError" :msg="groupError"></ErrorMsg>
+				</form>
 			</div>
 		 </div>
 
@@ -260,8 +269,8 @@ export default {
 .modal-overlay {
 	position: fixed;
 	top: 0; left: 0;
-	width: 100vw;
-	height: 100vh;
+	width: 100%;
+	height: 100%;
 	background: rgba(0, 0, 0, 0.6);
 	display: flex;
 	justify-content: center;
@@ -271,8 +280,8 @@ export default {
 
 .modal-content {
 	background: white;
-	border-radius: 1rem;
-	padding: 2rem;
+	border-radius: 20px;
+	padding: 20px;
 	width: 90%;
 	max-width: 400px;
 	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
@@ -280,54 +289,61 @@ export default {
 }
 
 .modal-content h2 {
-	margin-bottom: 1rem;
+	margin-bottom: 10px;
+	font-family: "SF Pro";
+  	color: rgb(4, 103, 133);
 }
 
 .modal-content label {
 	display: block;
-	margin-top: 1rem;
+	margin-top: 10px;
 	font-weight: bold;
+  	color: rgb(4, 103, 133);
 }
 
 .modal-content input[type="text"] {
-	width: 100%;
-	padding: 0.5rem;
-	margin-top: 0.5rem;
-	border-radius: 0.5rem;
+	padding: 8px;
+	margin-top: 3px;
+	border-radius: 5px;
 	border: 1px solid #ccc;
 }
 
 .user-list {
 	max-height: 200px;
 	overflow-y: auto;
-	margin-top: 0.5rem;
+	margin-top: 5px;
 }
 
 .user-option {
-	margin-bottom: 0.5rem;
+	margin-bottom: 5px;
+	gap: 8px;
+	align-items: center;
+	display: flex;
 }
+
 
 .modal-buttons {
 	display: flex;
 	justify-content: space-between;
-	margin-top: 1.5rem;
+	margin-top: 20px;
 }
 
 .modal-buttons button {
-	padding: 0.5rem 1rem;
+	padding: 10px 20px;
 	border: none;
-	border-radius: 0.5rem;
+	border-radius: 8px;
 	cursor: pointer;
-	font-family: "SF Pro", sans-serif;
+	font-family: "SF Pro";
 }
 
 .modal-buttons button:first-child {
-	background-color: #4CAF50;
+	background-color: rgb(4, 103, 133);
 	color: white;
 }
 
 .modal-buttons button:last-child {
-	background-color: #ccc;
+	background-color: rgb(226, 22, 22);
+	color: white;
 }
 
 
