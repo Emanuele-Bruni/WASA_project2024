@@ -7,7 +7,7 @@ import (
 )
 
 // seleziono la conversazione dalla tabella delle conversazioni
-func (db *appdbimpl) GetSpecificConversation(conversationId int) (Conversation, error) {
+func (db *appdbimpl) GetSpecificConversation(conversationId int, currentUserId int) (Conversation, error) {
 	var conversation Conversation
 	var members string
 	err := db.c.QueryRow("SELECT conversation_id,titolo,photo,isGroup,members FROM conversations_table WHERE conversation_id=?", conversationId).Scan(&conversation.ConversationId, &conversation.Title, &conversation.Photo, &conversation.IsGroup, &members)
@@ -35,5 +35,15 @@ func (db *appdbimpl) GetSpecificConversation(conversationId int) (Conversation, 
 		finalMembers = append(finalMembers, utente)
 	}
 	conversation.Members = finalMembers
+
+	//controllo per il nome della conversazione
+	if !conversation.IsGroup {
+		for _, membro := range finalMembers {
+			if membro.Id != currentUserId {
+				conversation.Title = membro.Name
+				conversation.Photo = membro.Photo
+			}
+		}
+	}
 	return conversation, err
 }

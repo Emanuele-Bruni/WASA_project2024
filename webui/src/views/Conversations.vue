@@ -3,6 +3,7 @@ export default {
 	data: function() {
 		return {
 			errormsg: null,
+			successmsg: null,
 			conversations: [],
 			showGroupModal: false,
 			groupTitle: "",
@@ -59,7 +60,6 @@ export default {
 						return {id: id, name: response.data.Names[index]};});
 					this.showGroupModal = true;
 				}
-
 			}catch(e) {
 				this.groupError = e.toString();
 			}
@@ -74,7 +74,11 @@ export default {
 				let response = await this.$axios.post("/conversations",
 					{title: this.groupTitle.trim(), users: this.selectedUserIds,},
 					{headers:{Authorization: localStorage.getItem("id")}});
-				this.showGroupModal = false;
+				this.successmsg = "Gruppo creato con successo!";
+				setTimeout(()=> {
+						this.successmsg = null;
+						this.showGroupModal = false;
+					},700);
 				this.getMyConversations(); // aggiorno lista conversazioni
 			} catch(e){
 				if (e.response){
@@ -146,11 +150,12 @@ export default {
 					</div>
 
 					<div class="modal-buttons">
-						<button @click="createGroup"> Crea </button>
+						<button> Crea </button>
 						<button @click="showGroupModal = false"> Annulla </button>
 					</div>
 
 					<ErrorMsg v-if="groupError" :msg="groupError"></ErrorMsg>
+					<SuccessMsg v-if="successmsg" :msg="successmsg"></SuccessMsg>
 				</form>
 			</div>
 		 </div>

@@ -13,7 +13,7 @@ const router = createRouter({
 		{path: '/conversations', component: Conversations},
 		{path: '/users', component: Users},
 		{path: '/settings', component: Settings},
-		{path: '/conversations/:conversationId', component: Chat}
+		{path: '/conversations/:conversationid', component: Chat}
 		//{path: '/some/:id/link', component: HomeView},
 	]
 })

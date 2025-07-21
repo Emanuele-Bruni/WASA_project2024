@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
@@ -44,7 +45,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, p htt
 		return
 	}
 	// prendo la conversazione dalla tabella con una funzione
-	conversation, err := rt.db.GetSpecificConversation(cnvId)
+	conversation, err := rt.db.GetSpecificConversation(cnvId, id)
 	if err != nil {
 		// il conversationId non esiste
 		if errors.Is(err, sql.ErrNoRows) {

@@ -4,10 +4,11 @@ import (
 	"WASA_project2024/service/api/reqcontext"
 	"WASA_project2024/service/database"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
@@ -31,7 +32,7 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 	// controllo che i valori passati siano validi
-	if len(requestBody.Title) < 1 || len(requestBody.Title) > 16 || len(requestBody.Users) < 2 || len(requestBody.Users) > 16 {
+	if len(requestBody.Title) < 1 || len(requestBody.Title) > 25 || len(requestBody.Users) < 2 || len(requestBody.Users) > 16 {
 		http.Error(w, "Valori non accettabili", http.StatusBadRequest)
 		ctx.Logger.WithError(err).Error("Lunghezza dei valori errata")
 		return
@@ -45,7 +46,7 @@ func (rt *_router) newGroup(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 	// devo ritornare il gruppo -> richiamo la funzione GetConversation
-	gruppo, err := rt.db.GetSpecificConversation(groupId)
+	gruppo, err := rt.db.GetSpecificConversation(groupId, id)
 	if err != nil {
 		ctx.Logger.Error("Errore durante la selezione del nuovo gruppo: ", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

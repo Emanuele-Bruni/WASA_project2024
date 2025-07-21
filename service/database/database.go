@@ -75,7 +75,7 @@ type AppDatabase interface {
 	CreateUser(name string) (int, error)
 	SetName(name string, id int) error
 	GetConversations(id int) ([]Conversation, error)
-	GetSpecificConversation(conversationId int) (Conversation, error)
+	GetSpecificConversation(conversationId int, currentUserId int) (Conversation, error)
 	CreateMessage(author string, text string, hours string, cnvid int, userid int) (Message, int, error)
 	ConversationExists(cnvId int) (bool, error)
 	CommentExists(commentId int) (bool, error)
