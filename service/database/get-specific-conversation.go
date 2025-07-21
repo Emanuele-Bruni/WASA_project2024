@@ -36,7 +36,7 @@ func (db *appdbimpl) GetSpecificConversation(conversationId int, currentUserId i
 	}
 	conversation.Members = finalMembers
 
-	//controllo per il nome della conversazione
+	// controllo per il nome della conversazione
 	if !conversation.IsGroup {
 		for _, membro := range finalMembers {
 			if membro.Id != currentUserId {
