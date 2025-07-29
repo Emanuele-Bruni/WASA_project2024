@@ -1,11 +1,15 @@
 <script>
+import MessageItem from '../components/MessageItem.vue';
+
 export default{
     data: function(){
         return {
             errormsg: null,
+            successmsg: null,
             conversationId: null,
             conversation: null,
             messages: [],
+            newMessage: "",
         }
     },
     methods: {
@@ -16,16 +20,44 @@ export default{
             this.conversationId = this.$route.params.conversationid;
             try{
                 let response = await this.$axios.get(`/conversations/${this.conversationId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                console.log(response);
+                //console.log(response);
                 this.conversation = response.data;
             }catch(e){
                 this.errormsg = e.toString();
             }
-
+        },
+        async getChatMessages(){
+            try {
+                let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
+                console.log(response);
+                const msgs = response.data.Messages;
+                if (!Array.isArray(msgs) || msgs.length === 0){
+                    this.errormsg = "Nessun Messaggio";
+                    this.messages = []
+                } else {
+                    this.errormsg = null;
+                    this.messages = msgs;
+                }
+                console.log(this.errormsg);
+            } catch(e){
+                    this.errormsg = e.toString();
+                    this.messages = []; 
+            }
+        },
+        async sendMessage(){
+            try{
+                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages`,
+                {text:this.newMessage},{headers:{Authorization: localStorage.getItem("id")}});
+                this.getChatMessages();
+                this.newMessage = "";
+            } catch(e) {
+                this.errormsg = e.toString();
+            }
         },
     },
     mounted(){
         this.getConversationInfo();
+        this.getChatMessages();
     }
 }
 </script>
@@ -41,17 +73,53 @@ export default{
             <button type="button" class="chatSettingsButton"> Impostazioni</button>
         </div>
      </div>
-    <!-- Lista di messaggi (devo fare endpoint per tornare i messaggi?)-->
+
+    <!-- Lista di messaggi (devo fare endpoint per tornare i messaggi)-->
+    <div class="messagesSection">
+        <div class="messagesList">
+           <MessageItem v-for="msg in messages"
+                :key="msg.messageId"
+                :messageId="msg.messageId"
+                :author="msg.author"
+                :text="msg.text"
+                :hours="msg.hours"
+            />
+            <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"></ErrorMsg> 
+        </div>
+    </div>
+
     <!-- DownBar per scrivere i messaggi-->
      <div class="downBar">
         <div class="downBarContent">
-            <input type="text" placeholder="Scrivi un messaggio"/>
-            <button class="sendButton"> Invia </button>
+            <form id="sendMessageForm" @submit.prevent="sendMessage">
+                <input type="text" v-model="newMessage" placeholder="Scrivi un messaggio"/>
+                <button class="sendButton" type="submit"> Invia </button>
+            </form>
         </div>
      </div>
 </template>
 
 <style scoped>
+#sendMessageForm {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+}
+.centeredError{
+    text-align: center;
+    width: 100%;
+    margin-top: 170px;
+}
+.messagesSection {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 80px;
+    margin-bottom: 80px;
+}
+.messagesList {
+    width: 80%;
+}
 input{
     font-family: "SF Pro";
 	width: 100%;
@@ -85,10 +153,9 @@ input{
 }
 .chatHeader {
   display: flex;
-  gap: 20px;
+  gap: 1rem;
   border: 2px solid rgb(243, 32, 32);
-  width: 75%;
-  text-align: center;
+  width: 80%;
 }
 .chatSettingsButton{
 	font-family: "SF Pro";
@@ -117,6 +184,7 @@ input{
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgb(4, 66, 85);
+  margin-left: 1rem;
 }
 .chatTitle {
   font-weight: bold;
@@ -125,28 +193,34 @@ input{
   font-family: "SF Pro";
 }
 .topBarContent{
-    display: flex;
-    align-items: center;
-    gap: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.2rem;
 }
 .topBar{
-    background-color: white;
-	padding: 13px 10px;
+	background-color: white;
+	padding: 0.75rem 1rem;
 	position: fixed;
 	left: 0;
+	top: 0;
 	width: 100%;
-	box-shadow: 0 5px 5px rgba(53, 81, 94, 0.5	)
+	z-index: 1000;
+	box-shadow: 0 5px 5px rgba(53, 81, 94, 0.5	) /* x y sfocatura colore(trasparenza)*/
 }
 .downBarContent{
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+    border: 2px solid black;
 }
 .downBar{
     background-color: white;
-	padding: 13px 20px;
+	padding: 0.75rem 1rem;
 	position: fixed;
-    margin-top: 518px;
+    bottom:0;
 	left: 0;
 	width: 100%;
     display: flex;

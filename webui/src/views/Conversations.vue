@@ -113,6 +113,7 @@ export default {
 			<!-- Pulsante per creare nuovo gruppo -->
 			<button type="button" class="btnNewGroup" @click="newGroup"> Nuovo Gruppo </button>
 		</div>
+
 		<!-- Lista di tutte le conversazioni dell'utente -->
 		 <div class="listWrapper">
 			 <div class="conversations-list">
