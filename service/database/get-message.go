@@ -10,7 +10,7 @@ func (db *appdbimpl) GetMessage(messageId int) (Message, error) {
 	// prendo il messaggio dalla tabella
 	var message Message
 	var commentsString sql.NullString
-	err := db.c.QueryRow("SELECT author,text,hours,comments FROM messages_table WHERE message_id=?", messageId).Scan(&message.Author, &message.Text, &message.Hours, &commentsString)
+	err := db.c.QueryRow("SELECT author,text,hours,comments,user_id FROM messages_table WHERE message_id=?", messageId).Scan(&message.Author, &message.Text, &message.Hours, &commentsString, &message.AuthorId)
 	if err != nil {
 		return Message{}, err
 	}

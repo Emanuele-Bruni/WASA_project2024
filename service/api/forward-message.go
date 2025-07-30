@@ -3,11 +3,12 @@ package api
 import (
 	"WASA_project2024/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
@@ -124,8 +125,15 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, p http
 	}
 	// calcolo il nuovo orario
 	currentTime := time.Now().Format("15:04")
+	// calcolo il nome che mi servirà per il nuovo messaggio
+	name, err := rt.db.GetNameById(id)
+	if err != nil {
+		http.Error(w, "Autore non identificato", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore nel recuperare il nome dell'utente")
+		return
+	}
 	// devo richiamare la funzione che crea il messaggio
-	forwardResponse, fwdId, err := rt.db.CreateMessage(message.Author, message.Text, currentTime, forwardId, id)
+	forwardResponse, fwdId, err := rt.db.CreateMessage(name, message.Text, currentTime, forwardId, id)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del messaggio")

@@ -97,7 +97,7 @@ export default{
                 :author="msg.author"
                 :text="msg.text"
                 :hours="msg.hours"
-                :isMine = "msg.author === username"
+                :isMine="msg.authorId === parseInt(userId)"
             />
             <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"/> 
             <div ref="bottomAnchor"></div>

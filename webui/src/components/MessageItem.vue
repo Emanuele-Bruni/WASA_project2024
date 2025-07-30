@@ -1,6 +1,6 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'text', 'hours','isMine']
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine']
 }
 </script>
 

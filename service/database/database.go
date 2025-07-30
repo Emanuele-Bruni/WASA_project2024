@@ -57,6 +57,7 @@ type Conversation struct {
 
 type Message struct {
 	MessageId int       `json:"messageId"`
+	AuthorId  int       `json:"authorId"`
 	Author    string    `json:"author"`
 	Text      string    `json:"text"`
 	Hours     string    `json:"hours"`

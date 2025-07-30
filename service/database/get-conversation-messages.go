@@ -8,7 +8,7 @@ import (
 )
 
 func (db *appdbimpl) GetConversationMessages(cnvId int) ([]Message, error) {
-	righe, err := db.c.Query("SELECT message_id, author, text, hours, comments FROM messages_table WHERE conversation_id = ?", cnvId)
+	righe, err := db.c.Query("SELECT message_id, author, text, hours, comments, user_id FROM messages_table WHERE conversation_id = ?", cnvId)
 	if err != nil {
 		return nil, fmt.Errorf("errore nella selezione dei messaggi: %w", err)
 	}
@@ -17,11 +17,11 @@ func (db *appdbimpl) GetConversationMessages(cnvId int) ([]Message, error) {
 	var result []Message
 
 	for righe.Next() {
-		var msgID int
+		var msgID, authorId int
 		var author, text, hours string
 		var comments sql.NullString
 
-		if err := righe.Scan(&msgID, &author, &text, &hours, &comments); err != nil {
+		if err := righe.Scan(&msgID, &author, &text, &hours, &comments, &authorId); err != nil {
 			return nil, fmt.Errorf("errore nella scansione del messaggio: %w", err)
 		}
 
@@ -33,6 +33,7 @@ func (db *appdbimpl) GetConversationMessages(cnvId int) ([]Message, error) {
 
 		var tempMessage Message
 		tempMessage.MessageId = msgID
+		tempMessage.AuthorId = authorId
 		tempMessage.Author = author
 		tempMessage.Text = text
 		tempMessage.Hours = hours

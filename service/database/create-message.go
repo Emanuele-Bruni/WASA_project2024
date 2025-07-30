@@ -19,6 +19,7 @@ func (db *appdbimpl) CreateMessage(author string, text string, hours string, cnv
 	// determino il messaggio da restituire (con commenti vuoti)
 	finalMessage := Message{
 		MessageId: int(messageId),
+		AuthorId:  int(userid),
 		Author:    author,
 		Text:      text,
 		Hours:     hours,
