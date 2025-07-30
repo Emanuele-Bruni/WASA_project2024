@@ -10,6 +10,8 @@ export default{
             conversation: null,
             messages: [],
             newMessage: "",
+            username : localStorage.getItem("username"),
+            userId: localStorage.getItem("id"),
         }
     },
     methods: {
@@ -39,8 +41,10 @@ export default{
                     this.messages = msgs;
                 }
                 console.log(this.errormsg);
+                this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
+                    this.scrollToBottom();
                     this.messages = []; 
             }
         },
@@ -48,12 +52,22 @@ export default{
             try{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages`,
                 {text:this.newMessage},{headers:{Authorization: localStorage.getItem("id")}});
-                this.getChatMessages();
                 this.newMessage = "";
+                await this.getChatMessages();
+                this.scrollToBottom();
             } catch(e) {
                 this.errormsg = e.toString();
+                this.scrollToBottom();
             }
         },
+        scrollToBottom() {
+            this.$nextTick(() => { 
+                const el = this.$refs.bottomAnchor
+                if (el) {
+                    el.scrollIntoView({behavior: 'smooth'});
+                }
+            });
+        }
     },
     mounted(){
         this.getConversationInfo();
@@ -83,8 +97,10 @@ export default{
                 :author="msg.author"
                 :text="msg.text"
                 :hours="msg.hours"
+                :isMine = "msg.author === username"
             />
-            <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"></ErrorMsg> 
+            <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"/> 
+            <div ref="bottomAnchor"></div>
         </div>
     </div>
 

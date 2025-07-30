@@ -1,12 +1,12 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'text', 'hours']
+    props: ['messageId', 'author', 'text', 'hours','isMine']
 }
 </script>
 
 <template>
-  <div class="messageItem">
-    <div class="messageBox">
+  <div :class="['messageItem',isMine ? 'mine':'']">
+    <div :class="['messageBox',isMine ? 'mineBox':'']">
       <div class="messageHeader">
         <strong>{{ author }}</strong>
         <button class="optionsButton">⋮</button>
@@ -24,7 +24,9 @@ export default {
   margin: 0.5rem 0;
   width: 100%;
 }
-
+.messageItem.mine{
+  justify-content: flex-end;
+}
 .messageBox {
   background-color: #f0f7fc;
   border: 1px solid #046785;
@@ -35,7 +37,10 @@ export default {
   max-width: 70%; /* Limita la larghezza massima */
   word-wrap: break-word; /* Spezza il testo lungo */
 }
-
+.messageBox.mineBox {
+  background-color: #d0f0c0; /* verde chiaro */
+  border: 1px solid #5ca75c;
+}
 .messageHeader {
   display: flex;
   justify-content: space-between;
