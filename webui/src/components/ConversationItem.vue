@@ -11,7 +11,8 @@ export default {
 
 <template>
   <div class="conversationCard">
-    <img :src="photo" class="avatar" />
+    <img :src="`data:image/png;base64,${photo.replace(/\s/g, '')}`" class="avatar" />
+
 
     <div class="info">
       <h3>{{ title }}</h3>

@@ -8,6 +8,8 @@ import UserItem from './components/UserItem.vue'
 import SuccessMsg from './components/SuccessMsg.vue'
 import ConversationItem from './components/ConversationItem.vue'
 import MessageItem from './components/MessageItem.vue'
+import ChatInfoItem from './components/ChatInfoItem.vue'
+import ConfirmModal from './components/ConfirmModal.vue'
 
 import './assets/dashboard.css'
 import './assets/main.css'
@@ -20,5 +22,7 @@ app.component("UserItem",UserItem);
 app.component("SuccessMsg", SuccessMsg);
 app.component("ConversationItem",ConversationItem);
 app.component("MessageItem", MessageItem);
+app.component("ChatInfoItem", ChatInfoItem);
+app.component("ConfirmModal", ConfirmModal);
 app.use(router)
 app.mount('#app')

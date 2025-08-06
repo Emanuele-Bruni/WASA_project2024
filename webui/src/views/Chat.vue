@@ -1,5 +1,6 @@
 <script>
-import MessageItem from '../components/MessageItem.vue';
+import ConfirmModal from '../components/ConfirmModal.vue';
+
 
 export default{
     data: function(){
@@ -12,6 +13,9 @@ export default{
             newMessage: "",
             username : localStorage.getItem("username"),
             userId: localStorage.getItem("id"),
+            showChatModal: false,
+            showConfirmModal: false,
+            groupError: null,
         }
     },
     methods: {
@@ -22,7 +26,7 @@ export default{
             this.conversationId = this.$route.params.conversationid;
             try{
                 let response = await this.$axios.get(`/conversations/${this.conversationId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                //console.log(response);
+                console.log(response);
                 this.conversation = response.data;
             }catch(e){
                 this.errormsg = e.toString();
@@ -31,7 +35,7 @@ export default{
         async getChatMessages(){
             try {
                 let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
-                console.log(response);
+                //console.log(response);
                 const msgs = response.data.Messages;
                 if (!Array.isArray(msgs) || msgs.length === 0){
                     this.errormsg = "Nessun Messaggio";
@@ -40,7 +44,7 @@ export default{
                     this.errormsg = null;
                     this.messages = msgs;
                 }
-                console.log(this.errormsg);
+                //console.log(this.errormsg);
                 this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
@@ -53,10 +57,18 @@ export default{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages`,
                 {text:this.newMessage},{headers:{Authorization: localStorage.getItem("id")}});
                 this.newMessage = "";
-                await this.getChatMessages();
+                this.getChatMessages();
                 this.scrollToBottom();
+                this.getConversationInfo();
             } catch(e) {
-                this.errormsg = e.toString();
+                if(e.response){
+                    const status = e.response.status;
+					if(status === 400){
+						this.errormsg = "Lunghezza del messaggio non valida";
+					}
+                } else {
+                    this.errormsg = e.toString();
+                }
                 this.scrollToBottom();
             }
         },
@@ -67,6 +79,48 @@ export default{
                     el.scrollIntoView({behavior: 'smooth'});
                 }
             });
+        },
+        chatSettings(){
+            this.showChatModal = true;
+        },
+        async setGroupName(editableTitle){
+            try{
+                let response = await this.$axios.put(`/conversations/${this.conversationId}/name`,
+                {groupName: editableTitle}, {headers:{Authorization: localStorage.getItem("id")}});
+
+                this.successmsg = "Nome gruppo aggiornato con successo";
+                this.showChatModal= false;
+                setTimeout(()=> {this.successmsg=null;},800);
+
+                this.getConversationInfo();
+                this.scrollToBottom();
+
+            } catch(e){
+                if(e.response){
+                    const status = e.response.status;
+					if(status === 400){
+						this.groupError = "Lunghezza del nome non valida";
+                        setTimeout(()=> {this.groupError=null;},800);
+					}
+                } else {
+                    this.groupError = e.toString();
+                }
+
+                this.showChatModal= false;
+                this.scrollToBottom();
+            }
+        },
+        async leaveGroup(){
+            try{
+                let response = await this.$axios.delete(`/conversations/${this.conversationId}/members`, {headers:{Authorization: localStorage.getItem("id")}})
+                this.successmsg = "Gruppo abbandonato con successo";
+                this.showChatModal = false;
+                setTimeout(()=> {this.successmsg=null;},800);
+                //torno alla lista delle conversazioni
+                this.$router.push("/conversations")
+            } catch(e) {
+                this.errormsg = e.toString();
+            }
         }
     },
     mounted(){
@@ -84,11 +138,24 @@ export default{
                <img :src="conversation.photo"  class="chatPhoto"/>
                <div class="chatTitle"> {{ conversation.title }}</div>
             </div>
-            <button type="button" class="chatSettingsButton"> Impostazioni</button>
+            <button type="button" class="chatSettingsButton" @click="chatSettings"> Info </button>
+            <ChatInfoItem v-if="showChatModal"
+                :photo="conversation.photo"
+                :title="conversation.title"
+                :isGroup="conversation.isGroup"
+                :members="conversation.members"
+                @close="showChatModal = false" 
+                @groupNameChanged="setGroupName"
+                @left="showConfirmModal=true"/>
+            <ConfirmModal v-if="showConfirmModal"
+                message="Sei sicuro di voler uscire dal gruppo?"
+                @yes="leaveGroup"
+                @no="showConfirmModal=false"
+                />
         </div>
      </div>
 
-    <!-- Lista di messaggi (devo fare endpoint per tornare i messaggi)-->
+    <!-- Lista di messaggi-->
     <div class="messagesSection">
         <div class="messagesList">
            <MessageItem v-for="msg in messages"
@@ -99,7 +166,9 @@ export default{
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
             />
+            <SuccessMsg v-if="successmsg" :msg="successmsg"/>
             <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"/> 
+            <ErrorMsg v-if="groupError" :msg="groupError"/>
             <div ref="bottomAnchor"></div>
         </div>
     </div>

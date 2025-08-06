@@ -3,10 +3,11 @@ package api
 import (
 	"WASA_project2024/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
@@ -71,8 +72,8 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, p httpro
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	// controllo che sia >1 e <16
-	if len(requestBody.GroupName) < 1 || len(requestBody.GroupName) > 16 {
+	// controllo che sia >1 e <25
+	if len(requestBody.GroupName) < 1 || len(requestBody.GroupName) > 25 {
 		http.Error(w, "Invalid Group Name", http.StatusBadRequest)
 		ctx.Logger.WithField("groupName", requestBody.GroupName).Error("Invalid length of field 'groupName'")
 		return
