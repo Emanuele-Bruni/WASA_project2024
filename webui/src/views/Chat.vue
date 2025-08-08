@@ -1,5 +1,6 @@
 <script>
 import ConfirmModal from '../components/ConfirmModal.vue';
+import MessageModal from '../components/MessageModal.vue';
 
 
 export default{
@@ -7,15 +8,22 @@ export default{
         return {
             errormsg: null,
             successmsg: null,
-            conversationId: null,
+            groupError: null,
+
+            conversationId: this.$route.params.conversationid,
+            username : localStorage.getItem("username"),
+            userId: localStorage.getItem("id"),
+            selectedMessageId: null,
+
             conversation: null,
             messages: [],
             newMessage: "",
-            username : localStorage.getItem("username"),
-            userId: localStorage.getItem("id"),
-            showChatModal: false,
-            showConfirmModal: false,
-            groupError: null,
+
+            showChatModal: false,           //appare quando si clicca su Info
+            confirmLeaveGroup: false,       //appare quando si vuole lasciare il gruppo
+            confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
+            showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
+
         }
     },
     methods: {
@@ -23,7 +31,6 @@ export default{
             this.$router.push("/conversations")
         },
         async getConversationInfo(){
-            this.conversationId = this.$route.params.conversationid;
             try{
                 let response = await this.$axios.get(`/conversations/${this.conversationId}`, {headers:{Authorization: localStorage.getItem("id")}});
                 console.log(response);
@@ -121,7 +128,31 @@ export default{
             } catch(e) {
                 this.errormsg = e.toString();
             }
-        }
+        },
+        openMessageOptions(messageId){
+            this.selectedMessageId = messageId;
+            this.showMessageOptions = true;
+        },
+        async deleteMessage(messageId){
+            try{
+                let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${messageId}`, {headers:{Authorization: localStorage.getItem("id")}});
+                this.confirmDeleteMessage = false;
+                this.showMessageOptions = false;
+                this.getChatMessages();
+
+            } catch(e) {
+                if(e.response) {
+                    const status = e.response.status;
+                    if(status === 403){
+                        this.errormsg = "Un messaggio può essere rimosso solo dall'autore";
+                        setTimeout(()=> {this.errormsg=null;},1000);
+                    } else {
+                        this.errormsg = e.toString();
+                    }
+                }
+            }
+        },
+        // async forwardMessage( selectedMessageId, forwardId) {}
     },
     mounted(){
         this.getConversationInfo();
@@ -146,12 +177,12 @@ export default{
                 :members="conversation.members"
                 @close="showChatModal = false" 
                 @groupNameChanged="setGroupName"
-                @left="showConfirmModal=true"/>
-            <ConfirmModal v-if="showConfirmModal"
+                @left="confirmLeaveGroup=true"/>
+            <ConfirmModal v-if="confirmLeaveGroup"
                 message="Sei sicuro di voler uscire dal gruppo?"
                 @yes="leaveGroup"
-                @no="showConfirmModal=false"
-                />
+                @no="confirmLeaveGroup=false"
+            />
         </div>
      </div>
 
@@ -165,6 +196,17 @@ export default{
                 :text="msg.text"
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
+                @messageOptions="openMessageOptions"
+            />
+            <MessageModal v-if="showMessageOptions"
+                :messageId="selectedMessageId"
+                @delete="confirmDeleteMessage = true"
+                @close="showMessageOptions=false"
+            />
+            <ConfirmModal v-if="confirmDeleteMessage"
+                message="Sei sicuro di voler eliminare il messaggio?"
+                @yes="deleteMessage(selectedMessageId)"
+                @no="confirmDeleteMessage=false"
             />
             <SuccessMsg v-if="successmsg" :msg="successmsg"/>
             <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"/> 
@@ -239,7 +281,6 @@ input{
 .chatHeader {
   display: flex;
   gap: 1rem;
-  border: 2px solid rgb(243, 32, 32);
   width: 80%;
 }
 .chatSettingsButton{
@@ -299,7 +340,6 @@ input{
     justify-content: center;
     gap: 1.5rem;
     width: 100%;
-    border: 2px solid black;
 }
 .downBar{
     background-color: white;

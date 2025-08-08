@@ -9,7 +9,7 @@ export default {
     <div :class="['messageBox',isMine ? 'mineBox':'']">
       <div class="messageHeader">
         <strong>{{ author }}</strong>
-        <button class="optionsButton">⋮</button>
+        <button class="optionsButton" @click="$emit('messageOptions', messageId)">⋮</button>
       </div>
       <div class="messageText">{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>

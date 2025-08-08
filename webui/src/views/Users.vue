@@ -38,14 +38,15 @@ export default {
 		async newConversation(userId){
 			try{
 				let response = await this.$axios.post(`/users/${userId}`, {}, {headers:{Authorization: localStorage.getItem("id")}});
+				console.log(response.data)
 				if (response) {
-					this.conversationId = response.data.ConversationId;
+					this.conversationId = response.data.conversationId;
 
 					this.successmsg = "Conversazione creata con successo!";
 					setTimeout(()=> {
 						this.successmsg = null;
-						this.$router.push("/conversations"); //path della prossima pagina
-					},500);								//1 secondo di attesa prima del redirect
+						this.$router.push(`/conversations/${this.conversationId}`);
+					},500);	
 				}
 			} catch(e){
 				if(e.response) {

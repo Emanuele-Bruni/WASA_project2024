@@ -10,6 +10,7 @@ export default {
 			userOptions: [],
 			selectedUserIds: [],
 			groupError: null,
+			groupId: null,
 		}
 	},
 	methods: {
@@ -75,11 +76,14 @@ export default {
 					{title: this.groupTitle.trim(), users: this.selectedUserIds,},
 					{headers:{Authorization: localStorage.getItem("id")}});
 				this.successmsg = "Gruppo creato con successo!";
+				console.log(response.data);
+				this.groupId = response.data.groupId;
 				setTimeout(()=> {
 						this.successmsg = null;
 						this.showGroupModal = false;
+						this.$router.push(`/conversations/${this.groupId}`);
 					},700);
-				this.getMyConversations(); // aggiorno lista conversazioni
+				this.getMyConversations();
 			} catch(e){
 				if (e.response){
 					const status = e.response.status;
