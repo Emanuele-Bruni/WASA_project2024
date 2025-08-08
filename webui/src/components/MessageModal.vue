@@ -8,7 +8,7 @@
     <div class="message-options-overlay">
         <div class="options-overlay-content">
             <div class="buttons">
-                <button> Inoltra messaggio </button>
+                <button @click="$emit('forward', messageId)"> Inoltra messaggio </button>
                 <button @click="$emit('delete',messageId)"> Elimina messaggio </button>
                 <button> Commenta messaggio </button>
                 <button> Elimina commento </button>

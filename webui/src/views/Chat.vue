@@ -14,15 +14,18 @@ export default{
             username : localStorage.getItem("username"),
             userId: localStorage.getItem("id"),
             selectedMessageId: null,
+            selectedConversationId: null,
 
             conversation: null,
             messages: [],
             newMessage: "",
+            forwardConversations: [],
 
             showChatModal: false,           //appare quando si clicca su Info
             confirmLeaveGroup: false,       //appare quando si vuole lasciare il gruppo
             confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
             showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
+            forwardModal: false,            //appare quando si vuole inoltrare un messaggio
 
         }
     },
@@ -152,7 +155,32 @@ export default{
                 }
             }
         },
-        // async forwardMessage( selectedMessageId, forwardId) {}
+        async openForwardModal(messageId){
+			this.selectedMessageId = messageId
+			try {
+				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
+				if(response){
+					this.forwardConversations = response.data.conversations;
+                    this.forwardModal = true;
+				}
+			} catch(e){
+                this.errormsg = e.toString();
+			}
+		},
+        async forwardMessage(convId){
+            try{
+                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/forward/${convId}`,
+                null,{headers:{Authorization: localStorage.getItem("id")}});
+                this.getChatMessages();
+                this.successmsg = "Inoltrato con successo";
+                setTimeout(()=> {this.successmsg=null;
+                    this.forwardModal = false;
+                    this.showMessageOptions = false;
+                },1000);
+            } catch(e) {
+                this.errormsg = e.toString();
+            }
+        },
     },
     mounted(){
         this.getConversationInfo();
@@ -200,8 +228,16 @@ export default{
             />
             <MessageModal v-if="showMessageOptions"
                 :messageId="selectedMessageId"
+                @forward="openForwardModal(selectedMessageId)"
                 @delete="confirmDeleteMessage = true"
                 @close="showMessageOptions=false"
+            />
+            <ForwardModal v-if="forwardModal"
+                :messageId="selectedMessageId"
+                :conversationId="conversationId"
+                :conversations="forwardConversations"
+                @toConversation="forwardMessage($event)"
+                @close="forwardModal=false"
             />
             <ConfirmModal v-if="confirmDeleteMessage"
                 message="Sei sicuro di voler eliminare il messaggio?"

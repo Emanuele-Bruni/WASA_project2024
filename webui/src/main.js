@@ -11,6 +11,7 @@ import MessageItem from './components/MessageItem.vue'
 import ChatInfoItem from './components/ChatInfoItem.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
 import MessageModal from './components/MessageModal.vue'
+import ForwardModal from './components/ForwardModal.vue'
 
 import './assets/dashboard.css'
 import './assets/main.css'
@@ -26,5 +27,6 @@ app.component("MessageItem", MessageItem);
 app.component("ChatInfoItem", ChatInfoItem);
 app.component("ConfirmModal", ConfirmModal);
 app.component("MessageModal", MessageModal);
+app.component("ForwardModal", ForwardModal);
 app.use(router)
 app.mount('#app')
