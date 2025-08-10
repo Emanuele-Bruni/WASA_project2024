@@ -43,8 +43,8 @@ export default {
 
             <!-- Pulsanti se è un gruppo-->
              <div v-if="isGroup" class="actions">
-                <button> Aggiungi Membro </button>
-                <button type="submit" @click="$emit('left')"> Esci dal Gruppo </button>
+                <button @click="$emit('addMember')"> Aggiungi Membro </button>
+                <button @click="$emit('left')"> Esci dal Gruppo </button>
              </div>
 
              <button class="close-button" @click="$emit('close')"> Chiudi </button>

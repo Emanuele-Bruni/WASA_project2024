@@ -28,8 +28,8 @@ export default {
 				let response = await this.$axios.get("/users", {headers:{Authorization: localStorage.getItem("id")}});
 				//console.log("Response Data: ",response.data);
 				if(response) {
-					this.ids = response.data.Ids;
-					this.names = response.data.Names;
+					this.ids = response.data.userIds;
+					this.names = response.data.names;
 				}
 			} catch(e){
 				this.errormsg = e.toString();

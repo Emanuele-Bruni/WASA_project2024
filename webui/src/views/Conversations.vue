@@ -55,10 +55,10 @@ export default {
 			try{
 				let response = await this.$axios.get("/users",{headers:{Authorization: localStorage.getItem("id")}});
 				//console.log(response.data);
-				if(response && response.data.Ids && response.data.Names) {
+				if(response && response.data.userIds && response.data.names) {
 					// Combino Ids e Names
-					this.userOptions = response.data.Ids.map((id,index) => {
-						return {id: id, name: response.data.Names[index]};});
+					this.userOptions = response.data.userIds.map((id,index) => {
+						return {id: id, name: response.data.names[index]};});
 					this.showGroupModal = true;
 				}
 			}catch(e) {

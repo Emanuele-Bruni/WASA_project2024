@@ -1,4 +1,5 @@
 <script>
+import AddToGroupModal from '../components/AddToGroupModal.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import MessageModal from '../components/MessageModal.vue';
 
@@ -20,12 +21,14 @@ export default{
             messages: [],
             newMessage: "",
             forwardConversations: [],
+            membersToAdd: [],
 
             showChatModal: false,           //appare quando si clicca su Info
             confirmLeaveGroup: false,       //appare quando si vuole lasciare il gruppo
             confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
             showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
             forwardModal: false,            //appare quando si vuole inoltrare un messaggio
+            addMemberModal: false,          // appare quando si vuole aggiungere un membro
 
         }
     },
@@ -181,6 +184,31 @@ export default{
                 this.errormsg = e.toString();
             }
         },
+        async openAddMember(){
+            try{
+                let response = await this.$axios.get("/users",{headers:{Authorization: localStorage.getItem("id")}});
+                if(response){
+                    // Combino Ids e Names
+					this.membersToAdd = response.data.userIds.map((id,index) => {
+						return {id: id, name: response.data.names[index]};});
+                    this.addMemberModal=true
+                }
+            } catch(e) {
+                this.errormsg = e.toString();
+            }
+        },
+        async addToGroup(userId){
+            try{
+                let response = await this.$axios.put(`/conversations/${this.conversationId}/members`,{user: userId},{headers:{Authorization: localStorage.getItem("id")}});
+                this.successmsg = "Utente aggiunto con successo";
+                setTimeout(()=> {this.successmsg=null;
+                    this.addMemberModal = false;
+                },1000);
+                this.getConversationInfo();
+            } catch(e) {
+                this.errormsg = e.toString();
+            }
+        },
     },
     mounted(){
         this.getConversationInfo();
@@ -205,11 +233,18 @@ export default{
                 :members="conversation.members"
                 @close="showChatModal = false" 
                 @groupNameChanged="setGroupName"
-                @left="confirmLeaveGroup=true"/>
+                @left="confirmLeaveGroup=true"
+                @addMember="openAddMember"/>
             <ConfirmModal v-if="confirmLeaveGroup"
                 message="Sei sicuro di voler uscire dal gruppo?"
                 @yes="leaveGroup"
                 @no="confirmLeaveGroup=false"
+            />
+            <AddToGroupModal v-if="addMemberModal"
+                :conversationId="conversationId"
+                :users="membersToAdd"
+                @addToGroup="addToGroup($event)"
+                @close="addMemberModal=false"
             />
         </div>
      </div>

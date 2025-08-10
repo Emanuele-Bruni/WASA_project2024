@@ -3,10 +3,11 @@ package api
 import (
 	"WASA_project2024/service/api/reqcontext"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
@@ -29,11 +30,11 @@ func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter
 
 	// devo restituire ids,names
 	var userResponse = struct {
-		Ids   []int
-		Names []string
+		UserIds []int    `json:"userIds"`
+		Names   []string `json:"names"`
 	}{
-		Ids:   ids,
-		Names: names,
+		UserIds: ids,
+		Names:   names,
 	}
 
 	w.Header().Set("content-type", "application/json")
