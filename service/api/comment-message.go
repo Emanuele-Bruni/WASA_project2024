@@ -4,11 +4,12 @@ import (
 	"WASA_project2024/service/api/reqcontext"
 	"WASA_project2024/service/database"
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
@@ -89,8 +90,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 
 	// nel request body devo mettere autore e commento
 	var requestBody = struct {
-		Author string `json:"author"`
-		Emoji  string `json:"emoji"`
+		Emoji string `json:"emoji"`
 	}{}
 
 	// decodifico la richiesta secondo il request body
@@ -99,24 +99,13 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		ctx.Logger.WithError(err).Error("Input non compatibile con il RequestBody")
 		return
 	}
-	// controllo che il commento o l'autore non siano vuoti
-	if strings.TrimSpace(requestBody.Author) == "" || strings.TrimSpace(requestBody.Emoji) == "" {
+	// controllo che il commento non sia vuoto
+	if strings.TrimSpace(requestBody.Emoji) == "" {
 		http.Error(w, "Autore ed emoji non possono essere vuoti", http.StatusBadRequest)
 		ctx.Logger.Error("Autore ed emoji non possono essere vuoti")
 		return
 	}
-	// controllo che l'autore sia quello giusto -> prende il nome dell'utente dall'id e lo compara
-	username, err := rt.db.GetNameById(id)
-	if err != nil {
-		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
-		ctx.Logger.Error("Errore durante la selezione del nome utente corrente")
-		return
-	}
-	if username != requestBody.Author {
-		http.Error(w, "Autore non corretto", http.StatusBadRequest)
-		ctx.Logger.Error("L'utente corrente deve corrispondere all'autore")
-		return
-	}
+
 	// controllo pattern emoji
 	emojiRegex := regexp.MustCompile(`^\p{So}+$`)
 	matched := emojiRegex.MatchString(requestBody.Emoji)
@@ -127,7 +116,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 	}
 
 	// funzione che crea commento e lo aggiunge ai messaggi (append ai commenti)
-	comment, commentId, err := rt.db.CreateComment(requestBody.Author, requestBody.Emoji, messageId)
+	comment, commentId, err := rt.db.CreateComment(id, requestBody.Emoji, messageId)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante la creazione del commento")

@@ -2,10 +2,11 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
@@ -116,14 +117,8 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, p ht
 		return
 	}
 	// controllo che chi sta cercando di eliminare il commento sia l'autore
-	username, err := rt.db.GetNameById(id)
-	if err != nil {
-		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
-		ctx.Logger.Error("Errore durante la selezione del nome utente corrente")
-		return
-	}
 	// FUNZION CHECK COMMENT AUTHOR
-	matched, err := rt.db.CheckAuthorComment(commentId, username)
+	matched, err := rt.db.CheckAuthorComment(commentId, id)
 	if err != nil {
 		http.Error(w, "Internal Serve Error", http.StatusInternalServerError)
 		ctx.Logger.Error("Errore durante il controllo dell'autore")

@@ -54,8 +54,8 @@ func (db *appdbimpl) GetConversationMessages(cnvId int) ([]Message, error) {
 
 		for _, n := range commentIds {
 			var tempComment Comment
-			err := db.c.QueryRow("SELECT comment_id, author, emoji FROM comments_table WHERE comment_id = ?", n).
-				Scan(&tempComment.CommentId, &tempComment.Author, &tempComment.Emoji)
+			err := db.c.QueryRow("SELECT comment_id, author_id, emoji FROM comments_table WHERE comment_id = ?", n).
+				Scan(&tempComment.CommentId, &tempComment.AuthorId, &tempComment.Emoji)
 			if err != nil {
 				return nil, fmt.Errorf("errore nella lettura del commento con id %d: %w", n, err)
 			}

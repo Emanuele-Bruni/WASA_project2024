@@ -1,8 +1,5 @@
 <script>
-import AddToGroupModal from '../components/AddToGroupModal.vue';
-import ConfirmModal from '../components/ConfirmModal.vue';
-import MessageModal from '../components/MessageModal.vue';
-
+import EmojiPicker from '../components/EmojiPicker.vue';
 
 export default{
     data: function(){
@@ -28,7 +25,8 @@ export default{
             confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
             showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
             forwardModal: false,            //appare quando si vuole inoltrare un messaggio
-            addMemberModal: false,          // appare quando si vuole aggiungere un membro
+            addMemberModal: false,          //appare quando si vuole aggiungere un membro
+            emojiPicker: false,             //appare quando si vuole commentare un messaggio
 
         }
     },
@@ -48,7 +46,7 @@ export default{
         async getChatMessages(){
             try {
                 let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
-                //console.log(response);
+                console.log(response);
                 const msgs = response.data.Messages;
                 if (!Array.isArray(msgs) || msgs.length === 0){
                     this.errormsg = "Nessun Messaggio";
@@ -57,7 +55,6 @@ export default{
                     this.errormsg = null;
                     this.messages = msgs;
                 }
-                //console.log(this.errormsg);
                 this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
@@ -209,6 +206,7 @@ export default{
                 this.errormsg = e.toString();
             }
         },
+        // commentMessage(conversationId, selectedMessageId, emoji)
     },
     mounted(){
         this.getConversationInfo();
@@ -265,7 +263,12 @@ export default{
                 :messageId="selectedMessageId"
                 @forward="openForwardModal(selectedMessageId)"
                 @delete="confirmDeleteMessage = true"
+                @openEmojiPicker="emojiPicker=true"
                 @close="showMessageOptions=false"
+            />
+            <EmojiPicker v-if="emojiPicker"
+                :messageId="selectedMessageId"
+                @close="emojiPicker=false"
             />
             <ForwardModal v-if="forwardModal"
                 :messageId="selectedMessageId"

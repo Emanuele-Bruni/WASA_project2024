@@ -27,7 +27,7 @@ func (db *appdbimpl) GetMessage(messageId int) (Message, error) {
 
 			var comment Comment
 			comment.CommentId = commentID
-			err = db.c.QueryRow("SELECT author, emoji FROM comments_table WHERE comment_id=?", commentID).Scan(&comment.Author, &comment.Emoji)
+			err = db.c.QueryRow("SELECT author_id, emoji FROM comments_table WHERE comment_id=?", commentID).Scan(&comment.AuthorId, &comment.Emoji)
 			if err != nil {
 				return Message{}, err
 			} else {

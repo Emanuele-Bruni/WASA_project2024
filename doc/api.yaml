@@ -122,12 +122,12 @@ components:
           description: comment identifier
           minimum: 1
           maximum: 1000 
-        author:
-          type: string
-          description: who wrote the comment 
-          minLength: 1
-          maxLength: 16
-          pattern: "^.*?$"
+        authorId:
+          type: integer
+          description: author identifier
+          minimum: 1
+          maximum: 1000
+          example: 124
         emoji:
           type: string
           description: the effective comment
@@ -545,10 +545,10 @@ paths:
                 hours: "22:20"
                 comments:
                   - commentId: 125
-                    author: "Stef"
+                    authorId: 3
                     emoji: "😁"
                   - commentId: 541
-                    author: "Gio"
+                    authorId: 2
                     emoji: "😒"
 
         "400":
@@ -596,10 +596,10 @@ paths:
                       hours: "22:20"
                       comments:
                         - commentId: 125
-                          author: "Stef"
+                          authorId: 5
                           emoji: "😁"
                         - commentId: 541
-                          author: "Gio"
+                          authorId: 7
                           emoji: "😒"
                     - messageId: 14
                       authorId: 2
@@ -608,7 +608,7 @@ paths:
                       hours: "13:03"
                       comments:
                         - commentId: 111
-                          author: "Max"
+                          authorId: 18
                           emoji: "😁"
         "400":
             description: unable to get conversation's messages
@@ -667,10 +667,10 @@ paths:
                 hours: "22:20"
                 comments:
                   - commentId: 13
-                    author: "Stef"
+                    authorId: 10
                     emoji: "😉"
                   - commentId: 54
-                    author: "Gio"
+                    authorId: 25
                     emoji: "😁"
   
   #commentMessage
@@ -694,8 +694,6 @@ paths:
               description: content of the comment
               type: object
               properties:
-                author:
-                  $ref: "#/components/schemas/Comment/properties/author"
                 emoji:
                   $ref: "#/components/schemas/Comment/properties/emoji"
 
@@ -722,7 +720,7 @@ paths:
                 $ref : "#/components/schemas/Comment"
               example:
                 commentId: 100
-                author: "stefano123"
+                authorId: 123
                 emoji: "😉"
   
   #uncommentMessage

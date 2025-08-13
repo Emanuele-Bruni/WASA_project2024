@@ -66,7 +66,7 @@ type Message struct {
 
 type Comment struct {
 	CommentId int    `json:"commentId"`
-	Author    string `json:"author"`
+	AuthorId  int    `json:"authorId"`
 	Emoji     string `json:"emoji"`
 }
 
@@ -84,7 +84,7 @@ type AppDatabase interface {
 	CheckUser_Conversation(cnvId int, userId int) (bool, error)
 	CheckMessage_Conversation(messageId int, cnvId int) (bool, error)
 	GetMessage(messageId int) (Message, error)
-	CreateComment(author string, emoji string, messageId int) (Comment, int, error)
+	CreateComment(author int, emoji string, messageId int) (Comment, int, error)
 	CheckComment_Message(commentId int, messageId int) (bool, error)
 	DeleteComment(commentId int) error
 	CheckUserId(id int) (bool, error)
@@ -104,7 +104,7 @@ type AppDatabase interface {
 	CreateGroup(titolo string, members []int, userId int) (int, error)
 	Conversation2MembersExists(userId1 int, userId2 int) (bool, int, error)
 	GetNameById(userId int) (string, error)
-	CheckAuthorComment(commentId int, username string) (bool, error)
+	CheckAuthorComment(commentId int, userId int) (bool, error)
 	GetConversationMessages(cnvId int) ([]Message, error)
 	Ping() error
 }
@@ -170,9 +170,10 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='comments_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE comments_table (	comment_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-														author TEXT,
+														author_id INTEGER NOT NULL,
 														emoji TEXT, 
 														message_id INTEGER NOT NULL,
+														FOREIGN KEY (author_id) REFERENCES users_table(id),
 														FOREIGN KEY (message_id) REFERENCES messages_table(message_id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {

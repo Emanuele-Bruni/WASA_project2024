@@ -10,9 +10,9 @@ import (
 )
 
 // crea un commento, lo aggiunge alla tabella dei commenti e alla lista dei commenti del messaggio
-func (db *appdbimpl) CreateComment(author string, emoji string, messageId int) (Comment, int, error) {
+func (db *appdbimpl) CreateComment(author int, emoji string, messageId int) (Comment, int, error) {
 	// inserisco il commento nella tabella dei commenti
-	res, err := db.c.Exec("INSERT INTO comments_table (author,emoji, message_id) VALUES (?,?,?)", author, emoji, messageId)
+	res, err := db.c.Exec("INSERT INTO comments_table (authorId,emoji, message_id) VALUES (?,?,?)", author, emoji, messageId)
 	if err != nil {
 		return Comment{}, -1, fmt.Errorf("errore nel creare il commento: %w", err)
 	}
@@ -25,7 +25,7 @@ func (db *appdbimpl) CreateComment(author string, emoji string, messageId int) (
 	// determino il commento
 	finalComment := Comment{
 		CommentId: int(commentId),
-		Author:    author,
+		AuthorId:  author,
 		Emoji:     emoji,
 	}
 

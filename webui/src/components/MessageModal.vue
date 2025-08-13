@@ -10,7 +10,7 @@
             <div class="buttons">
                 <button @click="$emit('forward', messageId)"> Inoltra messaggio </button>
                 <button @click="$emit('delete',messageId)"> Elimina messaggio </button>
-                <button> Commenta messaggio </button>
+                <button @click="$emit('openEmojiPicker',messageId)"> Commenta messaggio </button>
                 <button> Elimina commento </button>
                 <button @click="$emit('close')"> Annulla </button>
             </div>

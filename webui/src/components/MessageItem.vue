@@ -1,6 +1,6 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine']
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments']
 }
 </script>
 
@@ -13,11 +13,27 @@ export default {
       </div>
       <div class="messageText">{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>
+      <!-- Mostra i commenti se ci sono -->
+      <div v-if="comments && comments.length" class="commentsList">
+        <div v-for="comment in comments" :key="comment.id" class="commentItem">
+          <strong>{{ comment.user }}:</strong> {{ comment.text }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.commentsList {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid #046785;
+}
+
+.commentItem {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
 .messageItem {
   display: flex;
   justify-content: flex-start;
