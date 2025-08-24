@@ -206,7 +206,21 @@ export default{
                 this.errormsg = e.toString();
             }
         },
-        // commentMessage(conversationId, selectedMessageId, emoji)
+        async commentMessage(selectedEmoji) {
+            try{
+                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments`,
+                {emoji: selectedEmoji},{headers:{Authorization: localStorage.getItem("id")}});
+
+                await this.getChatMessages();
+                this.emojiPicker = false;
+                this.showMessageOptions = false;
+                
+            } catch(e) {
+                this.errormsg = e.toString();
+                setTimeout(()=> {this.errormsg=null;
+                },1000);
+            }
+        }
     },
     mounted(){
         this.getConversationInfo();
@@ -257,6 +271,7 @@ export default{
                 :text="msg.text"
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
+                :comments="msg.comments"
                 @messageOptions="openMessageOptions"
             />
             <MessageModal v-if="showMessageOptions"
@@ -268,6 +283,7 @@ export default{
             />
             <EmojiPicker v-if="emojiPicker"
                 :messageId="selectedMessageId"
+                @chosen="commentMessage($event)"
                 @close="emojiPicker=false"
             />
             <ForwardModal v-if="forwardModal"

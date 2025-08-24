@@ -7,8 +7,14 @@
 <template>
     <div class="message-options-overlay">
         <div class="options-overlay-content">
-            <div class="emoji picker">
+            <div class="emoji-picker">
                 <!-- Griglia di emoji da poter inserire-->
+                <button @click="$emit('chosen', '👍')"> 👍 </button>
+                <button @click="$emit('chosen', '😂')"> 😂 </button>
+                <button @click="$emit('chosen', '😢')"> 😢 </button>
+                <button @click="$emit('chosen', '😡')"> 😡 </button>
+                <button @click="$emit('chosen', '👎')"> 👎 </button>
+                 
             </div>
             <div class="buttons">
                 <button @click="$emit('close')"> Annulla </button>
@@ -18,6 +24,18 @@
 </template>
 
 <style scoped>
+.emoji-picker button{
+    padding: 5px 10px;
+    background-color: rgb(165, 222, 240);
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+}
+.emoji-picker{
+    display: flex;
+    align-items: baseline;
+    gap: 1.8rem;
+}
 .buttons button:last-child{
     background-color: rgb(226, 22, 22);
 	color: white;

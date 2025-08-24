@@ -16,7 +16,7 @@ export default {
       <!-- Mostra i commenti se ci sono -->
       <div v-if="comments && comments.length" class="commentsList">
         <div v-for="comment in comments" :key="comment.id" class="commentItem">
-          <strong>{{ comment.user }}:</strong> {{ comment.text }}
+          {{ comment.emoji }}
         </div>
       </div>
     </div>
@@ -28,6 +28,8 @@ export default {
   margin-top: 0.5rem;
   padding-left: 1rem;
   border-left: 2px solid #046785;
+  display: flex;
+  align-items: baseline;
 }
 
 .commentItem {
