@@ -13,6 +13,8 @@ export default{
             userId: localStorage.getItem("id"),
             selectedMessageId: null,
             selectedConversationId: null,
+            selectedComments: [],
+            specificComment: null,
 
             conversation: null,
             messages: [],
@@ -23,10 +25,12 @@ export default{
             showChatModal: false,           //appare quando si clicca su Info
             confirmLeaveGroup: false,       //appare quando si vuole lasciare il gruppo
             confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
+            confirmDeleteComment: false,
             showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
             forwardModal: false,            //appare quando si vuole inoltrare un messaggio
             addMemberModal: false,          //appare quando si vuole aggiungere un membro
             emojiPicker: false,             //appare quando si vuole commentare un messaggio
+            allComments: false,             //appare quando si vuole eliminare un commento
 
         }
     },
@@ -134,6 +138,9 @@ export default{
         },
         openMessageOptions(messageId){
             this.selectedMessageId = messageId;
+            // prendo i commenti e li salvo
+            const msg = this.messages.find(m => m.messageId === messageId)
+            this.selectedComments = msg ? msg.comments : []
             this.showMessageOptions = true;
         },
         async deleteMessage(messageId){
@@ -220,7 +227,36 @@ export default{
                 setTimeout(()=> {this.errormsg=null;
                 },1000);
             }
-        }
+        },
+        commentOption(commentId){
+            this.confirmDeleteComment =  true;
+            this.specificComment = commentId;
+        },
+        async uncommentMessage(commentId) {
+            try{
+                let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments/${commentId}`, {headers:{Authorization: localStorage.getItem("id")}});
+                this.successmsg = "Commento eliminato con successo";
+                setTimeout(()=> {this.successmsg=null;
+                    this.confirmDeleteComment = false;
+                    this.allComments = false;
+                    this.showMessageOptions=false;
+                },1000);
+                this.getChatMessages();
+
+            } catch(e) {
+                if(e.response) {
+                    this.confirmDeleteComment = false;
+                    const status = e.response.status;
+                    if(status === 500){
+                        this.errormsg = "Un commento può essere rimosso solo dall'autore";
+                        setTimeout(()=> {this.errormsg=null;},1000);
+                    } else {
+                        this.confirmDeleteComment = false;
+                        this.errormsg = e.toString();
+                    }
+                }
+            }
+        },
     },
     mounted(){
         this.getConversationInfo();
@@ -279,7 +315,15 @@ export default{
                 @forward="openForwardModal(selectedMessageId)"
                 @delete="confirmDeleteMessage = true"
                 @openEmojiPicker="emojiPicker=true"
+                @openComments="allComments=true"
                 @close="showMessageOptions=false"
+            />
+            <MessageComments v-if="allComments"
+                :messageId="selectedMessageId"
+                :comments="selectedComments"
+                :userId="userId"
+                @uncomment="commentOption($event)"
+                @close="allComments=false"
             />
             <EmojiPicker v-if="emojiPicker"
                 :messageId="selectedMessageId"
@@ -292,6 +336,11 @@ export default{
                 :conversations="forwardConversations"
                 @toConversation="forwardMessage($event)"
                 @close="forwardModal=false"
+            />
+            <ConfirmModal v-if="confirmDeleteComment"
+                message="Sei sicuro di voler eliminare il commento?"
+                @yes="uncommentMessage(specificComment)"
+                @no="confirmDeleteComment=false"
             />
             <ConfirmModal v-if="confirmDeleteMessage"
                 message="Sei sicuro di voler eliminare il messaggio?"

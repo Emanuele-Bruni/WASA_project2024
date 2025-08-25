@@ -14,6 +14,7 @@ import MessageModal from './components/MessageModal.vue'
 import ForwardModal from './components/ForwardModal.vue'
 import AddToGroupModal from './components/AddToGroupModal.vue'
 import EmojiPicker from './components/EmojiPicker.vue'
+import MessageComments from './components/MessageComments.vue'
 
 import './assets/dashboard.css'
 import './assets/main.css'
@@ -32,5 +33,6 @@ app.component("MessageModal", MessageModal);
 app.component("ForwardModal", ForwardModal);
 app.component("AddToGroupModal", AddToGroupModal);
 app.component("EmojiPicker", EmojiPicker);
+app.component("MessageComments", MessageComments);
 app.use(router)
 app.mount('#app')
