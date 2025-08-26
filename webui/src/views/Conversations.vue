@@ -30,7 +30,7 @@ export default {
 			this.errormsg = null
 			try {
 				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
-				//console.log(response.data);
+				console.log(response.data);
 				if(response){
 					this.conversations = response.data.conversations;
 				}
@@ -125,7 +125,7 @@ export default {
 				 <div>
 					 <ConversationItem v-for="conv in conversations" 
 						 :key="conv.conversationId" 
-						 :photo= "conv.photo" 
+						 :photo="conv.photo" 
 						 :title="conv.title" 
 						 :isGroup = "conv.isGroup"
 						 @click="chatSection(conv.conversationId)"></ConversationItem>

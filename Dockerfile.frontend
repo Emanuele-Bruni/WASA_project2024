@@ -1,0 +1,30 @@
+
+# Yarn builder
+FROM node:lts AS builder
+
+# Creo una directory dove copiare il codice e mi sposto
+WORKDIR /app
+
+# Copio i file di config e le dipendenze
+COPY webui/package.json webui/yarn.lock ./
+
+# utilizzo yarn moderno
+RUN corepack enable && yarn install
+
+# Copio il progetto vue
+COPY webui/ .
+
+# Costruisco il frontend 
+RUN yarn build-prod
+
+# Creo container finale
+FROM nginx:stable
+
+# Porte da usare
+EXPOSE 8080
+
+# Mi sposto nella directory dove copiare l'eseguibile ed eseguirlo
+WORKDIR /app/
+
+# Copio l'eseguibile generato dal container precedente
+COPY --from=builder /app/dist /usr/share/nginx/html

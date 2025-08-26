@@ -4,6 +4,9 @@ export default {
         photo: String,
         title: String,
         isGroup: Boolean
+    },
+    mounted() {
+      console.log("photo length:", this.photo?.length);
     }
 }
 </script>
@@ -11,7 +14,7 @@ export default {
 
 <template>
   <div class="conversationCard">
-    <img :src="`data:image/png;base64,${photo.replace(/\s/g, '')}`" class="avatar" />
+    <img :src="'data:image/png;base64,' + photo" class="avatar" /> 
 
 
     <div class="info">
