@@ -64,7 +64,7 @@ func (rt *_router) getMessages(w http.ResponseWriter, r *http.Request, p httprou
 
 	// responso
 	var messagesResponse = struct {
-		Messages []database.Message
+		Messages []database.Message `json:"messages"`
 	}{
 		Messages: messages,
 	}

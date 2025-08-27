@@ -5,9 +5,6 @@ export default {
         title: String,
         isGroup: Boolean
     },
-    mounted() {
-      console.log("photo length:", this.photo?.length);
-    }
 }
 </script>
 
@@ -51,8 +48,8 @@ export default {
 	inset -2px 0px 12px -3px rgba(11, 51, 68, 0.5);
 }
 .avatar {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 1rem;

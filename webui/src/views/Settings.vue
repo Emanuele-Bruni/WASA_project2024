@@ -6,6 +6,8 @@ export default {
 			username:"",
 			newUsername:"",
 			successmsg : null,
+			userId: localStorage.getItem("id"),
+			photo:"",
 		}
     },
     methods: {
@@ -49,12 +51,23 @@ export default {
 					}
 				}
 			}
+		},
+		async getMyPhoto(){
+			try{
+				let response = await this.$axios.get(`/settings/photo/${this.userId}`,{headers:{Authorization: localStorage.getItem("id")}});
+				console.log(response.data);
+				this.photo = response.data.photo;
+				localStorage.setItem("myPhoto",this.photo);
+			} catch(e) {
+				this.errormsg = e.toString();
+			}
 		}
     },
     mounted() {
 		const savedUsername = localStorage.getItem("username") || "";
 		this.username = savedUsername;
 		this.newUsername = savedUsername;
+		this.getMyPhoto();
     }
 }
 </script>
@@ -70,10 +83,11 @@ export default {
 
 	<div class="settings">
 		<p>Modifica la tua foto </p>
-		<!-- CERCHIO PER IMPOSTARE LA FOTO CHE VOGLIO IN ANTEPRIMA-->
-		<div class="photo">
-			<button type="button"> Photo </button>
+		<!-- CERCHIO PER IMPOSTARE LA FOTO -->
+		<div class="avatar-wrapper">
+			<img :src="`data:image/png;base64,` + photo" class="avatar" />
 		</div> <br>
+		<button type="button"> Photo </button>
 		<p>Modifica il tuo username </p>
 		<!-- BARRA PER IMPOSTARE USERNAME-->
 		<form id="newUsernameForm" @submit.prevent="setUsername">
@@ -87,12 +101,16 @@ export default {
 
 
 <style scoped>
-.photo{
-	background-color: white;
-	width: 160px;
-	height: 160px;
-	border-radius: 80px;
-
+.avatar-wrapper {
+  position: relative;
+  width: 100px;
+  margin: 0 auto;
+}
+.avatar {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 input{
 	font-family: "SF Pro";

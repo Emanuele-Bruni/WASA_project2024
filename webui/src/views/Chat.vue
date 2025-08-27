@@ -41,7 +41,7 @@ export default{
         async getConversationInfo(){
             try{
                 let response = await this.$axios.get(`/conversations/${this.conversationId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                console.log(response);
+                //console.log(response);
                 this.conversation = response.data;
             }catch(e){
                 this.errormsg = e.toString();
@@ -51,7 +51,7 @@ export default{
             try {
                 let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
                 console.log(response);
-                const msgs = response.data.Messages;
+                const msgs = response.data.messages;
                 if (!Array.isArray(msgs) || msgs.length === 0){
                     this.errormsg = "Nessun Messaggio";
                     this.messages = []
@@ -270,7 +270,7 @@ export default{
         <div class="topBarContent">
             <button type="button" class="backButton" @click="back"> Indietro </button>
              <div class="chatHeader" v-if="conversation">
-               <img :src="conversation.photo"  class="chatPhoto"/>
+               <img :src="'data:image/png;base64,' + conversation.photo"  class="chatPhoto"/>
                <div class="chatTitle"> {{ conversation.title }}</div>
             </div>
             <button type="button" class="chatSettingsButton" @click="chatSettings"> Info </button>

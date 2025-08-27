@@ -1103,3 +1103,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  
+  #getMyPhoto
+  /settings/photo/{userid}:
+    get:
+      tags: [Profile]
+      summary: get your photo
+      description: |
+        You can get your profile photo
+      operationId: getMyPhoto
+      responses:
+        "200":
+          description: your profile photo
+          content:
+            application/json:
+              schema:
+                description: profile photo
+                type: object
+                properties:
+                  photo: 
+                    $ref: "#/components/schemas/User/properties/photo"
+              example: 
+                photo: "abcDFHDIaaaz..."
+
+        "400":
+          description: unable to get the photo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

@@ -18,7 +18,7 @@ export default {
         <div class="modal-content">
             <!-- Foto -->
              <div class="avatar-wrapper">
-                <img :src="`data:image/png;base64,${photo.replace(/\s/g, '')}`" class="avatar" />
+                <img :src="`data:image/png;base64,` + photo" class="avatar" />
                 <!-- Modificabile solo se è un gruppo -->
                  <button v-if="isGroup" class="edit-button"> Photo </button>
              </div>
