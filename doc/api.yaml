@@ -30,8 +30,6 @@ components:
         photo:
           type: string
           description: photo
-          minLength: 3
-          maxLength: 25
           format: binary
           example: "abcDFHDIaaaz..."
 

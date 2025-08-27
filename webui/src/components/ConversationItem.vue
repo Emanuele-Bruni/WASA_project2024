@@ -48,7 +48,7 @@ export default {
 	inset -2px 0px 12px -3px rgba(11, 51, 68, 0.5);
 }
 .avatar {
-  width: 70px;
+  width: 60px;
   height: 60px;
   border-radius: 50%;
   object-fit: cover;

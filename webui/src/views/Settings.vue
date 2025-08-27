@@ -8,6 +8,7 @@ export default {
 			successmsg : null,
 			userId: localStorage.getItem("id"),
 			photo:"",
+			selectedPhoto:"",
 		}
     },
     methods: {
@@ -61,6 +62,30 @@ export default {
 			} catch(e) {
 				this.errormsg = e.toString();
 			}
+		},
+		onFileChange(e){
+			const file = e.target.files[0];
+			if(!file) return;
+			const reader = new FileReader();
+			reader.onload = () => {
+				this.selectedPhoto = reader.result.split(",")[1];
+				this.setMyPhoto();
+				this.photo = this.selectedPhoto;
+			};
+			reader.readAsDataURL(file);
+		},
+		async setMyPhoto(){
+			try {
+				let response = await this.$axios.put("/settings/photo",
+					{ photo: this.selectedPhoto },
+					{ headers:{ Authorization: localStorage.getItem("id") } }
+				);
+				this.successmsg = "Foto aggiornata con successo!";
+				localStorage.setItem("myPhoto", this.photo);
+				setTimeout(()=> {this.successmsg=null},1000);
+			} catch(e) {
+				this.errormsg = e.toString();
+			}
 		}
     },
     mounted() {
@@ -80,35 +105,44 @@ export default {
 			<button type="button" class="logoutButton" @click="logout"> Logout </button>
 		</div> 
 	</div>
-
-	<div class="settings">
-		<p>Modifica la tua foto </p>
-		<!-- CERCHIO PER IMPOSTARE LA FOTO -->
-		<div class="avatar-wrapper">
-			<img :src="`data:image/png;base64,` + photo" class="avatar" />
-		</div> <br>
-		<button type="button"> Photo </button>
-		<p>Modifica il tuo username </p>
-		<!-- BARRA PER IMPOSTARE USERNAME-->
-		<form id="newUsernameForm" @submit.prevent="setUsername">
-			<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
-			<button class="saveButton" type="submit"> Salva </button>
-		</form>	<br>
-		<SuccessMsg v-if="successmsg" :msg="successmsg" />
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+	<div class="subNavbar">
+		<div class="settings">
+			<p>Modifica la tua foto </p>
+			<!-- CERCHIO PER ANTEPRIMA DELLA FOTO -->
+			<div class="avatar-wrapper">
+				<img :src="`data:image/png;base64,` + photo" class="avatar" />
+			</div>
+			<!-- SELEZIONE DELLA NUOVA FOTO -->
+			<input type="file" accept="image/*" @change="onFileChange">
+	
+			<p>Modifica il tuo username </p>
+			<!-- BARRA PER IMPOSTARE USERNAME-->
+			<form id="newUsernameForm" @submit.prevent="setUsername">
+				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
+				<button class="saveButton" type="submit"> Salva </button>
+			</form>	<br>
+			<SuccessMsg v-if="successmsg" :msg="successmsg" />
+			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
+		</div>
 	</div>
+
 </template>
 
 
 <style scoped>
+.subNavbar{
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
 .avatar-wrapper {
   position: relative;
   width: 100px;
   margin: 0 auto;
 }
 .avatar {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -129,6 +163,8 @@ p{
 	text-align: center;
 }
 .settings{
+	width: 50%;
+	border: 1px solid black;
 	margin-top: 100px;
 	display: flex;
 	justify-content: center;
