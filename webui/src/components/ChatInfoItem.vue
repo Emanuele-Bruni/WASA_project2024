@@ -5,11 +5,28 @@ export default {
         title: String,
         isGroup: Boolean,
         members: Array,
+        conversationId: Number,
     },
     data() {
         return {
             editableTitle: this.title
         };
+    },
+    methods: {
+      triggerFileInput() {
+        this.$refs.fileInput.click();
+      },
+      changeGroupPhoto(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Photo = reader.result.split(",")[1];
+          this.$emit("groupPhotoSelected", base64Photo);
+        };
+        reader.readAsDataURL(file);
+      }
     }
 }
 </script>
@@ -20,7 +37,9 @@ export default {
              <div class="avatar-wrapper">
                 <img :src="`data:image/png;base64,` + photo" class="avatar" />
                 <!-- Modificabile solo se è un gruppo -->
-                 <button v-if="isGroup" class="edit-button"> Photo </button>
+                <button v-if="isGroup" class="edit-button" @click="triggerFileInput"> Modifica foto </button>
+                <!-- Input file nascosto -->
+                 <input type="file" accept="image/*" ref="fileInput" @change="changeGroupPhoto" style="display: none">
              </div>
 
             <!-- Titolo -->
@@ -28,7 +47,7 @@ export default {
                 <span v-if="isGroup" class="edit-title-span">
                   <form id="SetGroupName" @submit.prevent="$emit('groupNameChanged', editableTitle)">
                     <input v-model="editableTitle" :placeholder="title" />
-                    <button type="submit"> Modifica </button>
+                    <button type="submit"> Modifica nome </button>
                   </form>
 
                 </span>

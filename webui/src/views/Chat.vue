@@ -257,6 +257,20 @@ export default{
                 }
             }
         },
+        async setGroupPhoto(base64Photo){
+            try{
+                let response = await this.$axios.put(`/conversations/${this.conversationId}/photo`,
+					{ photo: base64Photo },
+					{ headers:{ Authorization: localStorage.getItem("id") } }
+				);
+                this.showChatModal = false;
+                this.getConversationInfo();
+                this.successmsg = "Foto aggiornata con successo!";
+				setTimeout(()=> {this.successmsg=null},1000);
+            } catch(e){
+                this.errormsg = e.toString();
+            }
+        }
     },
     mounted(){
         this.getConversationInfo();
@@ -279,10 +293,12 @@ export default{
                 :title="conversation.title"
                 :isGroup="conversation.isGroup"
                 :members="conversation.members"
+                :conversationId="conversationId"
                 @close="showChatModal = false" 
                 @groupNameChanged="setGroupName"
                 @left="confirmLeaveGroup=true"
-                @addMember="openAddMember"/>
+                @addMember="openAddMember"
+                @groupPhotoSelected="setGroupPhoto($event)"/>
             <ConfirmModal v-if="confirmLeaveGroup"
                 message="Sei sicuro di voler uscire dal gruppo?"
                 @yes="leaveGroup"
