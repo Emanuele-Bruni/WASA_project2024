@@ -30,6 +30,8 @@ components:
         photo:
           type: string
           description: photo
+          minLength: 0
+          maxLength: 2000000
           format: binary
           example: "abcDFHDIaaaz..."
 
@@ -1104,6 +1106,8 @@ paths:
   
   #getMyPhoto
   /settings/photo/{userid}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
     get:
       tags: [Profile]
       summary: get your photo

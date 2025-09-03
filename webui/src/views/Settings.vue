@@ -136,15 +136,16 @@ export default {
 	justify-content: center;
 }
 .avatar-wrapper {
-  position: relative;
-  width: 100px;
-  margin: 0 auto;
+	display: flex;
+	justify-content: center;
+  	align-items: center;
+  	margin-bottom: 1rem;
 }
 .avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
+  	width: 200px;
+  	height: 200px;
+  	border-radius: 50%;
+  	object-fit: cover;
 }
 input{
 	font-family: "SF Pro";
@@ -155,6 +156,17 @@ input{
 	box-shadow: 1px 3px 0 rgb(4, 103, 133);
 	outline: none;
 	transition: ease 0.25s;
+}
+input[type="file"] {
+	font-family: "SF Pro";
+	width: 70%;              /* stessa larghezza del bottone */
+	max-width: 300px;
+	padding: 0.6rem;
+	border: 2px solid rgb(4, 103, 133);
+	border-radius: 1rem;
+	box-shadow: 1px 3px 0 rgb(4, 103, 133);
+	text-align: center;
+	cursor: pointer;
 }
 p{
 	font-size: 1.4rem;
@@ -167,9 +179,10 @@ p{
 	border: 1px solid black;
 	margin-top: 100px;
 	display: flex;
-	justify-content: center;
 	flex-direction: column;
 	align-items: center;
+	padding: 0.5rem;
+	gap: 1rem;
 }
 .navbar{
 	background-color: rgb(178, 207, 233);
