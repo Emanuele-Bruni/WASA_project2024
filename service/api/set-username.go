@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // Set your username
@@ -50,6 +51,18 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, _ httpr
 	if len(requestBody.Username) < 3 || len(requestBody.Username) > 16 {
 		http.Error(w, "Invalid Username", http.StatusBadRequest)
 		ctx.Logger.WithField("username", requestBody.Username).Error("Invalid length of field 'username'")
+		return
+	}
+	// controllo se l'username esiste già
+	nameFound, err := rt.db.CheckUsernameExist(requestBody.Username)
+	if err != nil {
+		ctx.Logger.Error("Errore nel controllare l'username : ", err)
+		http.Error(w, "Error while checking username", http.StatusInternalServerError)
+		return
+	}
+	if nameFound {
+		http.Error(w, "Username non disponibile", http.StatusConflict)
+		ctx.Logger.Error("Username già esistente")
 		return
 	}
 	// username valido, lo aggiorno tramite la funzione

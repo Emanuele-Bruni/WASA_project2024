@@ -107,6 +107,7 @@ type AppDatabase interface {
 	CheckAuthorComment(commentId int, userId int) (bool, error)
 	GetConversationMessages(cnvId int) ([]Message, error)
 	GetUserPhoto(userId int) (string, error)
+	CheckUsernameExist(username string) (bool, error)
 	Ping() error
 }
 

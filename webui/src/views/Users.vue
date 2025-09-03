@@ -6,7 +6,8 @@ export default {
 			ids: [],
 			names: [],
 			conversationId: null,
-			successmsg: null
+			successmsg: null,
+			searchQuery: ""
 		}
     },
     methods: {
@@ -63,6 +64,20 @@ export default {
 			}
 		}
     },
+	computed:{
+		filteredUsers() {
+			if (!this.searchQuery) {
+				return this.names.map((name, index) => ({
+				id: this.ids[index],
+				name
+				}));
+			}
+			const query = this.searchQuery.toLowerCase();
+			return this.names
+				.map((name, index) => ({ id: this.ids[index], name }))
+				.filter(user => user.name.toLowerCase().includes(query));
+		}
+	},
     mounted() {
 		this.getAllUsers();
     }
@@ -78,7 +93,20 @@ export default {
 		</div> 
 	</div>
 	<div class="userList">
-		<UserItem v-for="(name,index) in names" :key="ids[index]" :userId="ids[index]" :username="name" @new-conversation="newConversation"> </UserItem>
+		<div class="searchBarContainer">
+			<input  class="searchBar" type="text" v-model="searchQuery" placeholder="Cerca utenti..." />
+		</div>
+		<!-- <UserItem v-for="(name,index) in names" 
+			:key="ids[index]" :userId="ids[index]"
+			:username="name"
+			 @new-conversation="newConversation"
+		/> -->
+		<UserItem v-for="user in filteredUsers"
+			:key="user.id"
+			:userId="user.id"
+			:username="user.name"
+			@new-conversation="newConversation"
+    	/>
 		<SuccessMsg v-if="successmsg" :msg="successmsg" />
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 	</div>
@@ -86,6 +114,13 @@ export default {
 
 
 <style scoped>
+.searchBar{
+	padding: 8px 12px;
+	border-radius: 1rem;
+	border: 2px solid rgb(4, 103, 133);
+	font-family: "SF Pro";
+	margin-bottom: 20px;
+}
 .userList{
 	margin-top: 100px; /* o quanto è alta la tua navbar */
 	display: flex;

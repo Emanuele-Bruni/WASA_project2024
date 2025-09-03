@@ -47,6 +47,9 @@ export default {
 					const status = e.response.status;
 					if(status===400){
 						this.errormsg = "Lunghezza del nome non valida";
+					} 
+					if(status===409){
+						this.errormsg = "Username già utilizzato";
 					} else {
 						this.errormsg = e.toString();
 					}
@@ -116,13 +119,13 @@ export default {
 			<input type="file" accept="image/*" @change="onFileChange">
 	
 			<p>Modifica il tuo username </p>
+			<SuccessMsg v-if="successmsg" :msg="successmsg" />
+			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 			<!-- BARRA PER IMPOSTARE USERNAME-->
 			<form id="newUsernameForm" @submit.prevent="setUsername">
 				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
 				<button class="saveButton" type="submit"> Salva </button>
 			</form>	<br>
-			<SuccessMsg v-if="successmsg" :msg="successmsg" />
-			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		</div>
 	</div>
 
@@ -146,6 +149,7 @@ export default {
   	height: 200px;
   	border-radius: 50%;
   	object-fit: cover;
+	border: 3px solid rgb(4, 103, 133);
 }
 input{
 	font-family: "SF Pro";
@@ -173,11 +177,12 @@ p{
 	font-family: "SF Pro";
 	color: rgb(4, 78, 100); 
 	text-align: center;
+	margin: 0.5rem 0;
 }
 .settings{
 	width: 50%;
 	border: 1px solid black;
-	margin-top: 100px;
+	margin-top: 80px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
