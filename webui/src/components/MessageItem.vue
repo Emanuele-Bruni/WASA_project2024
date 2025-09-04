@@ -1,6 +1,6 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments']
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'isForwarded']
 }
 </script>
 
@@ -13,6 +13,7 @@ export default {
       </div>
       <div class="messageText">{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>
+      <div v-if="isForwarded" class="forwardedLabel"> Inoltrato </div>
       <!-- Mostra i commenti se ci sono -->
       <div v-if="comments && comments.length" class="commentsList">
         <div v-for="comment in comments" :key="comment.id" class="commentItem">
@@ -24,6 +25,10 @@ export default {
 </template>
 
 <style scoped>
+.forwardedLabel{
+  font-style: italic;
+  color: gray;
+}
 .commentsList {
   margin-top: 0.5rem;
   padding-left: 1rem;

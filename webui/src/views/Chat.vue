@@ -20,6 +20,7 @@ export default{
             messages: [],
             newMessage: "",
             forwardConversations: [],
+            forwardedIds: JSON.parse(localStorage.getItem("forwardedIds") || "[]"),
             membersToAdd: [],
 
             showChatModal: false,           //appare quando si clicca su Info
@@ -178,7 +179,15 @@ export default{
             try{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/forward/${convId}`,
                 null,{headers:{Authorization: localStorage.getItem("id")}});
+                const newMessageId = response.data.messageId;
+                if (!this.forwardedIds.includes(newMessageId)) {
+                    this.forwardedIds.push(newMessageId);
+                    // salva in localStorage
+                    localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
+                }
+
                 this.getChatMessages();
+
                 this.successmsg = "Inoltrato con successo";
                 setTimeout(()=> {this.successmsg=null;
                     this.forwardModal = false;
@@ -324,6 +333,7 @@ export default{
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
                 :comments="msg.comments"
+                :isForwarded="forwardedIds.includes(msg.messageId)"
                 @messageOptions="openMessageOptions"
             />
             <MessageModal v-if="showMessageOptions"
