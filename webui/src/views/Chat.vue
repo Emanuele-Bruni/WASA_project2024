@@ -51,7 +51,7 @@ export default{
         async getChatMessages(){
             try {
                 let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
-                console.log(response);
+                // console.log(response);
                 const msgs = response.data.messages;
                 if (!Array.isArray(msgs) || msgs.length === 0){
                     this.errormsg = "Nessun Messaggio";
@@ -72,9 +72,9 @@ export default{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages`,
                 {text:this.newMessage},{headers:{Authorization: localStorage.getItem("id")}});
                 this.newMessage = "";
-                this.getChatMessages();
+                await this.getChatMessages();
                 this.scrollToBottom();
-                this.getConversationInfo();
+                 await this.getConversationInfo();
             } catch(e) {
                 if(e.response){
                     const status = e.response.status;
@@ -107,7 +107,7 @@ export default{
                 this.showChatModal= false;
                 setTimeout(()=> {this.successmsg=null;},800);
 
-                this.getConversationInfo();
+                await this.getConversationInfo();
                 this.scrollToBottom();
 
             } catch(e){
@@ -149,14 +149,14 @@ export default{
                 let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${messageId}`, {headers:{Authorization: localStorage.getItem("id")}});
                 this.confirmDeleteMessage = false;
                 this.showMessageOptions = false;
-                this.getChatMessages();
+                await this.getChatMessages();
 
             } catch(e) {
                 if(e.response) {
                     const status = e.response.status;
                     if(status === 403){
                         this.errormsg = "Un messaggio può essere rimosso solo dall'autore";
-                        setTimeout(()=> {this.errormsg=null;},1000);
+                        setTimeout(()=> {this.errormsg=null;},3000);
                     } else {
                         this.errormsg = e.toString();
                     }
@@ -186,7 +186,7 @@ export default{
                     localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
                 }
 
-                this.getChatMessages();
+                 await this.getChatMessages();
 
                 this.successmsg = "Inoltrato con successo";
                 setTimeout(()=> {this.successmsg=null;
@@ -250,7 +250,7 @@ export default{
                     this.allComments = false;
                     this.showMessageOptions=false;
                 },1000);
-                this.getChatMessages();
+                await this.getChatMessages();
 
             } catch(e) {
                 if(e.response) {
@@ -273,7 +273,7 @@ export default{
 					{ headers:{ Authorization: localStorage.getItem("id") } }
 				);
                 this.showChatModal = false;
-                this.getConversationInfo();
+                await this.getConversationInfo();
                 this.successmsg = "Foto aggiornata con successo!";
 				setTimeout(()=> {this.successmsg=null},1000);
             } catch(e){
@@ -284,7 +284,11 @@ export default{
     mounted(){
         this.getConversationInfo();
         this.getChatMessages();
-    }
+        this.interval = setInterval(() => this.getChatMessages(), 5000);
+    },
+    beforeUnmount() {
+  		clearInterval(this.interval);
+	}
 }
 </script>
 <template>

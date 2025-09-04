@@ -61,6 +61,7 @@ export default {
 						return {id: id, name: response.data.names[index]};});
 					this.showGroupModal = true;
 				}
+				await this.getMyConversations();
 			}catch(e) {
 				this.groupError = e.toString();
 			}
@@ -83,7 +84,7 @@ export default {
 						this.showGroupModal = false;
 						this.$router.push(`/conversations/${this.groupId}`);
 					},700);
-				this.getMyConversations();
+				 await this.getMyConversations();
 			} catch(e){
 				if (e.response){
 					const status = e.response.status;
@@ -93,11 +94,16 @@ export default {
 				} else {
 					this.groupError = e.toString();
 				}
+				await this.getMyConversations();
 			}
 		}
 	},
 	mounted() {
 		this.getMyConversations();
+		this.interval = setInterval(() => this.getMyConversations(), 5000);
+	},
+	beforeUnmount() {
+  		clearInterval(this.interval);
 	}
 }
 </script>

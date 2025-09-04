@@ -115,6 +115,18 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 		return
 	}
 
+	// controllo che l'utente non abbia già commentato il messaggio
+	commentedYet, err := rt.db.CheckUser_Comment(id, messageId)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		ctx.Logger.WithError(err).Error("Errore durante il controllo del commento")
+		return
+	}
+	if commentedYet {
+		http.Error(w, "Utente ha già commentato il messaggio", http.StatusBadRequest)
+		ctx.Logger.WithError(err).Error("Massimo un commento per messaggio")
+		return
+	}
 	// funzione che crea commento e lo aggiunge ai messaggi (append ai commenti)
 	comment, commentId, err := rt.db.CreateComment(id, requestBody.Emoji, messageId)
 	if err != nil {

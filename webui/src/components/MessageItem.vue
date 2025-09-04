@@ -11,9 +11,9 @@ export default {
         <strong>{{ author }}</strong>
         <button class="optionsButton" @click="$emit('messageOptions', messageId)">⋮</button>
       </div>
+      <div v-if="isForwarded" class="forwardedLabel"> Inoltrato </div>
       <div class="messageText">{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>
-      <div v-if="isForwarded" class="forwardedLabel"> Inoltrato </div>
       <!-- Mostra i commenti se ci sono -->
       <div v-if="comments && comments.length" class="commentsList">
         <div v-for="comment in comments" :key="comment.id" class="commentItem">
@@ -28,6 +28,9 @@ export default {
 .forwardedLabel{
   font-style: italic;
   color: gray;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  display: block;
 }
 .commentsList {
   margin-top: 0.5rem;

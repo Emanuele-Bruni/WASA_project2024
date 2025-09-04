@@ -49,6 +49,7 @@ export default {
 						this.$router.push(`/conversations/${this.conversationId}`);
 					},500);	
 				}
+				await this.getAllUsers();
 			} catch(e){
 				if(e.response) {
 					const status = e.response.status;
@@ -80,7 +81,11 @@ export default {
 	},
     mounted() {
 		this.getAllUsers();
-    }
+		this.interval = setInterval(() => this.getAllUsers(), 5000);
+    },
+	beforeUnmount() {
+  		clearInterval(this.interval);
+	}
 }
 </script>
 <template>
