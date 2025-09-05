@@ -109,6 +109,7 @@ type AppDatabase interface {
 	GetUserPhoto(userId int) (string, error)
 	CheckUsernameExist(username string) (bool, error)
 	CheckUser_Comment(userId int, messageId int) (bool, error)
+	UpdateComment(messageId int, author int, emoji string) (Comment, int, error)
 	Ping() error
 }
 

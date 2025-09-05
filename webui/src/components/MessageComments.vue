@@ -1,6 +1,20 @@
 <script>
     export default{
-        props: ['userId','messageId', 'comments']
+        props: ['userId','messageId', 'comments'],
+        computed: {
+            userMap(){
+                return JSON.parse(localStorage.getItem("userMap") || "{}");
+            }
+        },
+        methods: {
+            getUsername(authorId) {
+                return this.userMap[String(authorId)];
+            },
+            getCommentText(comment){
+                const username = this.getUsername(comment.authorId);
+                return `${username}: ${comment.emoji}`;
+            }
+        }
     }
 </script>
 
@@ -12,7 +26,7 @@
                     <li v-for="comm in comments" :key="comm.commentId">
                         <button @click="$emit('uncomment', comm.commentId)" 
                         :class="{'my-comment': String(comm.authorId) === userId}">
-                            {{ comm.emoji }}
+                            {{ getCommentText(comm) }}
                         </button>
                     </li>
                 </ul>

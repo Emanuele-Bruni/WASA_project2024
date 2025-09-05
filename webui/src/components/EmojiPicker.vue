@@ -39,6 +39,10 @@
 .buttons button:last-child{
     background-color: rgb(226, 22, 22);
 	color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 10px 20px;
+    font-family: "SF Pro";
 }
 .buttons{
     margin-top: 1.5rem;

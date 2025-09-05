@@ -181,7 +181,6 @@ p{
 }
 .settings{
 	width: 50%;
-	border: 1px solid black;
 	margin-top: 80px;
 	display: flex;
 	flex-direction: column;

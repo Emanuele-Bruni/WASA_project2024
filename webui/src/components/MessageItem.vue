@@ -1,6 +1,11 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'isForwarded']
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'isForwarded'],
+    methods : {
+      isPhotoMessage(text) {
+        return text.startsWith("[foto]");
+      }
+    }
 }
 </script>
 
@@ -12,7 +17,10 @@ export default {
         <button class="optionsButton" @click="$emit('messageOptions', messageId)">⋮</button>
       </div>
       <div v-if="isForwarded" class="forwardedLabel"> Inoltrato </div>
-      <div class="messageText">{{ text }}</div>
+      <div v-if="isPhotoMessage(text)">
+        <img :src="'data:image/png;base64,' + text.slice(6)" class="messagePhoto"/>
+      </div>
+      <div v-else class="messageText" >{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>
       <!-- Mostra i commenti se ci sono -->
       <div v-if="comments && comments.length" class="commentsList">
@@ -25,6 +33,14 @@ export default {
 </template>
 
 <style scoped>
+.messagePhoto {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
 .forwardedLabel{
   font-style: italic;
   color: gray;

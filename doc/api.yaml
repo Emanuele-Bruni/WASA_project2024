@@ -96,7 +96,7 @@ components:
           description: content of the message
           example: "Buongiorno!"
           minLength: 1
-          maxLength: 30
+          maxLength: 2000000
           pattern: "^.*?$"
         hours:
           type: string

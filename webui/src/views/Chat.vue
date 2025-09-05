@@ -11,6 +11,7 @@ export default{
             conversationId: this.$route.params.conversationid,
             username : localStorage.getItem("username"),
             userId: localStorage.getItem("id"),
+            userMap: JSON.parse(localStorage.getItem("userMap") || "{}"),
             selectedMessageId: null,
             selectedConversationId: null,
             selectedComments: [],
@@ -19,6 +20,7 @@ export default{
             conversation: null,
             messages: [],
             newMessage: "",
+            isPhoto: false,
             forwardConversations: [],
             forwardedIds: JSON.parse(localStorage.getItem("forwardedIds") || "[]"),
             membersToAdd: [],
@@ -60,7 +62,6 @@ export default{
                     this.errormsg = null;
                     this.messages = msgs;
                 }
-                this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
                     this.scrollToBottom();
@@ -227,6 +228,11 @@ export default{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments`,
                 {emoji: selectedEmoji},{headers:{Authorization: localStorage.getItem("id")}});
 
+                // aggiorno la userMap per visualizzare subito il nome
+                let storedMap = JSON.parse(localStorage.getItem("userMap"));
+                storedMap[this.userId] = this.username;
+                this.userMap =storedMap;
+
                 await this.getChatMessages();
                 this.emojiPicker = false;
                 this.showMessageOptions = false;
@@ -244,12 +250,9 @@ export default{
         async uncommentMessage(commentId) {
             try{
                 let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments/${commentId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                this.successmsg = "Commento eliminato con successo";
-                setTimeout(()=> {this.successmsg=null;
-                    this.confirmDeleteComment = false;
-                    this.allComments = false;
-                    this.showMessageOptions=false;
-                },1000);
+                this.confirmDeleteComment = false;
+                this.allComments = false;
+                this.showMessageOptions=false;
                 await this.getChatMessages();
 
             } catch(e) {
@@ -279,10 +282,23 @@ export default{
             } catch(e){
                 this.errormsg = e.toString();
             }
-        }
+        },
+        onFileSelected(e){
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64Photo = reader.result.split(",")[1];
+                this.newMessage = "[foto]" + base64Photo;
+                await this.sendMessage();
+            };
+            reader.readAsDataURL(file);
+        },
     },
     mounted(){
         this.getConversationInfo();
+        this.scrollToBottom();
         this.getChatMessages();
         this.interval = setInterval(() => this.getChatMessages(), 5000);
     },
@@ -387,6 +403,9 @@ export default{
     <!-- DownBar per scrivere i messaggi-->
      <div class="downBar">
         <div class="downBarContent">
+            <!-- Pulsante per scegliere la foto -->
+            <button type="button" class="sendButton" @click="$refs.fileInput.click()"> 🖼️​ </button>
+            <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="onFileSelected" />
             <form id="sendMessageForm" @submit.prevent="sendMessage">
                 <input type="text" v-model="newMessage" placeholder="Scrivi un messaggio"/>
                 <button class="sendButton" type="submit"> Invia </button>

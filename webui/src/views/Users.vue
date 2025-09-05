@@ -5,9 +5,13 @@ export default {
 			errormsg: null,
 			ids: [],
 			names: [],
+			userMap: {},
 			conversationId: null,
 			successmsg: null,
-			searchQuery: ""
+			searchQuery: "",
+			currentId: localStorage.getItem("id"),
+			currentUsername: localStorage.getItem("username"),
+
 		}
     },
     methods: {
@@ -31,6 +35,17 @@ export default {
 				if(response) {
 					this.ids = response.data.userIds;
 					this.names = response.data.names;
+					// creo mappa temporeanea 
+					const tempMap = {};
+					this.ids.forEach((id, index) => {
+						tempMap[id] = this.names[index];
+					});
+					// Assicuro che l'utente corrente resti sempre nella mappa
+					tempMap[this.currentId] = this.currentUsername;
+					this.userMap = tempMap; 
+					localStorage.setItem("userMap", JSON.stringify(this.userMap));
+
+					console.log(this.userMap);
 				}
 			} catch(e){
 				this.errormsg = e.toString();
