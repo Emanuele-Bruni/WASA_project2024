@@ -3,7 +3,11 @@ export default {
     props : {
         photo: String,
         title: String,
-        isGroup: Boolean
+        isGroup: Boolean,
+        lastMessage: {
+          type: Object,
+          default: null
+        }
     },
 }
 </script>
@@ -16,6 +20,11 @@ export default {
 
     <div class="info">
       <h3>{{ title }}</h3>
+      <div v-if="lastMessage" class="lastMessage">
+        <span class="hours">{{ lastMessage.hours }} | </span>
+        <span class="author">{{ lastMessage.author }}:</span>
+        <span class="text">{{ lastMessage.text }}</span>
+      </div>
     </div>
 
     <span class="statusDot" :class="isGroup ? 'group' : 'private'"></span>
@@ -24,6 +33,25 @@ export default {
 
 
 <style scoped>
+.lastMessage {
+  font-size: 14px;
+  color: #a0a0a0; /* grigio chiaro */
+  font-style: italic;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.lastMessage .author {
+  font-weight: bold;
+}
+
+.lastMessage .hours {
+  margin-left: auto;
+  font-style: italic;
+  align-items: right;
+}
 .conversationCard {
   display: flex;
   align-items: center;

@@ -1,6 +1,6 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'isForwarded'],
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'forwardedIds'],
     methods : {
       isPhotoMessage(text) {
         return text.startsWith("[foto]");
@@ -16,7 +16,7 @@ export default {
         <strong>{{ author }}</strong>
         <button class="optionsButton" @click="$emit('messageOptions', messageId)">⋮</button>
       </div>
-      <div v-if="isForwarded" class="forwardedLabel"> Inoltrato </div>
+      <div v-if="forwardedIds[messageId]" class="forwardedLabel">Inoltrato</div>
       <div v-if="isPhotoMessage(text)">
         <img :src="'data:image/png;base64,' + text.slice(6)" class="messagePhoto"/>
       </div>

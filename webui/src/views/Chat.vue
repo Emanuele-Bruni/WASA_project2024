@@ -22,7 +22,7 @@ export default{
             newMessage: "",
             isPhoto: false,
             forwardConversations: [],
-            forwardedIds: JSON.parse(localStorage.getItem("forwardedIds") || "[]"),
+            forwardedIds: JSON.parse(localStorage.getItem("forwardedIds") || "{}"),
             membersToAdd: [],
 
             showChatModal: false,           //appare quando si clicca su Info
@@ -62,6 +62,23 @@ export default{
                     this.errormsg = null;
                     this.messages = msgs;
                 }
+
+                // Aggiorna l'ultimo messaggio in localStorage
+                if (Array.isArray(msgs) && msgs.length) {
+                    const lastMsg = msgs[msgs.length - 1];
+                    let lastMessages = JSON.parse(localStorage.getItem("lastMessages") || "{}");
+                    let displayText= lastMsg.text.startsWith("[foto]") ? "📷 Foto" : lastMsg.text;
+                    if (displayText.length > 10) {
+                        displayText = displayText.substring(0, 10) + "...";
+                    }
+                    lastMessages[this.conversationId] = {
+                        author: this.userMap[lastMsg.authorId] || lastMsg.author,
+                        text: displayText,
+                        hours: lastMsg.hours
+                    };
+                    localStorage.setItem("lastMessages", JSON.stringify(lastMessages));
+                }
+                this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
                     this.scrollToBottom();
@@ -75,7 +92,7 @@ export default{
                 this.newMessage = "";
                 await this.getChatMessages();
                 this.scrollToBottom();
-                 await this.getConversationInfo();
+                await this.getConversationInfo();
             } catch(e) {
                 if(e.response){
                     const status = e.response.status;
@@ -182,18 +199,15 @@ export default{
                 null,{headers:{Authorization: localStorage.getItem("id")}});
                 const newMessageId = response.data.messageId;
                 if (!this.forwardedIds.includes(newMessageId)) {
-                    this.forwardedIds.push(newMessageId);
+                    this.forwardedIds[newMessageId] = true;
                     // salva in localStorage
                     localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
                 }
 
-                 await this.getChatMessages();
-
-                this.successmsg = "Inoltrato con successo";
-                setTimeout(()=> {this.successmsg=null;
-                    this.forwardModal = false;
-                    this.showMessageOptions = false;
-                },1000);
+                await this.getChatMessages();
+                this.forwardModal = false;
+                this.showMessageOptions = false;
+                this.scrollToBottom();
             } catch(e) {
                 this.errormsg = e.toString();
             }
@@ -353,7 +367,7 @@ export default{
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
                 :comments="msg.comments"
-                :isForwarded="forwardedIds.includes(msg.messageId)"
+                :forwardedIds="forwardedIds"
                 @messageOptions="openMessageOptions"
             />
             <MessageModal v-if="showMessageOptions"

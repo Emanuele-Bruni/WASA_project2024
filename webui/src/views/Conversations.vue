@@ -5,6 +5,8 @@ export default {
 			errormsg: null,
 			successmsg: null,
 			conversations: [],
+			userMap: JSON.parse(localStorage.getItem("userMap") || "{}"),
+			lastMessages: JSON.parse(localStorage.getItem("lastMessages") || "{}"),
 			showGroupModal: false,
 			groupTitle: "",
 			userOptions: [],
@@ -96,6 +98,10 @@ export default {
 				}
 				await this.getMyConversations();
 			}
+		},
+		getLastMessage(conversationId){
+			const lastMessages = JSON.parse(localStorage.getItem("lastMessages") || "{}");
+			return this.lastMessages[conversationId] || null;
 		}
 	},
 	mounted() {
@@ -134,6 +140,7 @@ export default {
 						 :photo="conv.photo" 
 						 :title="conv.title" 
 						 :isGroup = "conv.isGroup"
+						 :lastMessage ="getLastMessage(conv.conversationId)"
 						 @click="chatSection(conv.conversationId)"></ConversationItem>
 				 </div>
 			 </div>
