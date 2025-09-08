@@ -116,7 +116,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, p http
 	}
 
 	// controllo che l'utente non abbia già commentato il messaggio, se si, sostituisco il commento
-	commentedYet, err := rt.db.CheckUser_Comment(id, messageId)
+	commentedYet, err := rt.db.CheckUserComment(id, messageId)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		ctx.Logger.WithError(err).Error("Errore durante il controllo del commento")

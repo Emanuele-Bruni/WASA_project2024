@@ -16,7 +16,7 @@ func (db *appdbimpl) UpdateComment(messageId int, author int, emoji string) (Com
 	}
 	// restituisco il commento aggiornato
 	newComment := Comment{
-		CommentId: int(commentId),
+		CommentId: commentId,
 		AuthorId:  author,
 		Emoji:     emoji,
 	}
