@@ -6,6 +6,7 @@ export default {
 			successmsg: null,
 			conversations: [],
 			userMap: JSON.parse(localStorage.getItem("userMap") || "{}"),
+			userId: localStorage.getItem("id"),
 			lastMessages: JSON.parse(localStorage.getItem("lastMessages") || "{}"),
 			showGroupModal: false,
 			groupTitle: "",
@@ -100,13 +101,35 @@ export default {
 			}
 		},
 		getLastMessage(conversationId){
-			const lastMessages = JSON.parse(localStorage.getItem("lastMessages") || "{}");
 			return this.lastMessages[conversationId] || null;
+		},
+		async refreshLastMessages(){
+			try {
+				for(const conv of this.conversations){
+					let response = await this.$axios.get(`/conversations/${conv.conversationId}/messages`, 
+														{ headers: { Authorization: localStorage.getItem("id") }});
+					const msgs = response.data.messages;
+					if(Array.isArray(msgs) && msgs.length){
+						const lastMsg = msgs[msgs.length - 1];
+						let displayText = lastMsg.text.startsWith("[foto]") ? "📷Foto" : lastMsg.text;
+						if(displayText.length > 10) displayText = displayText.substring(0,10) + "...";
+						this.lastMessages[conv.conversationId] = {
+							author: this.userMap[lastMsg.authorId] || lastMsg.author,
+							text: displayText,
+							hours: lastMsg.hours
+						};
+					}
+				}
+				localStorage.setItem("lastMessages", JSON.stringify(this.lastMessages));
+			} catch(e){
+				console.error("Errore aggiornando ultimi messaggi", e);
+			}
 		}
+
 	},
 	mounted() {
 		this.getMyConversations();
-		this.interval = setInterval(() => this.getMyConversations(), 5000);
+		this.interval = setInterval(() => {this.getMyConversations(); this.refreshLastMessages();}, 30000);
 	},
 	beforeUnmount() {
   		clearInterval(this.interval);

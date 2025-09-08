@@ -1,5 +1,4 @@
 <script>
-import EmojiPicker from '../components/EmojiPicker.vue';
 
 export default{
     data: function(){
@@ -62,14 +61,13 @@ export default{
                     this.errormsg = null;
                     this.messages = msgs;
                 }
-
-                // Aggiorna l'ultimo messaggio in localStorage
-                if (Array.isArray(msgs) && msgs.length) {
-                    const lastMsg = msgs[msgs.length - 1];
-                    let lastMessages = JSON.parse(localStorage.getItem("lastMessages") || "{}");
-                    let displayText= lastMsg.text.startsWith("[foto]") ? "📷 Foto" : lastMsg.text;
-                    if (displayText.length > 10) {
-                        displayText = displayText.substring(0, 10) + "...";
+                // Aggiorno ultimo messaggio
+                if(Array.isArray(msgs) && msgs.length){
+                    const lastMsg = msgs[msgs.length-1];
+                    let lastMessages = JSON.parse(localStorage.getItem("lastMessages")||"{}");
+                    let displayText = lastMsg.text.startsWith("[foto]") ? "📷Foto" : lastMsg.text;
+                    if(displayText.length > 20){
+                        displayText = displayText.substring(0,20) + "...";
                     }
                     lastMessages[this.conversationId] = {
                         author: this.userMap[lastMsg.authorId] || lastMsg.author,
@@ -78,7 +76,6 @@ export default{
                     };
                     localStorage.setItem("lastMessages", JSON.stringify(lastMessages));
                 }
-                this.scrollToBottom();
             } catch(e){
                     this.errormsg = e.toString();
                     this.scrollToBottom();
@@ -186,9 +183,9 @@ export default{
 			try {
 				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
 				if(response){
-					this.forwardConversations = response.data.conversations;
+                    this.forwardConversations = response.data.conversations;
                     this.forwardModal = true;
-				}
+                }
 			} catch(e){
                 this.errormsg = e.toString();
 			}
@@ -198,11 +195,15 @@ export default{
                 let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/forward/${convId}`,
                 null,{headers:{Authorization: localStorage.getItem("id")}});
                 const newMessageId = response.data.messageId;
-                if (!this.forwardedIds.includes(newMessageId)) {
-                    this.forwardedIds[newMessageId] = true;
-                    // salva in localStorage
-                    localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
+                
+                // 🔹 Assicuriamoci che forwardedIds[this.conversationId] sia un oggetto
+                if (!this.forwardedIds[this.conversationId] || typeof this.forwardedIds[this.conversationId] !== "object") {
+                    this.forwardedIds[this.conversationId] = {};
                 }
+
+                this.forwardedIds[this.conversationId][newMessageId] = true;
+
+                localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
 
                 await this.getChatMessages();
                 this.forwardModal = false;
@@ -312,9 +313,23 @@ export default{
     },
     mounted(){
         this.getConversationInfo();
-        this.scrollToBottom();
         this.getChatMessages();
-        this.interval = setInterval(() => this.getChatMessages(), 5000);
+        this.scrollToBottom();
+        this.interval = setInterval(() => this.getChatMessages(), 30000);
+
+        // 🔹 Reset forwardedIds se il backend non ha conversazioni
+        this.$axios.get("/conversations", { headers: { Authorization: localStorage.getItem("id") } })
+            .then(response => {
+                if (!response.data.conversations || response.data.conversations.length === 0) {
+                    this.forwardedIds = {};
+                    localStorage.removeItem("forwardedIds");
+                }
+            })
+            .catch(() => {
+                // Ignora eventuali errori qui
+            });
+
+        
     },
     beforeUnmount() {
   		clearInterval(this.interval);
@@ -367,7 +382,7 @@ export default{
                 :hours="msg.hours"
                 :isMine="msg.authorId === parseInt(userId)"
                 :comments="msg.comments"
-                :forwardedIds="forwardedIds"
+                :isForwarded="!!(forwardedIds[conversationId] && forwardedIds[conversationId][msg.messageId])"
                 @messageOptions="openMessageOptions"
             />
             <MessageModal v-if="showMessageOptions"

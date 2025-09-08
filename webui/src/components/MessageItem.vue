@@ -1,6 +1,6 @@
 <script>
 export default {
-    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'forwardedIds'],
+    props: ['messageId', 'author', 'authorId', 'text', 'hours','isMine', 'comments', 'isForwarded'],
     methods : {
       isPhotoMessage(text) {
         return text.startsWith("[foto]");
@@ -12,16 +12,23 @@ export default {
 <template>
   <div :class="['messageItem',isMine ? 'mine':'']">
     <div :class="['messageBox',isMine ? 'mineBox':'']">
+
+      <!-- Header autore e opzioni -->
       <div class="messageHeader">
         <strong>{{ author }}</strong>
         <button class="optionsButton" @click="$emit('messageOptions', messageId)">⋮</button>
       </div>
-      <div v-if="forwardedIds[messageId]" class="forwardedLabel">Inoltrato</div>
+
+      <!-- Label inoltrato-->
+      <div v-if="isForwarded" class="forwardedLabel">Inoltrato</div>
+
+      <!-- Messaggio-->
       <div v-if="isPhotoMessage(text)">
         <img :src="'data:image/png;base64,' + text.slice(6)" class="messagePhoto"/>
       </div>
       <div v-else class="messageText" >{{ text }}</div>
       <div class="messageTime">{{ hours }}</div>
+
       <!-- Mostra i commenti se ci sono -->
       <div v-if="comments && comments.length" class="commentsList">
         <div v-for="comment in comments" :key="comment.id" class="commentItem">
