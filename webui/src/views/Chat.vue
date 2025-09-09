@@ -244,9 +244,12 @@ export default{
                 {emoji: selectedEmoji},{headers:{Authorization: localStorage.getItem("id")}});
 
                 // aggiorno la userMap per visualizzare subito il nome
-                let storedMap = JSON.parse(localStorage.getItem("userMap"));
-                storedMap[this.userId] = this.username;
-                this.userMap =storedMap;
+                let storedMap = JSON.parse(localStorage.getItem("userMap") || "{}");
+                if (this.userId && this.username){
+                    storedMap[this.userId] = this.username;
+                    this.userMap =storedMap;
+                    localStorage.setItem("userMap", JSON.stringify(storedMap));
+                }
 
                 await this.getChatMessages();
                 this.emojiPicker = false;
