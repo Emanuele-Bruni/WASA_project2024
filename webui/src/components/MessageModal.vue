@@ -8,7 +8,6 @@
     <div class="message-options-overlay">
         <div class="options-overlay-content">
             <div class="buttons">
-                <button @click="$emit('reply', messageId)"> Rispondi </button>
                 <button @click="$emit('forward', messageId)"> Inoltra messaggio </button>
                 <button @click="$emit('delete',messageId)"> Elimina messaggio </button>
                 <button @click="$emit('openEmojiPicker',messageId)"> Commenta messaggio </button>

@@ -36,6 +36,7 @@ export default {
 				console.log(response.data);
 				if(response){
 					this.conversations = response.data.conversations;
+					 await this.refreshLastMessages();
 				}
 			} catch(e){
 				if(e.response) {
@@ -82,6 +83,7 @@ export default {
 				this.successmsg = "Gruppo creato con successo!";
 				console.log(response.data);
 				this.groupId = response.data.groupId;
+				this.lastMessages[this.groupId] = null;
 				setTimeout(()=> {
 						this.successmsg = null;
 						this.showGroupModal = false;
@@ -118,6 +120,8 @@ export default {
 							text: displayText,
 							hours: lastMsg.hours
 						};
+					} else {
+						delete this.lastMessages[conv.conversationId];
 					}
 				}
 				localStorage.setItem("lastMessages", JSON.stringify(this.lastMessages));

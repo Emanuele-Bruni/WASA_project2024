@@ -9,6 +9,7 @@ export default {
 			userId: localStorage.getItem("id"),
 			photo:"",
 			selectedPhoto:"",
+			userMap: JSON.parse(localStorage.getItem("userMap") || "{}")
 		}
     },
     methods: {
@@ -39,6 +40,9 @@ export default {
 					this.successmsg = "Username aggiornato con successo!";
 					localStorage.setItem("username",response.data.username);
 					this.username = response.data.username;
+					// aggiorno userMap
+					this.userMap[this.userId] = this.username;
+					localStorage.setItem("userMap",JSON.stringify(this.userMap));
 
 					setTimeout(()=> {this.successmsg=null},1000);
 				}
