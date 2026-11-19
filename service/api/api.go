@@ -42,6 +42,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"sync"
 )
 
 // Config is used to provide dependencies and configuration to the New function.
@@ -82,6 +83,7 @@ func New(cfg Config) (Router, error) {
 		router:     router,
 		baseLogger: cfg.Logger,
 		db:         cfg.Database,
+		sessions:   make(map[string]session),
 	}, nil
 }
 
@@ -92,5 +94,7 @@ type _router struct {
 	// Use context logger if available (e.g., in requests) instead of this logger.
 	baseLogger logrus.FieldLogger
 
-	db database.AppDatabase
+	db         database.AppDatabase
+	sessionsMu sync.Mutex
+	sessions   map[string]session
 }

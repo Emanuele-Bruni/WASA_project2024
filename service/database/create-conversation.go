@@ -3,71 +3,66 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 )
 
-func (db *appdbimpl) CreateConversation(userId1 int, userId2 int) (int, error) {
-	// prendo le info dell'utente2
-	// titolo -> username dell'utente2
-	// photo -> photo standard
-	// isGroup -> 0
-	// members -> "userId1,userId2"
-	var username string
-	photo := DefaultContactPhoto
-	isGroup := 0
-	members := strconv.Itoa(userId1) + "," + strconv.Itoa(userId2)
+func (db *appdbimpl) CreateConversation(userID1, userID2 int) (int, error) {
+	if userID1 == userID2 {
+		return 0, fmt.Errorf("conversation with self is not allowed")
+	}
+	if userID1 > userID2 {
+		userID1, userID2 = userID2, userID1
+	}
+	return db.createConversation("", []int{userID1, userID2}, false)
+}
 
-	err := db.c.QueryRow("SELECT name FROM users_table WHERE id=?", userId2).Scan(&username)
+// Creation of the conversation and all memberships is a single atomic write.
+func (db *appdbimpl) createConversation(title string, members []int, isGroup bool) (int, error) {
+	tx, err := db.c.Begin()
 	if err != nil {
-		return -1, fmt.Errorf("error during user selection: %w", err)
+		return 0, err
 	}
+	defer tx.Rollback()
+	var low, high interface{}
+	if !isGroup {
+		low, high = members[0], members[1]
+	}
+	avatar, err := defaultAvatar(isGroup)
+	if err != nil {
+		return 0, err
+	}
+	imageID, err := saveImage(tx, avatar)
+	if err != nil {
+		return 0, err
+	}
+	result, err := tx.Exec("INSERT INTO conversations_table(title,photo,is_group,direct_user_low,direct_user_high,photo_image_id) VALUES(?,'',?,?,?,?)", title, isGroup, low, high, imageID)
+	if err != nil {
+		return 0, fmt.Errorf("create conversation: %w", err)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	for _, userID := range members {
+		if _, err = tx.Exec("INSERT INTO conversation_members(conversation_id,user_id) VALUES(?,?)", id, userID); err != nil {
+			return 0, fmt.Errorf("add member: %w", err)
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return 0, err
+	}
+	return int(id), nil
+}
 
-	res, err := db.c.Exec("INSERT INTO conversations_table (titolo,photo,isGroup,members) VALUES (?,?,?,?)", username, photo, isGroup, members)
+func requireAffected(result sql.Result, err error) error {
 	if err != nil {
-		return -1, fmt.Errorf("error during conversation creation: %w", err)
+		return err
 	}
-
-	conversationId, err := res.LastInsertId()
+	count, err := result.RowsAffected()
 	if err != nil {
-		return -1, fmt.Errorf("error getting last insert ID: %w", err)
+		return err
 	}
-
-	// devo inserirlo in conversation_ids nella users_table di entrambi gli utenti
-	// UTENTE 1
-	var currentConversationsString1 sql.NullString
-	err = db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", userId1).Scan(&currentConversationsString1)
-	if err != nil {
-		return -1, fmt.Errorf("error during conversations selection: %w", err)
+	if count == 0 {
+		return sql.ErrNoRows
 	}
-	var updatedConversations1 string
-	// controllo se è non NULL e se non è vuota
-	if currentConversationsString1.Valid && currentConversationsString1.String != "" {
-		updatedConversations1 = fmt.Sprintf("%s,%d", currentConversationsString1.String, conversationId)
-	} else {
-		updatedConversations1 = fmt.Sprintf("%d", conversationId)
-	}
-	_, err = db.c.Exec("UPDATE users_table SET conversation_ids=? WHERE id=?", updatedConversations1, userId1)
-	if err != nil {
-		return -1, fmt.Errorf("error insert new conversation into the database: %w", err)
-	}
-
-	// UTENTE 2
-	var currentConversationsString2 sql.NullString
-	err = db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", userId2).Scan(&currentConversationsString2)
-	if err != nil {
-		return -1, fmt.Errorf("error during conversations selection: %w", err)
-	}
-	var updatedConversations2 string
-	// controllo se è non NULL e se non è vuota
-	if currentConversationsString2.Valid && currentConversationsString2.String != "" {
-		updatedConversations2 = fmt.Sprintf("%s,%d", currentConversationsString2.String, conversationId)
-	} else {
-		updatedConversations2 = fmt.Sprintf("%d", conversationId)
-	}
-	_, err = db.c.Exec("UPDATE users_table SET conversation_ids=? WHERE id=?", updatedConversations2, userId2)
-	if err != nil {
-		return -1, fmt.Errorf("error insert new conversation into the database: %w", err)
-	}
-
-	return int(conversationId), nil
+	return nil
 }

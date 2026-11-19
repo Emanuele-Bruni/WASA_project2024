@@ -2,81 +2,66 @@ package database
 
 import (
 	"database/sql"
-	"strconv"
-	"strings"
-
-	"github.com/sirupsen/logrus"
+	"time"
 )
 
-func (db *appdbimpl) GetConversations(userId int) ([]Conversation, error) {
+type MessagePreview struct {
+	MessageID int       `json:"messageId"`
+	AuthorID  int       `json:"authorId"`
+	Author    string    `json:"author"`
+	Type      string    `json:"type"`
+	Text      string    `json:"text"`
+	CreatedAt time.Time `json:"createdAt"`
+	Hours     string    `json:"hours"`
+	Forwarded bool      `json:"forwarded"`
+}
 
-	var userConversations []Conversation    // lista finale delle conversazioni
-	var stringaConversazioni sql.NullString // stringa "20,30,40"
-	var lista_id []int                      // [20,30,40]
+const conversationSelect = `SELECT c.conversation_id,c.title,
+ CASE WHEN c.photo_image_id IS NULL THEN '' ELSE '/media/'||c.photo_image_id END,c.is_group,
+ u.id,u.name,CASE WHEN u.photo_image_id IS NULL THEN '' ELSE '/media/'||u.photo_image_id END,
+ lm.message_id,lm.user_id,la.name,CASE WHEN lm.content_type='image' THEN '' ELSE substr(lm.text,1,200) END,lm.content_type,lm.created_at,lm.forwarded
+ FROM conversations_table c
+ JOIN conversation_members own ON own.conversation_id=c.conversation_id AND own.user_id=?
+ JOIN conversation_members cm ON cm.conversation_id=c.conversation_id
+ JOIN users_table u ON u.id=cm.user_id
+ LEFT JOIN messages_table lm ON lm.message_id=(SELECT m.message_id FROM messages_table m WHERE m.conversation_id=c.conversation_id ORDER BY m.created_at DESC,m.message_id DESC LIMIT 1)
+ LEFT JOIN users_table la ON la.id=lm.user_id`
 
-	// controllo l'id nella tabella utenti e prendo la stringa di conversazioni
-	err := db.c.QueryRow("SELECT conversation_ids FROM users_table WHERE id=?", userId).Scan(&stringaConversazioni)
+func (db *appdbimpl) GetConversations(userID int) ([]Conversation, error) {
+	return db.readConversations(conversationSelect+" ORDER BY lm.created_at DESC,lm.message_id DESC,c.conversation_id DESC,u.id", userID, userID)
+}
+func (db *appdbimpl) readConversations(query string, currentUserID int, args ...interface{}) ([]Conversation, error) {
+	rows, err := db.c.Query(query, args...)
 	if err != nil {
-		return []Conversation{}, err
+		return nil, err
 	}
-	if !stringaConversazioni.Valid && stringaConversazioni.String == "" {
-		return []Conversation{}, ErrNoConversation
-	}
-
-	// prendo gli id delle conversazioni dell'utente e la aggiungo alla lista degli id
-	for _, id_stringa := range strings.Split(stringaConversazioni.String, ",") {
-		// converto il valore in numero
-		num, err := strconv.Atoi(id_stringa)
-		if err != nil {
-			logrus.WithField("conversation_id", id_stringa).WithError(err).Error("id non valido")
-		} else {
-			lista_id = append(lista_id, num)
-		}
-	}
-
-	for _, conversation_id := range lista_id {
+	defer rows.Close()
+	result := make([]Conversation, 0)
+	for rows.Next() {
 		var conversation Conversation
-		conversation.ConversationId = conversation_id
-
-		var members string // "1,2,3"
-		var isGroup int
-
-		// recupero le info della conversazione
-		err := db.c.QueryRow("SELECT titolo,photo,isGroup,members FROM conversations_table WHERE conversation_id=?", conversation_id).Scan(&conversation.Title, &conversation.Photo, &isGroup, &members)
-		if err != nil {
-			return []Conversation{}, err
+		var member User
+		var mid, authorID sql.NullInt64
+		var author, text, kind, created sql.NullString
+		var forwarded sql.NullBool
+		if err = rows.Scan(&conversation.ConversationId, &conversation.Title, &conversation.Photo, &conversation.IsGroup, &member.Id, &member.Name, &member.Photo, &mid, &authorID, &author, &text, &kind, &created, &forwarded); err != nil {
+			return nil, err
 		}
-		if isGroup == 0 {
-			conversation.IsGroup = false
-		} else {
-			conversation.IsGroup = true
-		}
-
-		// controllo i membri
-		for _, memberId_stringa := range strings.Split(members, ",") {
-			// converto membro in numero
-			memberId, err := strconv.Atoi(memberId_stringa)
-			var utente User
-			utente.Id = memberId
-			if err != nil {
-				logrus.WithField("memberId not valid", memberId).WithError(err).Error("id non valido")
-			} else {
-				// ottenuto id membro, ora devo prendere le sue info
-				err := db.c.QueryRow("SELECT name,photo FROM users_table WHERE id=?", memberId).Scan(&utente.Name, &utente.Photo)
+		if len(result) == 0 || result[len(result)-1].ConversationId != conversation.ConversationId {
+			conversation.Members = make([]User, 0)
+			if mid.Valid {
+				timestamp, err := time.Parse(time.RFC3339Nano, created.String)
 				if err != nil {
-					return []Conversation{}, err
+					return nil, err
 				}
-				// aggiungo l'utente alla lista dei membri della conversazione
-				conversation.Members = append(conversation.Members, utente)
+				conversation.LastMessage = &MessagePreview{MessageID: int(mid.Int64), AuthorID: int(authorID.Int64), Author: author.String, Type: kind.String, Text: text.String, CreatedAt: timestamp, Hours: timestamp.Format("15:04"), Forwarded: forwarded.Bool}
 			}
-			// 0 -> no gruppo
-			if isGroup == 0 && userId != memberId {
-				conversation.Photo = utente.Photo // se non è un gruppo, allora la foto e il nome sono quelle dell'altro utente
-				conversation.Title = utente.Name
-			}
+			result = append(result, conversation)
 		}
-
-		userConversations = append(userConversations, conversation)
+		current := &result[len(result)-1]
+		current.Members = append(current.Members, member)
+		if !current.IsGroup && member.Id != currentUserID {
+			current.Title, current.Photo = member.Name, member.Photo
+		}
 	}
-	return userConversations, nil
+	return result, rows.Err()
 }

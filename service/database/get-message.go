@@ -1,40 +1,18 @@
 package database
 
-import (
-	"database/sql"
-	"strconv"
-	"strings"
-)
+import "database/sql"
 
-func (db *appdbimpl) GetMessage(messageId int) (Message, error) {
-	// prendo il messaggio dalla tabella
-	var message Message
-	var commentsString sql.NullString
-	err := db.c.QueryRow("SELECT author,text,hours,comments,user_id FROM messages_table WHERE message_id=?", messageId).Scan(&message.Author, &message.Text, &message.Hours, &commentsString, &message.AuthorId)
+func messageByID(q queryer, messageID int) (Message, error) {
+	messages, err := readMessages(q, " WHERE m.message_id=?", messageID)
 	if err != nil {
 		return Message{}, err
 	}
-
-	// calcolo i commenti
-	if commentsString.Valid && commentsString.String != "" {
-		commentIDs := strings.Split(commentsString.String, ",")
-
-		for _, idStringa := range commentIDs {
-			commentID, err := strconv.Atoi(strings.TrimSpace(idStringa))
-			if err != nil {
-				return Message{}, err
-			}
-
-			var comment Comment
-			comment.CommentId = commentID
-			err = db.c.QueryRow("SELECT author_id, emoji FROM comments_table WHERE comment_id=?", commentID).Scan(&comment.AuthorId, &comment.Emoji)
-			if err != nil {
-				return Message{}, err
-			} else {
-				message.Comments = append(message.Comments, comment)
-			}
-		}
-
+	if len(messages) == 0 {
+		return Message{}, sql.ErrNoRows
 	}
-	return message, nil
+	return messages[0], nil
+}
+
+func (db *appdbimpl) GetMessage(messageID int) (Message, error) {
+	return messageByID(db.c, messageID)
 }

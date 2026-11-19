@@ -1,17 +1,29 @@
 package database
 
-import "fmt"
-
-// CreateUser crea un nuovo utente con il nome specificato e restituisce il suo ID.
-func (db *appdbimpl) CreateUser(name string) (int, error) {
-	photo := DefaultContactPhoto
-	res, err := db.c.Exec("INSERT INTO users_table (name,photo) VALUES (?,?)", name, photo)
+// GetOrCreateUser handles concurrent logins without creating duplicate usernames.
+func (db *appdbimpl) GetOrCreateUser(name string) (int, error) {
+	tx, err := db.c.Begin()
 	if err != nil {
-		return -1, fmt.Errorf("error creating user: %w", err)
+		return 0, err
 	}
-	userID, err := res.LastInsertId()
+	defer tx.Rollback()
+	avatar, err := defaultAvatar(false)
 	if err != nil {
-		return -1, fmt.Errorf("error getting last insert ID: %w", err)
+		return 0, err
 	}
-	return int(userID), nil
+	imageID, err := saveImage(tx, avatar)
+	if err != nil {
+		return 0, err
+	}
+	if _, err = tx.Exec("INSERT INTO users_table(name,photo,photo_image_id) VALUES(?,'',?) ON CONFLICT(name) DO NOTHING", name, imageID); err != nil {
+		return 0, err
+	}
+	var id int
+	if err = tx.QueryRow("SELECT id FROM users_table WHERE name=?", name).Scan(&id); err != nil {
+		return 0, err
+	}
+	if err = tx.Commit(); err != nil {
+		return 0, err
+	}
+	return id, nil
 }

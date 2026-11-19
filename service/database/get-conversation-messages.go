@@ -2,73 +2,61 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
+	"time"
 )
 
-func (db *appdbimpl) GetConversationMessages(cnvId int) ([]Message, error) {
-	righe, err := db.c.Query("SELECT message_id, author, text, hours, comments, user_id FROM messages_table WHERE conversation_id = ?", cnvId)
+type queryer interface {
+	Query(string, ...interface{}) (*sql.Rows, error)
+	QueryRow(string, ...interface{}) *sql.Row
+}
+
+const messageSelect = `SELECT m.message_id,m.user_id,u.name,CASE WHEN m.content_type='image' THEN '' ELSE m.text END,m.created_at,m.forwarded,m.original_message_id,
+ r.comment_id,r.author_id,r.emoji,m.content_type,i.image_id,i.mime_type,CASE WHEN m.image_name='' THEN 'Immagine' ELSE m.image_name END,i.width,i.height,length(i.data)
+ FROM messages_table m JOIN users_table u ON u.id=m.user_id
+ LEFT JOIN comments_table r ON r.message_id=m.message_id
+ LEFT JOIN images i ON i.image_id=m.image_id`
+
+func readMessages(q queryer, filter string, args ...interface{}) ([]Message, error) {
+	rows, err := q.Query(messageSelect+filter+" ORDER BY m.created_at,m.message_id,r.comment_id", args...)
 	if err != nil {
-		return nil, fmt.Errorf("errore nella selezione dei messaggi: %w", err)
+		return nil, err
 	}
-	defer righe.Close()
-
-	var result []Message
-
-	for righe.Next() {
-		var msgID, authorId int
-		var author, text, hours string
-		var comments sql.NullString
-
-		if err := righe.Scan(&msgID, &author, &text, &hours, &comments, &authorId); err != nil {
-			return nil, fmt.Errorf("errore nella scansione del messaggio: %w", err)
+	defer rows.Close()
+	result := make([]Message, 0)
+	for rows.Next() {
+		var message Message
+		var timestamp string
+		var original, commentID, authorID sql.NullInt64
+		var emoji sql.NullString
+		var imageID, width, height, size sql.NullInt64
+		var mime, name sql.NullString
+		if err = rows.Scan(&message.MessageId, &message.AuthorId, &message.Author, &message.Text, &timestamp, &message.Forwarded, &original, &commentID, &authorID, &emoji, &message.Type, &imageID, &mime, &name, &width, &height, &size); err != nil {
+			return nil, err
 		}
-
-		// Usa una stringa vuota se comments è NULL
-		commentsStr := ""
-		if comments.Valid {
-			commentsStr = comments.String
-		}
-
-		var tempMessage Message
-		tempMessage.MessageId = msgID
-		tempMessage.AuthorId = authorId
-		tempMessage.Author = author
-		tempMessage.Text = text
-		tempMessage.Hours = hours
-
-		var allComments []Comment
-		var commentIds []int
-
-		if strings.TrimSpace(commentsStr) != "" {
-			parts := strings.Split(commentsStr, ",")
-			for _, p := range parts {
-				n, err := strconv.Atoi(strings.TrimSpace(p))
-				if err != nil {
-					return nil, fmt.Errorf("errore nella conversione dell'id del commento: %w", err)
-				}
-				commentIds = append(commentIds, n)
-			}
-		}
-
-		for _, n := range commentIds {
-			var tempComment Comment
-			err := db.c.QueryRow("SELECT comment_id, author_id, emoji FROM comments_table WHERE comment_id = ?", n).
-				Scan(&tempComment.CommentId, &tempComment.AuthorId, &tempComment.Emoji)
+		if len(result) == 0 || result[len(result)-1].MessageId != message.MessageId {
+			message.CreatedAt, err = time.Parse(time.RFC3339Nano, timestamp)
 			if err != nil {
-				return nil, fmt.Errorf("errore nella lettura del commento con id %d: %w", n, err)
+				return nil, err
 			}
-			allComments = append(allComments, tempComment)
+			message.Hours = message.CreatedAt.Format("15:04")
+			message.Comments = make([]Comment, 0)
+			if imageID.Valid {
+				message.Image = &ImageMetadata{ImageID: int(imageID.Int64), URL: imageURL(int(imageID.Int64)), MimeType: mime.String, Name: name.String, Width: int(width.Int64), Height: int(height.Int64), Size: int(size.Int64)}
+			}
+			if original.Valid {
+				id := int(original.Int64)
+				message.OriginalMessageID = &id
+			}
+			result = append(result, message)
 		}
-
-		tempMessage.Comments = allComments
-		result = append(result, tempMessage)
+		if commentID.Valid {
+			current := &result[len(result)-1]
+			current.Comments = append(current.Comments, Comment{CommentId: int(commentID.Int64), AuthorId: int(authorID.Int64), Emoji: emoji.String})
+		}
 	}
+	return result, rows.Err()
+}
 
-	if err := righe.Err(); err != nil {
-		return nil, fmt.Errorf("errore nella lettura delle righe: %w", err)
-	}
-
-	return result, nil
+func (db *appdbimpl) GetConversationMessages(conversationID int) ([]Message, error) {
+	return readMessages(db.c, " WHERE m.conversation_id=?", conversationID)
 }

@@ -1,27 +1,20 @@
+FROM golang:1.27.3 AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+COPY vendor/ ./vendor/
+COPY cmd/ ./cmd/
+COPY service/ ./service/
+RUN CGO_ENABLED=1 go build -mod=vendor -trimpath -ldflags="-s -w" -o /app/webapi ./cmd/webapi \
+    && CGO_ENABLED=0 go build -mod=vendor -trimpath -ldflags="-s -w" -o /app/healthcheck ./cmd/healthcheck
 
-# Go builder
-FROM golang:1.19.1 AS builder
-
-# Creo una directory dove copiare il codice e mi sposto
-WORKDIR /src/
-
-# Copio il contenuto del codice nella workdir 
-COPY . .
-
-# Compilo il backend
-RUN go build -o /app/webapi ./cmd/webapi
-
-# Creo il container finale che conterrà il backend
-FROM debian:bookworm
-
-# Che porte usare
+FROM debian:trixie-slim
+RUN groupadd --gid 10001 wasa \
+    && useradd --uid 10001 --gid wasa --no-create-home --shell /usr/sbin/nologin wasa \
+    && mkdir /data && chown wasa:wasa /data && chmod 750 /data
+WORKDIR /app
+COPY --from=builder /app/webapi /app/healthcheck ./
+ENV CFG_DB_FILENAME=/data/wasatext-v2.db
+USER 10001:10001
 EXPOSE 3000
-
-# Mi sposto nella directory dove copiare l'eseguibile ed eseguirlo
-WORKDIR /app/
-
-# Copio l'eseguibile generato nel container precedente
-COPY --from=builder /app/webapi ./
-
-# Avvio il backend
+HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD ["/app/healthcheck"]
 CMD ["/app/webapi"]

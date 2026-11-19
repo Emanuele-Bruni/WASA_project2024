@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -34,7 +35,8 @@ func main() {
 
 	flag.Parse()
 
-	res, err := http.Get(fmt.Sprintf("http://localhost:%d/liveness", *port))
+	client := http.Client{Timeout: 2 * time.Second}
+	res, err := client.Get(fmt.Sprintf("http://localhost:%d/liveness", *port))
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

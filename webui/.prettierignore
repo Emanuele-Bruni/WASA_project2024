@@ -1,0 +1,7 @@
+.yarn
+.pnp.*
+dist
+coverage
+playwright-report
+test-results
+yarn.lock

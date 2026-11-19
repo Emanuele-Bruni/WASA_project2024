@@ -1,288 +1,131 @@
-<script>
-export default {
-    data: function() {
-        return {
-			errormsg: null,
-			username:"",
-			newUsername:"",
-			successmsg : null,
-			userId: localStorage.getItem("id"),
-			photo:"",
-			selectedPhoto:"",
-			userMap: JSON.parse(localStorage.getItem("userMap") || "{}")
-		}
-    },
-    methods: {
-        logout(){
-			localStorage.removeItem("auth")
-			localStorage.removeItem("id")
-			this.$router.push("/login") //torno al login
-		},
-        usersSection(){
-			this.$router.push("/users")
-		},
-        conversationsSection(){
-            this.$router.push("/conversations")
-        },
-		async setUsername(){
-			this.successmsg = null;
-			this.errormsg = null;
-			const token = localStorage.getItem("id");
-			if(!token){
-				this.errormsg = "Utente non autenticato";
-				return
-			}
-			try {
-				let response = await this.$axios.put("/settings/username",
-				{username: this.newUsername},{headers:{Authorization: localStorage.getItem("id")}});
-				console.log("Response Data: ",response.data);
-				if(response){
-					this.successmsg = "Username aggiornato con successo!";
-					localStorage.setItem("username",response.data.username);
-					this.username = response.data.username;
-					// aggiorno userMap
-					this.userMap[this.userId] = this.username;
-					localStorage.setItem("userMap",JSON.stringify(this.userMap));
-
-					setTimeout(()=> {this.successmsg=null},1000);
-				}
-			}catch(e){
-				if (e.response){
-					const status = e.response.status;
-					if(status===400){
-						this.errormsg = "Lunghezza del nome non valida";
-					} 
-					if(status===409){
-						this.errormsg = "Username già utilizzato";
-					} else {
-						this.errormsg = e.toString();
-					}
-				}
-			}
-		},
-		async getMyPhoto(){
-			try{
-				let response = await this.$axios.get(`/settings/photo/${this.userId}`,{headers:{Authorization: localStorage.getItem("id")}});
-				console.log(response.data);
-				this.photo = response.data.photo;
-				localStorage.setItem("myPhoto",this.photo);
-			} catch(e) {
-				this.errormsg = e.toString();
-			}
-		},
-		onFileChange(e){
-			const file = e.target.files[0];
-			if(!file) return;
-			const reader = new FileReader();
-			reader.onload = () => {
-				this.selectedPhoto = reader.result.split(",")[1];
-				this.setMyPhoto();
-				this.photo = this.selectedPhoto;
-			};
-			reader.readAsDataURL(file);
-		},
-		async setMyPhoto(){
-			try {
-				let response = await this.$axios.put("/settings/photo",
-					{ photo: this.selectedPhoto },
-					{ headers:{ Authorization: localStorage.getItem("id") } }
-				);
-				this.successmsg = "Foto aggiornata con successo!";
-				localStorage.setItem("myPhoto", this.photo);
-				setTimeout(()=> {this.successmsg=null},1000);
-			} catch(e) {
-				this.errormsg = e.toString();
-			}
-		}
-    },
-    mounted() {
-		const savedUsername = localStorage.getItem("username") || "";
-		this.username = savedUsername;
-		this.newUsername = savedUsername;
-		this.getMyPhoto();
-    }
+<script setup>
+import { onMounted, ref } from 'vue'
+import { profile, initials, loadProfile, setProfile } from '../services/profile'
+import { logout } from '../services/axios'
+import { apiErrorMessage } from '../services/errors'
+import { useRequestScope } from '../composables/use-request-scope'
+import AppAvatar from '../components/AppAvatar.vue'
+import AppAlert from '../components/AppAlert.vue'
+import ImagePicker from '../components/ImagePicker.vue'
+import AvatarCropper from '../components/AvatarCropper.vue'
+const { client, signal } = useRequestScope(),
+	name = ref(profile.name),
+	error = ref(''),
+	notice = ref(''),
+	busy = ref(false),
+	imageVersion = ref(0),
+	cropping = ref(false)
+onMounted(async () => {
+	try {
+		await loadProfile(client)
+		if (!signal.aborted) name.value = profile.name
+	} catch (e) {
+		if (!signal.aborted) error.value = apiErrorMessage(e)
+	}
+})
+async function save(url, body) {
+	if (busy.value) return false
+	busy.value = true
+	error.value = ''
+	notice.value = ''
+	try {
+		const { data } = await client.put(url, body)
+		setProfile(data.user)
+		localStorage.setItem('username', data.user.name)
+		notice.value = 'Modifiche salvate.'
+		return true
+	} catch (e) {
+		if (!signal.aborted) error.value = apiErrorMessage(e)
+		return false
+	} finally {
+		if (!signal.aborted) busy.value = false
+	}
+}
+async function savePhoto(image) {
+	if (await save('/settings/photo', { image })) {
+		imageVersion.value++
+		cropping.value = false
+	}
+}
+async function signOut() {
+	try {
+		await logout()
+	} catch (e) {
+		error.value = apiErrorMessage(e)
+	}
 }
 </script>
 <template>
-    <div class="navbar">
-		<div class="container">
-			<button type="button" class="btn" @click="conversationsSection"> Conversazioni </button>
-			<button type="button" class="btn" @click="usersSection"> Utenti </button>
-			<button type="button" class="currentButton"> Impostazioni </button>
-			<button type="button" class="logoutButton" @click="logout"> Logout </button>
-		</div> 
-	</div>
-	<div class="subNavbar">
-		<div class="settings">
-			<p>Modifica la tua foto </p>
-			<!-- CERCHIO PER ANTEPRIMA DELLA FOTO -->
-			<div class="avatar-wrapper">
-				<img :src="`data:image/png;base64,` + photo" class="avatar" />
+	<section class="v2-page v2-settings-page">
+		<header class="v2-page-header"><h1>Profilo</h1></header>
+		<AppAlert :message="error" /><AppAlert
+			:message="notice"
+			success
+			dismissible
+			@dismiss="notice = ''"
+		/>
+		<div class="v2-settings-grid">
+			<section class="v2-settings-card v2-profile-card">
+				<div class="v2-profile-card__avatar">
+					<AppAvatar :initials="initials(profile.name)" :src="profile.photo" size="xlarge" />
+				</div>
+				<h2>{{ profile.name }}</h2>
+				<button
+					v-if="profile.photo && !cropping"
+					class="v2-button v2-button--secondary"
+					@click="cropping = true"
+				>
+					Regola ritaglio
+				</button>
+				<AvatarCropper
+					v-if="cropping && profile.photo"
+					:src="profile.photo"
+					:busy="busy"
+					@save="savePhoto"
+					@cancel="cropping = false"
+				/>
+				<ImagePicker
+					:key="imageVersion"
+					:busy="busy"
+					label="Cambia immagine profilo"
+					@save="savePhoto"
+				/>
+			</section>
+			<div class="v2-settings-stack">
+				<section class="v2-settings-card">
+					<header>
+						<div>
+							<h2>Informazioni personali</h2>
+							<p>Aggiorna il nome mostrato nelle conversazioni.</p>
+						</div>
+					</header>
+					<form class="v2-form" @submit.prevent="save('/settings/username', { name: name.trim() })">
+						<label for="profile-name">Nome utente</label
+						><input
+							id="profile-name"
+							v-model="name"
+							minlength="3"
+							maxlength="16"
+							:disabled="busy"
+							required
+						/>
+						<div class="v2-form__actions">
+							<button class="v2-button v2-button--primary" :disabled="busy">
+								{{ busy ? 'Salvataggio…' : 'Salva modifiche' }}
+							</button>
+						</div>
+					</form>
+				</section>
+				<section class="v2-settings-card v2-settings-card--danger">
+					<div>
+						<h2>Sessione</h2>
+						<p>Esci da WasaText e torna alla schermata di accesso.</p>
+					</div>
+					<button class="v2-button v2-button--danger" :disabled="busy" @click="signOut">
+						Esci
+					</button>
+				</section>
 			</div>
-			<!-- SELEZIONE DELLA NUOVA FOTO -->
-			<input type="file" accept="image/*" @change="onFileChange">
-	
-			<p>Modifica il tuo username </p>
-			<SuccessMsg v-if="successmsg" :msg="successmsg" />
-			<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-			<!-- BARRA PER IMPOSTARE USERNAME-->
-			<form id="newUsernameForm" @submit.prevent="setUsername">
-				<input type="text" id="username" v-model="newUsername" :placeholder="username"/>
-				<button class="saveButton" type="submit"> Salva </button>
-			</form>	<br>
 		</div>
-	</div>
-
+	</section>
 </template>
-
-
-<style scoped>
-.subNavbar{
-	width: 100%;
-	display: flex;
-	justify-content: center;
-}
-.avatar-wrapper {
-	display: flex;
-	justify-content: center;
-  	align-items: center;
-  	margin-bottom: 1rem;
-}
-.avatar {
-  	width: 200px;
-  	height: 200px;
-  	border-radius: 50%;
-  	object-fit: cover;
-	border: 3px solid rgb(4, 103, 133);
-}
-input{
-	font-family: "SF Pro";
-	width: 100%;
-	padding: 0.875rem;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-	outline: none;
-	transition: ease 0.25s;
-}
-input[type="file"] {
-	font-family: "SF Pro";
-	width: 70%;              /* stessa larghezza del bottone */
-	max-width: 300px;
-	padding: 0.6rem;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-	text-align: center;
-	cursor: pointer;
-}
-p{
-	font-size: 1.4rem;
-	font-family: "SF Pro";
-	color: rgb(4, 78, 100); 
-	text-align: center;
-	margin: 0.5rem 0;
-}
-.settings{
-	width: 50%;
-	margin-top: 80px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 0.5rem;
-	gap: 1rem;
-}
-.navbar{
-	background-color: rgb(178, 207, 233);
-	padding: 0.75rem 1rem;
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 100%;
-	z-index: 1000;
-	box-shadow: 0 5px 5px rgba(53, 81, 94, 0.5	) /* x y sfocatura colore(trasparenza)*/
-}
-.container{
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.2rem;
-}
-.logoutButton{	
-	color: white;
-	background-color: rgb(235, 85, 85);
-	text-align: center;
-	font-family: "SF Pro";
-	padding: 0.875rem;
-	border: 2px solid rgb(243, 32, 32);
-	border-radius: 1rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(243, 32, 32);
-}
-.logoutButton:hover{
-	background-color: rgb(241, 41, 41);
-}
-.logoutButton:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.btn{
-	text-align: center;
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: #bad4e9;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.btn:hover{
-	color: white;
-	background-color: rgb(10, 146, 187);
-}
-.btn:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.currentButton{
-	text-align: center;
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: rgb(199, 177, 177);
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.saveButton {
-	text-align: center;
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: #bad4e9;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-	width: 100%;
-	margin-top: 0.3rem;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.saveButton:hover{
-	background-color:rgb(10, 146, 187);
-	color: white;
-}
-.saveButton:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-</style>

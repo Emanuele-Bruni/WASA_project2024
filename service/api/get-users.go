@@ -2,49 +2,21 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
-	"encoding/json"
-	"net/http"
-	"strconv"
-	"strings"
-
+	"WASA_project2024/service/database"
 	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
-func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, _ httprouter.Params, ctx reqcontext.RequestContext) {
-	// calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	id, err := strconv.Atoi(token)
+func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
+	users, err := rt.db.GetUsers(ctx.UserID)
 	if err != nil {
-		ctx.Logger.Error("Token must be a number: ", err)
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		respondDatabaseError(w, err, ctx)
 		return
 	}
-
-	// creo funzione che ritorna tutti gli utenti della tabella -> GetUsers
-	ids, names, err := rt.db.GetAllUsers(id)
-	if err != nil {
-		ctx.Logger.Error("Errore durante la selezione degli utenti: ", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	if users == nil {
+		users = []database.User{}
 	}
-
-	// devo restituire ids,names
-	var userResponse = struct {
-		UserIds []int    `json:"userIds"`
-		Names   []string `json:"names"`
-	}{
-		UserIds: ids,
-		Names:   names,
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(userResponse); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Failed to encode response")
-		return
-	}
-
-	ctx.Logger.Infof("Lista di utenti ricevuta: IDs: %v, Names: %v", ids, names)
+	writeJSON(w, 200, struct {
+		Users []database.User `json:"users"`
+	}{users}, ctx)
 }

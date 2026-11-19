@@ -1,0 +1,54 @@
+name: V2 checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+      - name: Formatting
+        run: test -z "$(gofmt -l cmd service)"
+      - run: go vet ./...
+      - run: go test -race ./...
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: node .yarn/releases/yarn-4.5.0.cjs install --immutable --immutable-cache
+      - run: node .yarn/releases/yarn-4.5.0.cjs lint
+      - run: node .yarn/releases/yarn-4.5.0.cjs format:check
+      - run: node .yarn/releases/yarn-4.5.0.cjs test
+      - run: node .yarn/releases/yarn-4.5.0.cjs build-prod
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose -p wasa-e2e -f compose.test.yml build
+      - run: docker compose -p wasa-e2e -f compose.test.yml run --rm browser
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: browser-report
+          path: |
+            webui/playwright-report
+            webui/test-results
+          retention-days: 7
+      - if: always()
+        run: docker compose -p wasa-e2e -f compose.test.yml down --volumes

@@ -1,36 +1,23 @@
 package database
 
-import "fmt"
-
-// devo ritornare [lista ids],[lista nomi],errore
-func (db *appdbimpl) GetAllUsers(userId int) ([]int, []string, error) {
-
-	righe, err := db.c.Query("SELECT id,name FROM users_table WHERE id!=?", userId)
+func (db *appdbimpl) GetUsers(userID int) ([]User, error) {
+	rows, err := db.c.Query("SELECT id,name,CASE WHEN photo_image_id IS NULL THEN '' ELSE '/media/'||photo_image_id END FROM users_table WHERE id!=? ORDER BY id", userID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("errore nella selezione degli utenti: %w", err)
+		return nil, err
 	}
-	defer righe.Close()
-
-	var ids []int
-	var names []string
-
-	// prendo gli id degli utenti
-	for righe.Next() {
-		var id int
-		var name string
-		// prendo l'id e il nome dalla tupla
-		err := righe.Scan(&id, &name)
-		if err != nil {
-			return nil, nil, fmt.Errorf("errore durante la scansione: %w", err)
+	defer rows.Close()
+	users := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err = rows.Scan(&user.Id, &user.Name, &user.Photo); err != nil {
+			return nil, err
 		}
-		// li aggiungo
-		ids = append(ids, id)
-		names = append(names, name)
+		users = append(users, user)
 	}
-
-	if err := righe.Err(); err != nil {
-		return nil, nil, fmt.Errorf("errore durante l'iterazione delle righe: %w", err)
-	}
-
-	return ids, names, nil
+	return users, rows.Err()
+}
+func (db *appdbimpl) GetUser(userID int) (User, error) {
+	var user User
+	err := db.c.QueryRow("SELECT id,name,CASE WHEN photo_image_id IS NULL THEN '' ELSE '/media/'||photo_image_id END FROM users_table WHERE id=?", userID).Scan(&user.Id, &user.Name, &user.Photo)
+	return user, err
 }
