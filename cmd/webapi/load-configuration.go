@@ -25,7 +25,7 @@ type WebAPIConfiguration struct {
 	}
 	Debug bool
 	DB    struct {
-		Filename string `conf:"default:/tmp/wasatext.db"`
+		Filename string `conf:"default:data/wasatext-v2.db"`
 	}
 }
 
@@ -35,10 +35,14 @@ type WebAPIConfiguration struct {
 // So, CLI parameters will override the environment, and configuration file will override everything.
 // Note that the configuration file can be specified only via CLI or environment variable.
 func loadConfiguration() (WebAPIConfiguration, error) {
+	return loadConfigurationFrom(os.Args[1:])
+}
+
+func loadConfigurationFrom(args []string) (WebAPIConfiguration, error) {
 	var cfg WebAPIConfiguration
 
 	// Try to load configuration from environment variables and command line switches
-	if err := conf.Parse(os.Args[1:], "CFG", &cfg); err != nil {
+	if err := conf.Parse(args, "CFG", &cfg); err != nil {
 		if errors.Is(err, conf.ErrHelpWanted) {
 			usage, err := conf.Usage("CFG", &cfg)
 			if err != nil {

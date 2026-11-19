@@ -1,19 +1,7 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import AppShell from './components/AppShell.vue'
 </script>
-<script>
-export default {}
-</script>
-
 <template>
-	<div class="container-fluid">
-		<RouterView />
-	</div>
-
+	<AppShell><RouterView /></AppShell>
+	<div id="dialogs" class="v2-app"></div>
 </template>
-
-<style>
-body{
-	background-color: rgb(208, 219, 226);
-}
-</style>

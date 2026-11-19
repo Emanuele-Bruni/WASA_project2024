@@ -1,6 +1,7 @@
 package database
 
-func (db *appdbimpl) SetMyPhoto(photo string, id int) error {
-	_, err := db.c.Exec("UPDATE users_table SET photo=? WHERE id=?", photo, id)
-	return err
+import "WASA_project2024/service/media"
+
+func (db *appdbimpl) SetMyPhoto(photo media.Image, id int) error {
+	return db.setPhoto(photo, id, false)
 }

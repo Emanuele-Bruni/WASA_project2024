@@ -1,7 +1,5 @@
 package database
 
-import "fmt"
-
 func (db *appdbimpl) CheckAuthorComment(commentId int, userId int) (bool, error) {
 	// prendo l'autore del commento
 	var authorId int
@@ -11,7 +9,7 @@ func (db *appdbimpl) CheckAuthorComment(commentId int, userId int) (bool, error)
 	}
 	// lo paragono all'username
 	if authorId != userId {
-		return false, fmt.Errorf("autore e utente non coincidono")
+		return false, nil
 	}
 	return true, nil
 }

@@ -1,15 +1,43 @@
-version: '1'
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    environment:
+      CFG_DB_FILENAME: /data/wasatext-v2.db
+      CFG_WEB_API_HOST: 0.0.0.0:3000
+      CFG_WEB_READ_TIMEOUT: ${API_READ_TIMEOUT:-5s}
+      CFG_WEB_WRITE_TIMEOUT: ${API_WRITE_TIMEOUT:-5s}
+      CFG_WEB_SHUTDOWN_TIMEOUT: ${API_SHUTDOWN_TIMEOUT:-5s}
+    volumes:
+      - backend_data:/data
     ports:
-      - "3000:3000"
-  
+      - "${BACKEND_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    stop_grace_period: 15s
+    restart: unless-stopped
+
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    environment:
+      API_URL: ${API_URL:-/api}
+      BACKEND_URL: ${BACKEND_URL:-http://backend:3000}
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:uid=101,gid=101,mode=1770
+    restart: unless-stopped
+
+volumes:
+  backend_data:

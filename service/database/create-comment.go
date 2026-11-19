@@ -2,61 +2,35 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/sirupsen/logrus"
+	"errors"
 )
 
-// crea un commento, lo aggiunge alla tabella dei commenti e alla lista dei commenti del messaggio
-func (db *appdbimpl) CreateComment(author int, emoji string, messageId int) (Comment, int, error) {
-	// inserisco il commento nella tabella dei commenti
-	res, err := db.c.Exec("INSERT INTO comments_table (author_id,emoji, message_id) VALUES (?,?,?)", author, emoji, messageId)
+// SetReaction atomically creates or replaces the single reaction of an author on a message.
+func (db *appdbimpl) SetReaction(author int, emoji string, messageID int) (Comment, bool, error) {
+	tx, err := db.c.Begin()
 	if err != nil {
-		return Comment{}, -1, fmt.Errorf("errore nel creare il commento: %w", err)
+		return Comment{}, false, err
 	}
-	// calcolo l'id del commento
-	commentId, err := res.LastInsertId()
-	if err != nil {
-		return Comment{}, -1, fmt.Errorf("errore nel calcolare l'ID del commento: %w", err)
+	defer tx.Rollback()
+	var existing int
+	lookup := tx.QueryRow("SELECT comment_id FROM comments_table WHERE message_id=? AND author_id=?", messageID, author).Scan(&existing)
+	created := errors.Is(lookup, sql.ErrNoRows)
+	if lookup != nil && !created {
+		return Comment{}, false, lookup
 	}
-
-	// determino il commento
-	finalComment := Comment{
-		CommentId: int(commentId),
-		AuthorId:  author,
-		Emoji:     emoji,
+	if err = requireAffected(tx.Exec(`INSERT INTO comments_table(message_id,author_id,emoji)
+ SELECT m.message_id,?,? FROM messages_table m
+ JOIN conversation_members cm ON cm.conversation_id=m.conversation_id AND cm.user_id=?
+ WHERE m.message_id=?
+ ON CONFLICT(message_id,author_id) DO UPDATE SET emoji=excluded.emoji`, author, emoji, author, messageID)); err != nil {
+		return Comment{}, false, err
 	}
-
-	// recupero l'array con gli id dei commenti
-	var currentComments sql.NullString // stringa "20,30,40"
-	err = db.c.QueryRow("SELECT comments FROM messages_table WHERE message_id=?", messageId).Scan(&currentComments)
-	if err != nil {
-		return Comment{}, -1, fmt.Errorf("errore nel recuperare i commenti attuali: %w", err)
+	var comment Comment
+	if err = tx.QueryRow("SELECT comment_id,author_id,emoji FROM comments_table WHERE message_id=? AND author_id=?", messageID, author).Scan(&comment.CommentId, &comment.AuthorId, &comment.Emoji); err != nil {
+		return Comment{}, false, err
 	}
-
-	var commentsidList []int // [20,30,40]
-	if currentComments.Valid && currentComments.String != "" {
-		for _, id_stringa := range strings.Split(currentComments.String, ",") {
-			// converto in numero
-			num, err := strconv.Atoi(id_stringa)
-			if err != nil {
-				logrus.WithField("comment_id", id_stringa).WithError(err).Error("id non valido")
-			} else {
-				commentsidList = append(commentsidList, num)
-			}
-		}
+	if err = tx.Commit(); err != nil {
+		return Comment{}, false, err
 	}
-	// aggiungo il commento creato
-	commentsidList = append(commentsidList, finalComment.CommentId)
-	// converto la lista in stringa
-	updatedComments := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(commentsidList)), ","), "[]")
-	// aggiorno la colonna "comments" del database
-	_, err = db.c.Exec("UPDATE messages_table SET comments=? WHERE message_id=?", updatedComments, messageId)
-	if err != nil {
-		return Comment{}, -1, fmt.Errorf("errore nell'aggiornare la lista dei commenti: %w", err)
-	}
-
-	return finalComment, int(commentId), nil
+	return comment, created, nil
 }

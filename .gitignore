@@ -1,1 +1,18 @@
 spectral.js
+.env
+data/
+backups/
+
+# Keep project notes local; publish only the root README.
+**/*.md
+!/README.md
+
+webui/dist/
+webui/.yarn/unplugged/
+webui/.yarn/install-state.gz
+webui/.yarn/global/
+webui/coverage/
+webui/test-results/
+webui/playwright-report/
+webui/node_modules/
+webui/.pnp.*

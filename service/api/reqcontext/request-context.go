@@ -13,6 +13,17 @@ import (
 
 // RequestContext is the context of the request, for request-dependent parameters
 type RequestContext struct {
+	// Authenticated identity and resource IDs, validated by the route middleware.
+	UserID         int
+	UserName       string
+	SessionKey     string
+	ConversationID int
+	MessageID      int
+	CommentID      int
+	ForwardID      int
+	MediaID        int
+	TargetUserID   int
+
 	// ReqUUID is the request unique ID
 	ReqUUID uuid.UUID
 

@@ -3,80 +3,82 @@ package api
 import (
 	"WASA_project2024/service/api/reqcontext"
 	"WASA_project2024/service/database"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/julienschmidt/httprouter"
+	"time"
 )
 
 func (rt *_router) getMessages(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	// calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	id, err := strconv.Atoi(token)
+	query := r.URL.Query()
+	for key, values := range query {
+		if (key != "limit" && key != "before" && key != "since") || len(values) != 1 {
+			writeError(w, 400, "Parametri della cronologia non validi")
+			return
+		}
+	}
+	limit := 50
+	if raw, ok := query["limit"]; ok {
+		parsed, err := strconv.Atoi(raw[0])
+		if err != nil || parsed < 1 || parsed > 100 {
+			writeError(w, 400, "limit deve essere compreso tra 1 e 100", "limit")
+			return
+		}
+		limit = parsed
+	}
+	var page database.MessagePage
+	var err error
+	if raw, ok := query["since"]; ok {
+		if query.Has("before") {
+			writeError(w, 400, "before e since non possono essere combinati")
+			return
+		}
+		cursor, parseError := strconv.ParseInt(raw[0], 10, 64)
+		if parseError != nil || cursor < 0 {
+			writeError(w, 400, "Cursore di aggiornamento non valido", "since")
+			return
+		}
+		page, err = rt.db.GetMessageChanges(ctx.ConversationID, cursor, limit)
+	} else {
+		var before *database.MessagePosition
+		if raw, ok := query["before"]; ok {
+			if len(raw[0]) > 256 {
+				writeError(w, 400, "Cursore pagina non valido", "before")
+				return
+			}
+			bytes, decodeError := base64.RawURLEncoding.Strict().DecodeString(raw[0])
+			var position database.MessagePosition
+			if decodeError != nil || json.Unmarshal(bytes, &position) != nil || position.ConversationID != ctx.ConversationID || position.MessageID < 1 || position.CreatedAt.IsZero() || position.CreatedAt.Location() != time.UTC {
+				writeError(w, 400, "Cursore pagina non valido", "before")
+				return
+			}
+			before = &position
+		}
+		page, err = rt.db.GetMessagePage(ctx.ConversationID, before, limit)
+	}
+	if errors.Is(err, database.ErrInvalidCursor) {
+		writeError(w, 400, "Cursore non valido")
+		return
+	}
 	if err != nil {
-		ctx.Logger.Error("Token must be a number: ", err)
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		respondDatabaseError(w, err, ctx)
 		return
 	}
-	// prendo il conversationid
-	cnvId, err := strconv.Atoi(p.ByName("conversationid"))
-	if err != nil {
-		// errore nel prendere il parametro
-		http.Error(w, "Parametro non valido", http.StatusBadRequest)
-		ctx.Logger.WithError(err).Error("conversationId invalid parameter")
-		return
+	var before *string
+	if page.Before != nil {
+		encoded, _ := json.Marshal(page.Before)
+		value := base64.RawURLEncoding.EncodeToString(encoded)
+		before = &value
 	}
-	// controllo se l'utente fa parte della conversazione
-	// funzione che controlla se l'utente è nella conversazione
-	found, err := rt.db.CheckUser_Conversation(cnvId, id)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'appartenenza dell'utente alla conversazione")
-		return
-	}
-	if !found {
-		http.Error(w, "Utente non appartiene alla conversazione", http.StatusForbidden)
-		ctx.Logger.Error("Errore perché l'utente non appartiene alla conversazione")
-		return
-	}
-	// Verifica se la conversazione esiste
-	exists, err := rt.db.ConversationExists(cnvId)
-	if err != nil {
-		http.Error(w, "Errore interno nel controllo della conversazione", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Errore durante la verifica dell'esistenza della conversazione")
-		return
-	}
-	if !exists {
-		http.Error(w, "La conversazione non esiste", http.StatusNotFound)
-		ctx.Logger.Error("conversazione inesistente")
-		return
-	}
-
-	// funzione che ritorna tutti gli ids dei messaggi della conversazione
-	messages, err := rt.db.GetConversationMessages(cnvId)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Errore durante la lettura dei messaggi")
-		return
-	}
-
-	// responso
-	var messagesResponse = struct {
-		Messages []database.Message `json:"messages"`
-	}{
-		Messages: messages,
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(messagesResponse); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Failed to encode response")
-		return
-	}
-
-	ctx.Logger.Infof("Lista di messaggi ricevuta")
+	writeJSON(w, 200, struct {
+		Messages       []database.Message `json:"messages"`
+		DeletedIDs     []int              `json:"deletedIds"`
+		Cursor         string             `json:"cursor"`
+		Before         *string            `json:"before"`
+		HasMore        bool               `json:"hasMore"`
+		HasMoreChanges bool               `json:"hasMoreChanges"`
+	}{page.Messages, page.DeletedIDs, strconv.FormatInt(page.Cursor, 10), before, page.HasMore, page.HasMoreChanges}, ctx)
 }

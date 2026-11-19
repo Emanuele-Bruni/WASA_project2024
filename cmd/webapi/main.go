@@ -28,7 +28,6 @@ import (
 	"WASA_project2024/service/database"
 	"WASA_project2024/service/globaltime"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/ardanlabs/conf"
@@ -38,6 +37,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 )
 
@@ -82,7 +82,12 @@ func run() error {
 
 	// Start Database
 	logger.Println("initializing database support")
-	dbconn, err := sql.Open("sqlite3", cfg.DB.Filename+"?_foreign_keys=1")
+	if cfg.DB.Filename != ":memory:" {
+		if err := os.MkdirAll(filepath.Dir(cfg.DB.Filename), 0750); err != nil {
+			return fmt.Errorf("creating database directory: %w", err)
+		}
+	}
+	dbconn, err := database.Open(cfg.DB.Filename)
 	if err != nil {
 		logger.WithError(err).Error("error opening SQLite DB")
 		return fmt.Errorf("opening SQLite: %w", err)

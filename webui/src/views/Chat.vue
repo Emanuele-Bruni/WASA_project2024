@@ -1,595 +1,269 @@
 <script>
-
-export default{
-    data: function(){
-        return {
-            errormsg: null,
-            successmsg: null,
-            groupError: null,
-
-            conversationId: this.$route.params.conversationid,
-            username : localStorage.getItem("username"),
-            userId: localStorage.getItem("id"),
-            userMap: JSON.parse(localStorage.getItem("userMap") || "{}"),
-            selectedMessageId: null,
-            selectedConversationId: null,
-            selectedComments: [],
-            specificComment: null,
-
-            conversation: null,
-            messages: [],
-            newMessage: "",
-            isPhoto: false,
-            forwardConversations: [],
-            forwardedIds: JSON.parse(localStorage.getItem("forwardedIds") || "{}"),
-            membersToAdd: [],
-
-            showChatModal: false,           //appare quando si clicca su Info
-            confirmLeaveGroup: false,       //appare quando si vuole lasciare il gruppo
-            confirmDeleteMessage: false,    //appare quando si vuole eliminare un messaggio
-            confirmDeleteComment: false,
-            showMessageOptions: false,      //appare quando si clicca sui puntini del messaggio
-            forwardModal: false,            //appare quando si vuole inoltrare un messaggio
-            addMemberModal: false,          //appare quando si vuole aggiungere un membro
-            emojiPicker: false,             //appare quando si vuole commentare un messaggio
-            allComments: false,             //appare quando si vuole eliminare un commento
-
-        }
-    },
-    methods: {
-        back(){
-            this.$router.push("/conversations")
-        },
-        async getConversationInfo(){
-            try{
-                let response = await this.$axios.get(`/conversations/${this.conversationId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                //console.log(response);
-                this.conversation = response.data;
-            }catch(e){
-                this.errormsg = e.toString();
-            }
-        },
-        async getChatMessages(){
-            try {
-                let response = await this.$axios.get(`/conversations/${this.conversationId}/messages`,{headers:{Authorization: localStorage.getItem("id")}});
-                // console.log(response);
-                const msgs = response.data.messages;
-                if (!Array.isArray(msgs) || msgs.length === 0){
-                    this.errormsg = "Nessun Messaggio";
-                    this.messages = []
-                } else {
-                    this.errormsg = null;
-                    this.messages = msgs;
-                }
-                // Aggiorno ultimo messaggio
-                if(Array.isArray(msgs) && msgs.length){
-                    const lastMsg = msgs[msgs.length-1];
-                    let lastMessages = JSON.parse(localStorage.getItem("lastMessages")||"{}");
-                    let displayText = lastMsg.text.startsWith("[foto]") ? "📷Foto" : lastMsg.text;
-                    if(displayText.length > 20){
-                        displayText = displayText.substring(0,20) + "...";
-                    }
-                    lastMessages[this.conversationId] = {
-                        author: this.userMap[lastMsg.authorId] || lastMsg.author,
-                        text: displayText,
-                        hours: lastMsg.hours
-                    };
-                    localStorage.setItem("lastMessages", JSON.stringify(lastMessages));
-                }
-            } catch(e){
-                    this.errormsg = e.toString();
-                    this.scrollToBottom();
-                    this.messages = []; 
-            }
-        },
-        async sendMessage(){
-            try{
-                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages`,
-                {text:this.newMessage},{headers:{Authorization: localStorage.getItem("id")}});
-                this.newMessage = "";
-                await this.getChatMessages();
-                this.scrollToBottom();
-                await this.getConversationInfo();
-            } catch(e) {
-                if(e.response){
-                    const status = e.response.status;
-					if(status === 400){
-						this.errormsg = "Lunghezza del messaggio non valida";
-					}
-                } else {
-                    this.errormsg = e.toString();
-                }
-                this.scrollToBottom();
-            }
-        },
-        scrollToBottom() {
-            this.$nextTick(() => { 
-                const el = this.$refs.bottomAnchor
-                if (el) {
-                    el.scrollIntoView({behavior: 'smooth'});
-                }
-            });
-        },
-        chatSettings(){
-            this.showChatModal = true;
-        },
-        async setGroupName(editableTitle){
-            try{
-                let response = await this.$axios.put(`/conversations/${this.conversationId}/name`,
-                {groupName: editableTitle}, {headers:{Authorization: localStorage.getItem("id")}});
-
-                this.successmsg = "Nome gruppo aggiornato con successo";
-                this.showChatModal= false;
-                setTimeout(()=> {this.successmsg=null;},800);
-
-                await this.getConversationInfo();
-                this.scrollToBottom();
-
-            } catch(e){
-                if(e.response){
-                    const status = e.response.status;
-					if(status === 400){
-						this.groupError = "Lunghezza del nome non valida";
-                        setTimeout(()=> {this.groupError=null;},800);
-					}
-                } else {
-                    this.groupError = e.toString();
-                }
-
-                this.showChatModal= false;
-                this.scrollToBottom();
-            }
-        },
-        async leaveGroup(){
-            try{
-                let response = await this.$axios.delete(`/conversations/${this.conversationId}/members`, {headers:{Authorization: localStorage.getItem("id")}})
-                this.successmsg = "Gruppo abbandonato con successo";
-                this.showChatModal = false;
-                setTimeout(()=> {this.successmsg=null;},800);
-                //torno alla lista delle conversazioni
-                this.$router.push("/conversations")
-            } catch(e) {
-                this.errormsg = e.toString();
-            }
-        },
-        openMessageOptions(messageId){
-            this.selectedMessageId = messageId;
-            // prendo i commenti e li salvo
-            const msg = this.messages.find(m => m.messageId === messageId)
-            this.selectedComments = msg ? msg.comments : []
-            this.showMessageOptions = true;
-        },
-        async deleteMessage(messageId){
-            try{
-                let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${messageId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                this.confirmDeleteMessage = false;
-                this.showMessageOptions = false;
-                await this.getChatMessages();
-
-            } catch(e) {
-                if(e.response) {
-                    const status = e.response.status;
-                    if(status === 403){
-                        this.errormsg = "Un messaggio può essere rimosso solo dall'autore";
-                        setTimeout(()=> {this.errormsg=null;},3000);
-                    } else {
-                        this.errormsg = e.toString();
-                    }
-                }
-            }
-        },
-        async openForwardModal(messageId){
-			this.selectedMessageId = messageId
+import chatOptions from '../composables/chat-options'
+import AppAvatar from '../components/AppAvatar.vue'
+import AppAlert from '../components/AppAlert.vue'
+import AppDialog from '../components/AppDialog.vue'
+import ChatDetails from '../components/ChatDetails.vue'
+import ChatMessage from '../components/ChatMessage.vue'
+import MessageComposer from '../components/MessageComposer.vue'
+import { initials } from '../services/profile'
+export default {
+	mixins: [chatOptions],
+	components: { AppAvatar, AppAlert, AppDialog, ChatDetails, ChatMessage, MessageComposer },
+	data() {
+		return { acting: false, announcement: '' }
+	},
+	watch: {
+		messages(current, previous) {
+			if (!previous?.length || !current.length) return
+			const latest = Math.max(...previous.map((message) => message.messageId))
+			const incoming = current.filter(
+				(message) => message.messageId > latest && message.authorId !== Number(this.userId)
+			)
+			if (incoming.length) {
+				const message = incoming[incoming.length - 1]
+				this.announcement = `Nuovo messaggio da ${message.author}: ${message.type === 'image' ? 'Immagine' : message.text.slice(0, 120)}`
+			}
+		}
+	},
+	computed: {
+		selectedMessage() {
+			return this.messages.find((message) => message.messageId === this.selectedMessageId)
+		}
+	},
+	methods: {
+		initials,
+		async react(message, emoji) {
+			if (this.acting) return
+			this.selectedMessageId = message.messageId
+			const mine = message.comments.find(
+				(comment) => comment.authorId === Number(this.userId) && comment.emoji === emoji
+			)
+			await this.perform(
+				mine ? 'uncommentMessage' : 'commentMessage',
+				mine ? mine.commentId : emoji
+			)
+		},
+		async perform(method, ...args) {
+			if (this.acting) return
+			const controller = this.chatController
+			this.acting = true
+			this.errormsg = null
+			this.groupError = null
 			try {
-				let response = await this.$axios.get("/conversations",{headers:{Authorization: localStorage.getItem("id")}});
-				if(response){
-                    this.forwardConversations = response.data.conversations;
-                    this.forwardModal = true;
-                }
-			} catch(e){
-                this.errormsg = e.toString();
+				await this[method](...args)
+			} finally {
+				if (controller === this.chatController) this.acting = false
 			}
 		},
-        async forwardMessage(convId){
-            try{
-                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/forward/${convId}`,
-                null,{headers:{Authorization: localStorage.getItem("id")}});
-                const newMessageId = response.data.messageId;
-                
-                // 🔹 Assicuriamoci che forwardedIds[this.conversationId] sia un oggetto
-                if (!this.forwardedIds[this.conversationId] || typeof this.forwardedIds[this.conversationId] !== "object") {
-                    this.forwardedIds[this.conversationId] = {};
-                }
-
-                this.forwardedIds[this.conversationId][newMessageId] = true;
-
-                localStorage.setItem("forwardedIds", JSON.stringify(this.forwardedIds));
-
-                await this.getChatMessages();
-                this.forwardModal = false;
-                this.showMessageOptions = false;
-                this.scrollToBottom();
-            } catch(e) {
-                this.errormsg = e.toString();
-            }
-        },
-        async openAddMember(){
-            try{
-                let response = await this.$axios.get("/users",{headers:{Authorization: localStorage.getItem("id")}});
-                if(response){
-                    // Combino Ids e Names
-					this.membersToAdd = response.data.userIds.map((id,index) => {
-						return {id: id, name: response.data.names[index]};});
-                    this.addMemberModal=true
-                }
-            } catch(e) {
-                this.errormsg = e.toString();
-            }
-        },
-        async addToGroup(userId){
-            try{
-                let response = await this.$axios.put(`/conversations/${this.conversationId}/members`,{user: userId},{headers:{Authorization: localStorage.getItem("id")}});
-                this.successmsg = "Utente aggiunto con successo";
-                setTimeout(()=> {this.successmsg=null;
-                    this.addMemberModal = false;
-                },1000);
-                this.getConversationInfo();
-            } catch(e) {
-                this.errormsg = e.toString();
-            }
-        },
-        async commentMessage(selectedEmoji) {
-            try{
-                let response = await this.$axios.post(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments`,
-                {emoji: selectedEmoji},{headers:{Authorization: localStorage.getItem("id")}});
-
-                // aggiorno la userMap per visualizzare subito il nome
-                let storedMap = JSON.parse(localStorage.getItem("userMap") || "{}");
-                if (this.userId && this.username){
-                    storedMap[this.userId] = this.username;
-                    this.userMap =storedMap;
-                    localStorage.setItem("userMap", JSON.stringify(storedMap));
-                }
-
-                await this.getChatMessages();
-                this.emojiPicker = false;
-                this.showMessageOptions = false;
-                
-            } catch(e) {
-                this.errormsg = e.toString();
-                setTimeout(()=> {this.errormsg=null;
-                },1000);
-            }
-        },
-        commentOption(commentId){
-            this.confirmDeleteComment =  true;
-            this.specificComment = commentId;
-        },
-        async uncommentMessage(commentId) {
-            try{
-                let response = await this.$axios.delete(`/conversations/${this.conversationId}/messages/${this.selectedMessageId}/comments/${commentId}`, {headers:{Authorization: localStorage.getItem("id")}});
-                this.confirmDeleteComment = false;
-                this.allComments = false;
-                this.showMessageOptions=false;
-                await this.getChatMessages();
-
-            } catch(e) {
-                if(e.response) {
-                    this.confirmDeleteComment = false;
-                    const status = e.response.status;
-                    if(status === 500){
-                        this.errormsg = "Un commento può essere rimosso solo dall'autore";
-                        setTimeout(()=> {this.errormsg=null;},1000);
-                    } else {
-                        this.confirmDeleteComment = false;
-                        this.errormsg = e.toString();
-                    }
-                }
-            }
-        },
-        async setGroupPhoto(base64Photo){
-            try{
-                let response = await this.$axios.put(`/conversations/${this.conversationId}/photo`,
-					{ photo: base64Photo },
-					{ headers:{ Authorization: localStorage.getItem("id") } }
-				);
-                this.showChatModal = false;
-                await this.getConversationInfo();
-                this.successmsg = "Foto aggiornata con successo!";
-				setTimeout(()=> {this.successmsg=null},1000);
-            } catch(e){
-                this.errormsg = e.toString();
-            }
-        },
-        onFileSelected(e){
-            const file = e.target.files[0];
-            if(!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async () => {
-                const base64Photo = reader.result.split(",")[1];
-                this.newMessage = "[foto]" + base64Photo;
-                await this.sendMessage();
-            };
-            reader.readAsDataURL(file);
-        },
-    },
-    mounted(){
-        this.getConversationInfo();
-        this.getChatMessages();
-        this.scrollToBottom();
-        this.interval = setInterval(() => this.getChatMessages(), 30000);
-
-        // 🔹 Reset forwardedIds se il backend non ha conversazioni
-        this.$axios.get("/conversations", { headers: { Authorization: localStorage.getItem("id") } })
-            .then(response => {
-                if (!response.data.conversations || response.data.conversations.length === 0) {
-                    this.forwardedIds = {};
-                    localStorage.removeItem("forwardedIds");
-                }
-            })
-            .catch(() => {
-                // Ignora eventuali errori qui
-            });
-
-        
-    },
-    beforeUnmount() {
-  		clearInterval(this.interval);
+		openForward() {
+			this.showMessageOptions = false
+			this.perform('openForwardModal', this.selectedMessageId)
+		},
+		confirmLeave() {
+			this.showChatModal = false
+			this.confirmLeaveGroup = true
+		}
 	}
 }
 </script>
 <template>
-    <!-- TopBar con Foto,Nome e tasto impostazioni-->
-     <div class="topBar">
-        <div class="topBarContent">
-            <button type="button" class="backButton" @click="back"> Indietro </button>
-             <div class="chatHeader" v-if="conversation">
-               <img :src="'data:image/png;base64,' + conversation.photo"  class="chatPhoto"/>
-               <div class="chatTitle"> {{ conversation.title }}</div>
-            </div>
-            <button type="button" class="chatSettingsButton" @click="chatSettings"> Info </button>
-            <ChatInfoItem v-if="showChatModal"
-                :photo="conversation.photo"
-                :title="conversation.title"
-                :isGroup="conversation.isGroup"
-                :members="conversation.members"
-                :conversationId="conversationId"
-                @close="showChatModal = false" 
-                @groupNameChanged="setGroupName"
-                @left="confirmLeaveGroup=true"
-                @addMember="openAddMember"
-                @groupPhotoSelected="setGroupPhoto($event)"/>
-            <ConfirmModal v-if="confirmLeaveGroup"
-                message="Sei sicuro di voler uscire dal gruppo?"
-                @yes="leaveGroup"
-                @no="confirmLeaveGroup=false"
-            />
-            <AddToGroupModal v-if="addMemberModal"
-                :conversationId="conversationId"
-                :users="membersToAdd"
-                @addToGroup="addToGroup($event)"
-                @close="addMemberModal=false"
-            />
-        </div>
-     </div>
-
-    <!-- Lista di messaggi-->
-    <div class="messagesSection">
-        <div class="messagesList">
-           <MessageItem v-for="msg in messages"
-                :key="msg.messageId"
-                :messageId="msg.messageId"
-                :author="msg.author"
-                :text="msg.text"
-                :hours="msg.hours"
-                :isMine="msg.authorId === parseInt(userId)"
-                :comments="msg.comments"
-                :isForwarded="!!(forwardedIds[conversationId] && forwardedIds[conversationId][msg.messageId])"
-                @messageOptions="openMessageOptions"
-            />
-            <MessageModal v-if="showMessageOptions"
-                :messageId="selectedMessageId"
-                @forward="openForwardModal(selectedMessageId)"
-                @delete="confirmDeleteMessage = true"
-                @openEmojiPicker="emojiPicker=true"
-                @openComments="allComments=true"
-                @close="showMessageOptions=false"
-            />
-            <MessageComments v-if="allComments"
-                :messageId="selectedMessageId"
-                :comments="selectedComments"
-                :userId="userId"
-                @uncomment="commentOption($event)"
-                @close="allComments=false"
-            />
-            <EmojiPicker v-if="emojiPicker"
-                :messageId="selectedMessageId"
-                @chosen="commentMessage($event)"
-                @close="emojiPicker=false"
-            />
-            <ForwardModal v-if="forwardModal"
-                :messageId="selectedMessageId"
-                :conversationId="conversationId"
-                :conversations="forwardConversations"
-                @toConversation="forwardMessage($event)"
-                @close="forwardModal=false"
-            />
-            <ConfirmModal v-if="confirmDeleteComment"
-                message="Sei sicuro di voler eliminare il commento?"
-                @yes="uncommentMessage(specificComment)"
-                @no="confirmDeleteComment=false"
-            />
-            <ConfirmModal v-if="confirmDeleteMessage"
-                message="Sei sicuro di voler eliminare il messaggio?"
-                @yes="deleteMessage(selectedMessageId)"
-                @no="confirmDeleteMessage=false"
-            />
-            <SuccessMsg v-if="successmsg" :msg="successmsg"/>
-            <ErrorMsg v-if="errormsg" :msg="errormsg" :class="{ centeredError: errormsg === 'Nessun Messaggio' }"/> 
-            <ErrorMsg v-if="groupError" :msg="groupError"/>
-            <div ref="bottomAnchor"></div>
-        </div>
-    </div>
-
-    <!-- DownBar per scrivere i messaggi-->
-     <div class="downBar">
-        <div class="downBarContent">
-            <!-- Pulsante per scegliere la foto -->
-            <button type="button" class="sendButton" @click="$refs.fileInput.click()"> 🖼️​ </button>
-            <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="onFileSelected" />
-            <form id="sendMessageForm" @submit.prevent="sendMessage">
-                <input type="text" v-model="newMessage" placeholder="Scrivi un messaggio"/>
-                <button class="sendButton" type="submit"> Invia </button>
-            </form>
-        </div>
-     </div>
+	<section v-if="loading" class="v2-page" role="status">Caricamento…</section>
+	<section v-else-if="!conversation" class="v2-page">
+		<h1>{{ errormsg || 'Conversazione non trovata' }}</h1>
+		<button class="v2-button v2-button--secondary" @click="startChat">Riprova</button
+		><RouterLink to="/conversations" class="v2-button v2-button--primary"
+			>Torna alle conversazioni</RouterLink
+		>
+	</section>
+	<section v-else class="v2-chat-page">
+		<p class="v2-sr-only" role="status" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
+		<header class="v2-chat-header">
+			<RouterLink
+				to="/conversations"
+				class="v2-icon-button v2-chat-header__back"
+				aria-label="Torna alle conversazioni"
+				>‹</RouterLink
+			>
+			<AppAvatar :initials="initials(conversation.title)" :src="conversation.photo" size="medium" />
+			<div class="v2-chat-header__identity">
+				<h1>{{ conversation.title }}</h1>
+				<p v-if="conversation.isGroup">{{ conversation.members.length }} partecipanti</p>
+			</div>
+			<button
+				class="v2-icon-button"
+				aria-label="Informazioni conversazione"
+				@click="showChatModal = true"
+			>
+				•••
+			</button>
+		</header>
+		<div
+			ref="messageList"
+			class="v2-message-list"
+			role="region"
+			aria-label="Cronologia messaggi"
+			tabindex="0"
+		>
+			<AppAlert
+				:message="errormsg || pollError"
+				retry
+				@retry="getChatMessages"
+				dismissible
+				@dismiss="errormsg = null"
+			/><AppAlert :message="successmsg" success dismissible @dismiss="successmsg = null" />
+			<button
+				v-if="timeline?.state.hasMore"
+				class="v2-button v2-button--secondary older-messages"
+				:disabled="loadingOlder"
+				@click="loadOlder"
+			>
+				{{ loadingOlder ? 'Caricamento…' : 'Carica messaggi precedenti' }}
+			</button>
+			<div v-if="!messages.length" class="v2-chat-empty">
+				<h2>Nessun messaggio</h2>
+				<p>Scrivi il primo messaggio per iniziare la conversazione.</p>
+			</div>
+			<template v-for="(message, index) in messages" :key="message.messageId"
+				><div
+					v-if="
+						index === 0 ||
+						messages[index - 1].createdAt.slice(0, 10) !== message.createdAt.slice(0, 10)
+					"
+					class="v2-date-divider"
+				>
+					<span>{{
+						new Date(message.createdAt).toLocaleDateString('it-IT', {
+							day: 'numeric',
+							month: 'long',
+							year: 'numeric'
+						})
+					}}</span>
+				</div>
+				<ChatMessage
+					:message="message"
+					:user-id="Number(userId)"
+					:is-group="conversation.isGroup"
+					@actions="openMessageOptions"
+					@reaction="react"
+			/></template>
+		</div>
+		<MessageComposer
+			v-model="newMessage"
+			:sending="sending"
+			:attachment="attachment"
+			:preview="attachmentPreview"
+			:error="attachmentError"
+			@send="sendMessage"
+			@file="onFileSelected"
+			@clear="clearAttachment"
+			@dismiss-error="attachmentError = null"
+		/>
+		<ChatDetails
+			v-if="showChatModal"
+			:conversation="conversation"
+			:users="addMemberModal ? membersToAdd : null"
+			:busy="acting"
+			:error="groupError || errormsg"
+			@close="!acting && (showChatModal = false)"
+			@rename="perform('setGroupName', $event)"
+			@photo="perform('setGroupPhoto', $event)"
+			@load-users="perform('openAddMember')"
+			@add="perform('addToGroup', $event)"
+			@leave="confirmLeave"
+		/>
+		<AppDialog
+			v-else-if="confirmLeaveGroup"
+			title="Abbandonare il gruppo?"
+			@close="!acting && (confirmLeaveGroup = false)"
+			><p>Non vedrai più “{{ conversation.title }}” nell’elenco delle conversazioni.</p>
+			<AppAlert :message="errormsg" />
+			<footer class="v2-modal__actions">
+				<button
+					class="v2-button v2-button--secondary"
+					:disabled="acting"
+					@click="confirmLeaveGroup = false"
+				>
+					Annulla</button
+				><button
+					class="v2-button v2-button--danger"
+					:disabled="acting"
+					@click="perform('leaveGroup')"
+				>
+					Abbandona
+				</button>
+			</footer></AppDialog
+		>
+		<AppDialog
+			v-else-if="showMessageOptions && selectedMessage"
+			title="Azioni sul messaggio"
+			@close="!acting && (showMessageOptions = false)"
+		>
+			<AppAlert :message="errormsg" />
+			<div class="v2-quick-reactions">
+				<button
+					v-for="emoji in ['👍', '💙', '😂', '✨', '😮', '🎉']"
+					:key="emoji"
+					:disabled="acting"
+					:aria-label="`Reagisci con ${emoji}`"
+					@click="perform('commentMessage', emoji)"
+				>
+					{{ emoji }}
+				</button>
+			</div>
+			<div class="message-actions">
+				<button class="v2-button v2-button--secondary" :disabled="acting" @click="openForward">
+					↗ Inoltra</button
+				><button
+					v-if="selectedMessage.authorId === Number(userId)"
+					class="v2-button v2-button--danger"
+					:disabled="acting"
+					@click="perform('deleteMessage', selectedMessageId)"
+				>
+					Elimina</button
+				><button class="v2-button v2-button--secondary" @click="showMessageOptions = false">
+					Annulla
+				</button>
+			</div>
+			<p v-for="comment in selectedComments" :key="comment.commentId" class="reaction-detail">
+				{{
+					conversation.members.find((member) => member.userId === comment.authorId)?.name ||
+					'Utente'
+				}}: {{ comment.emoji }}
+				<button
+					v-if="comment.authorId === Number(userId)"
+					class="v2-button v2-button--secondary"
+					:disabled="acting"
+					@click="perform('uncommentMessage', comment.commentId)"
+				>
+					Rimuovi reazione
+				</button>
+			</p>
+		</AppDialog>
+		<AppDialog
+			v-else-if="forwardModal"
+			title="Scegli una conversazione"
+			@close="!acting && (forwardModal = false)"
+			><AppAlert :message="errormsg" />
+			<div class="v2-forward-list">
+				<button
+					v-for="target in forwardConversations.filter(
+						(item) => item.conversationId !== conversation.conversationId
+					)"
+					:key="target.conversationId"
+					class="v2-forward-option"
+					:disabled="acting"
+					@click="perform('forwardMessage', target.conversationId)"
+				>
+					<AppAvatar :initials="initials(target.title)" :src="target.photo" size="medium" /><span
+						><strong>{{ target.title }}</strong
+						><small>{{ target.isGroup ? 'Gruppo' : 'Conversazione privata' }}</small></span
+					><span aria-hidden="true">›</span>
+				</button>
+			</div>
+			<p v-if="forwardConversations.length < 2">
+				Crea un’altra conversazione per inoltrare il messaggio.
+			</p></AppDialog
+		>
+	</section>
 </template>
-
-<style scoped>
-#sendMessageForm {
-  display: flex;
-  width: 100%;
-  gap: 1rem;
-}
-.centeredError{
-    text-align: center;
-    width: 100%;
-    margin-top: 170px;
-}
-.messagesSection {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 80px;
-    margin-bottom: 80px;
-}
-.messagesList {
-    width: 80%;
-}
-input{
-    font-family: "SF Pro";
-	width: 100%;
-	padding: 0.875rem;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-	outline: none;
-	transition: ease 0.25s;
-}
-.sendButton{
- 	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: #bad4e9;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-    width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.sendButton:hover{
-    color: white;
-	background-color: rgb(10, 146, 187);
-}
-.sendButton:active{
-    box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), 
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.chatHeader {
-  display: flex;
-  gap: 1rem;
-  width: 80%;
-}
-.chatSettingsButton{
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: #bad4e9;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-    width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.chatSettingsButton:hover{
-    color: white;
-	background-color: rgb(10, 146, 187);
-}
-.chatSettingsButton:active{
-    box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), 
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.chatPhoto {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid rgb(4, 66, 85);
-  margin-left: 1rem;
-}
-.chatTitle {
-  font-weight: bold;
-  font-size: 30px;
-  color: rgb(4, 66, 85);
-  font-family: "SF Pro";
-}
-.topBarContent{
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.2rem;
-}
-.topBar{
-	background-color: white;
-	padding: 0.75rem 1rem;
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 100%;
-	z-index: 1000;
-	box-shadow: 0 5px 5px rgba(53, 81, 94, 0.5	) /* x y sfocatura colore(trasparenza)*/
-}
-.downBarContent{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    width: 100%;
-}
-.downBar{
-    background-color: white;
-	padding: 0.75rem 1rem;
-	position: fixed;
-    bottom:0;
-	left: 0;
-	width: 100%;
-    display: flex;
-	box-shadow: 0 -5px 5px rgba(53, 81, 94, 0.5	);
-}
-.backButton{
-    color: white;
-	background-color: rgb(235, 85, 85);
-	text-align: center;
-	font-family: "SF Pro";
-	padding: 0.875rem;
-	border: 2px solid rgb(243, 32, 32);
-	border-radius: 1rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(243, 32, 32);
-}
-.backButton:hover{
-	background-color: rgb(241, 41, 41);
-}
-.backButton:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-</style>

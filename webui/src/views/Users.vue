@@ -1,221 +1,61 @@
-<script>
-export default {
-    data: function() {
-        return {
-			errormsg: null,
-			ids: [],
-			names: [],
-			userMap: {},
-			conversationId: null,
-			successmsg: null,
-			searchQuery: "",
-			currentId: localStorage.getItem("id"),
-			currentUsername: localStorage.getItem("username"),
-
-		}
-    },
-    methods: {
-        logout(){
-			localStorage.removeItem("auth")
-			localStorage.removeItem("id")
-			this.$router.push("/login") //torno al login
-		},
-        settingsSection(){
-			this.$router.push("/settings")
-		},
-        conversationsSection(){	
-            this.$router.push("/conversations")
-        },
-		async getAllUsers() {
-			this.errormsg = null	
-			try{
-				//console.log("Authorization Header:", localStorage.getItem("auth"));
-				let response = await this.$axios.get("/users", {headers:{Authorization: localStorage.getItem("id")}});
-				//console.log("Response Data: ",response.data);
-				if(response) {
-					this.ids = response.data.userIds;
-					this.names = response.data.names;
-					// creo mappa temporeanea 
-					const tempMap = {};
-					this.ids.forEach((id, index) => {
-						tempMap[id] = this.names[index];
-					});
-					// Assicuro che l'utente corrente resti sempre nella mappa
-					tempMap[this.currentId] = this.currentUsername;
-					this.userMap = tempMap; 
-					localStorage.setItem("userMap", JSON.stringify(this.userMap));
-
-					console.log(this.userMap);
-				}
-			} catch(e){
-				this.errormsg = e.toString();
-			}
-		},
-		async newConversation(userId){
-			try{
-				let response = await this.$axios.post(`/users/${userId}`, {}, {headers:{Authorization: localStorage.getItem("id")}});
-				console.log(response.data)
-				if (response) {
-					this.conversationId = response.data.conversationId;
-
-					this.successmsg = "Conversazione creata con successo!";
-					setTimeout(()=> {
-						this.successmsg = null;
-						this.$router.push(`/conversations/${this.conversationId}`);
-					},500);	
-				}
-				await this.getAllUsers();
-			} catch(e){
-				if(e.response) {
-					const status = e.response.status;
-					if (status === 400){
-						this.errormsg = "Conversazione già esistente";
-						setTimeout(()=> {
-							this.errormsg = null;
-						},1000);
-				} else {
-						this.errormsg = e.toString();
-				}
-				}
-			}
-		}
-    },
-	computed:{
-		filteredUsers() {
-			if (!this.searchQuery) {
-				return this.names.map((name, index) => ({
-				id: this.ids[index],
-				name
-				}));
-			}
-			const query = this.searchQuery.toLowerCase();
-			return this.names
-				.map((name, index) => ({ id: this.ids[index], name }))
-				.filter(user => user.name.toLowerCase().includes(query));
-		}
-	},
-    mounted() {
-		this.getAllUsers();
-		this.interval = setInterval(() => this.getAllUsers(), 5000);
-    },
-	beforeUnmount() {
-  		clearInterval(this.interval);
+<script setup>
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { serverState } from '../services/server-state'
+import { initials } from '../services/profile'
+import { apiErrorMessage } from '../services/errors'
+import { useCollection } from '../composables/use-collection'
+import AppAvatar from '../components/AppAvatar.vue'
+import AppAlert from '../components/AppAlert.vue'
+const { client, signal, loading, error, refresh } = useCollection('users'),
+	router = useRouter(),
+	search = ref(''),
+	opening = ref(null)
+const users = computed(() =>
+	serverState.users.filter((user) =>
+		user.name.toLowerCase().includes(search.value.trim().toLowerCase())
+	)
+)
+async function open(user) {
+	if (opening.value) return
+	opening.value = user.userId
+	try {
+		const all = (await client.get('/conversations')).data.conversations
+		const existing = all.find(
+			(item) => !item.isGroup && item.members?.some((member) => member.userId === user.userId)
+		)
+		const id =
+			existing?.conversationId ||
+			(await client.post(`/users/${user.userId}`, {})).data.conversation.conversationId
+		await router.push(`/conversations/${id}`)
+	} catch (e) {
+		if (!signal.aborted) error.value = apiErrorMessage(e)
+	} finally {
+		if (!signal.aborted) opening.value = null
 	}
 }
 </script>
 <template>
-    <div class="navbar">
-		<div class="container">
-			<button type="button" class="btn" @click="conversationsSection"> Conversazioni </button>
-			<button type="button" class="currentButton"> Utenti </button>
-			<button type="button" class="btn" @click="settingsSection"> Impostazioni </button>
-			<button type="button" class="logoutButton" @click="logout"> Logout </button>
-		</div> 
-	</div>
-	<div class="userList">
-		<div class="searchBarContainer">
-			<input  class="searchBar" type="text" v-model="searchQuery" placeholder="Cerca utenti..." />
+	<section class="v2-page">
+		<header class="v2-page-header"><h1>Persone</h1></header>
+		<label class="v2-search v2-search--standalone"
+			><span aria-hidden="true">⌕</span><span class="v2-sr-only">Cerca persone</span
+			><input v-model="search" type="search" placeholder="Cerca per nome…"
+		/></label>
+		<AppAlert :message="error" retry @retry="refresh" />
+		<p v-if="loading" role="status">Caricamento…</p>
+		<div class="v2-people-grid">
+			<article v-for="user in users" :key="user.userId" class="v2-person-card">
+				<AppAvatar :initials="initials(user.name)" :src="user.photo" size="xlarge" />
+				<h2>{{ user.name }}</h2>
+				<button class="v2-button v2-button--secondary" :disabled="!!opening" @click="open(user)">
+					{{ opening === user.userId ? 'Apertura…' : 'Scrivi' }}
+				</button>
+			</article>
 		</div>
-		<!-- <UserItem v-for="(name,index) in names" 
-			:key="ids[index]" :userId="ids[index]"
-			:username="name"
-			 @new-conversation="newConversation"
-		/> -->
-		<UserItem v-for="user in filteredUsers"
-			:key="user.id"
-			:userId="user.id"
-			:username="user.name"
-			@new-conversation="newConversation"
-    	/>
-		<SuccessMsg v-if="successmsg" :msg="successmsg" />
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-	</div>
+		<div v-if="!loading && !error && !users.length" class="v2-empty-state">
+			<h2>Nessuna persona trovata</h2>
+			<p>Controlla il nome e riprova.</p>
+		</div>
+	</section>
 </template>
-
-
-<style scoped>
-.searchBar{
-	padding: 8px 12px;
-	border-radius: 1rem;
-	border: 2px solid rgb(4, 103, 133);
-	font-family: "SF Pro";
-	margin-bottom: 20px;
-}
-.userList{
-	margin-top: 100px; /* o quanto è alta la tua navbar */
-	display: flex;
-	justify-content: center;
-	flex-direction: column;
-	align-items: center;
-}
-.navbar{
-	background-color: rgb(178, 207, 233);
-	padding: 0.75rem 1rem;
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 100%;
-	z-index: 1000;
-	box-shadow: 0 5px 5px rgba(53, 81, 94, 0.5	) /* x y sfocatura colore(trasparenza)*/
-}
-.container{
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.2rem;
-}
-.logoutButton{	
-	color: white;
-	background-color: rgb(235, 85, 85);
-	text-align: center;
-	font-family: "SF Pro";
-	padding: 0.875rem;
-	border: 2px solid rgb(243, 32, 32);
-	border-radius: 1rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(243, 32, 32);
-}
-.logoutButton:hover{
-	background-color: rgb(241, 41, 41);
-}
-.logoutButton:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.btn{
-	text-align: center;
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: #bad4e9;
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-.btn:hover{
-	color: white;
-	background-color: rgb(10, 146, 187);
-}
-.btn:active{
-	box-shadow: 
-	inset 0px -12px 12px -6px rgba(31, 77, 97, 0.5), /* x,y,sfocatura,restringimento -> rgba(1 indica l'opacità*/
-	inset 0px 12px 12px -6px rgba(11, 51, 68, 0.5),
-	inset 12px 0px 12px -6px rgba(11, 51, 68, 0.5),
-	inset -12px 0px 12px -6px rgba(11, 51, 68, 0.5);
-}
-.currentButton{
-	text-align: center;
-	font-family: "SF Pro";
-	color: rgb(4, 66, 85); 
-	background-color: rgb(199, 177, 177);
-	border: 2px solid rgb(4, 103, 133);
-	border-radius: 1rem;
-	padding: 0.875rem;
-	width: 118px;
-	box-shadow: 1px 3px 0 rgb(4, 103, 133);
-}
-</style>

@@ -1,30 +1,16 @@
-
-# Yarn builder
-FROM node:lts AS builder
-
-# Creo una directory dove copiare il codice e mi sposto
+FROM node:24-bookworm-slim AS builder
 WORKDIR /app
+COPY webui/package.json webui/yarn.lock webui/.yarnrc.yml ./
+COPY webui/.yarn/ ./.yarn/
+RUN node .yarn/releases/yarn-4.5.0.cjs install --immutable --immutable-cache
+COPY webui/ ./
+RUN node .yarn/releases/yarn-4.5.0.cjs exec vite build --mode production
 
-# Copio i file di config e le dipendenze
-COPY webui/package.json webui/yarn.lock ./
-
-# utilizzo yarn moderno
-RUN corepack enable && yarn install
-
-# Copio il progetto vue
-COPY webui/ .
-
-# Costruisco il frontend 
-RUN yarn build-prod
-
-# Creo container finale
-FROM nginx:stable
-
-# Porte da usare
-EXPOSE 8080
-
-# Mi sposto nella directory dove copiare l'eseguibile ed eseguirlo
-WORKDIR /app/
-
-# Copio l'eseguibile generato dal container precedente
+FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY docker/frontend/nginx.conf.template /etc/nginx/wasa.conf.template
+COPY docker/frontend/start.sh /usr/local/bin/wasa-frontend
+USER 101:101
+ENV API_URL=/api BACKEND_URL=http://backend:3000
+EXPOSE 8080
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/wasa-frontend"]

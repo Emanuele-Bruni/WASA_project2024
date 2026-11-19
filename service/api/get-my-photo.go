@@ -2,46 +2,10 @@ package api
 
 import (
 	"WASA_project2024/service/api/reqcontext"
-	"encoding/json"
-	"net/http"
-	"strconv"
-	"strings"
-
 	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
 func (rt *_router) getMyPhoto(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx reqcontext.RequestContext) {
-	// calcolo l'id utente e vedo se è autorizzato
-	token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	id, err := strconv.Atoi(token)
-	if err != nil {
-		ctx.Logger.Error("Token must be a number: ", err)
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-	// prendo la foto dell'utente
-	photo, err := rt.db.GetUserPhoto(id)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Errore durante la selezione della foto")
-		return
-	}
-
-	// restituisco la foto
-	var photoResponse = struct {
-		Photo string `json:"photo"`
-	}{
-		Photo: photo,
-	}
-
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(photoResponse); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		ctx.Logger.WithError(err).Error("Failed to encode response")
-		return
-	}
-
-	ctx.Logger.Infof("Foto ricevuta")
+	rt.respondUser(w, ctx)
 }
